@@ -66,4 +66,8 @@ export interface PlayerStats {
   totalCreditsEarned: number;
   totalDataEarned: number;
   totalPlayTimeMs: number;
+  /** Consecutive wins per minigame type (resets on failure). */
+  minigameWinStreaks: Partial<Record<MinigameType, number>>;
+  /** Cumulative wins per minigame type across all runs. */
+  minigameWinsTotal: Partial<Record<MinigameType, number>>;
 }

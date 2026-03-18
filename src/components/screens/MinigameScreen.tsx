@@ -5,6 +5,7 @@ import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getDifficulty, getTimeLimit } from "@/data/balancing";
 import { checkSkip } from "@/lib/power-up-effects";
+import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
 import { CloseBrackets } from "@/components/minigames/CloseBrackets";
 import { TypeBackward } from "@/components/minigames/TypeBackward";
@@ -32,6 +33,7 @@ export function MinigameScreen() {
   const inventory = useGameStore((s) => s.inventory);
   const usePowerUp = useGameStore((s) => s.usePowerUp);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
 
   const currentMinigame = floorMinigames[currentMinigameIndex];
 
@@ -94,14 +96,25 @@ export function MinigameScreen() {
 
       // After 1-second result flash, dispatch to store
       setTimeout(() => {
+        // Record minigame result for streak/total tracking first
+        recordMinigameResult(result.minigame, result.success);
+
         if (result.success) {
           completeMinigame(result);
         } else {
           failMinigame();
         }
+
+        // Check achievements after store state is updated
+        // (Zustand set() is synchronous so state is fresh here)
+        awardNewAchievements({
+          success: result.success,
+          timeMs: result.timeMs,
+          type: result.minigame,
+        });
       }, 1000);
     },
-    [completeMinigame, failMinigame],
+    [completeMinigame, failMinigame, recordMinigameResult],
   );
 
   return (

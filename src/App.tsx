@@ -1,3 +1,4 @@
+import { Toaster } from "sonner";
 import { useGameStore } from "@/store/game-store";
 import { ScanlineOverlay } from "@/components/layout/ScanlineOverlay";
 import { HUD } from "@/components/layout/HUD";
@@ -103,6 +104,13 @@ export default function App() {
       <ScanlineOverlay />
       <HUD />
       {renderScreen()}
+      <Toaster
+        position="bottom-right"
+        theme="dark"
+        toastOptions={{
+          className: "font-mono text-xs uppercase tracking-wider",
+        }}
+      />
     </div>
   );
 }

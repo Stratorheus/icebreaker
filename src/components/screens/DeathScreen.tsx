@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/game-store";
 import { getDataReward, getMilestoneBonus } from "@/data/balancing";
+import { awardNewAchievements } from "@/hooks/use-achievement-check";
 
 /**
  * Death screen — shown when HP reaches 0.
@@ -49,6 +50,10 @@ export function DeathScreen() {
       totalDataEarned: stats.totalDataEarned + dataEarned,
       totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
     });
+
+    // Check run-end achievements (total-runs, total-minigames) after stats
+    // are updated. Zustand set() is synchronous so getState() is fresh.
+    awardNewAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

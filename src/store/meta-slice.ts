@@ -25,6 +25,8 @@ export interface MetaSlice {
   unlockAchievement: (id: string) => void;
   markBriefingSeen: (type: MinigameType) => void;
   updateStats: (partial: Partial<PlayerStats>) => void;
+  /** Update win streak + cumulative wins for a minigame result. */
+  recordMinigameResult: (type: MinigameType, won: boolean) => void;
   getUpgradeTier: (id: string) => number;
 }
 
@@ -42,6 +44,8 @@ const initialStats: PlayerStats = {
   totalCreditsEarned: 0,
   totalDataEarned: 0,
   totalPlayTimeMs: 0,
+  minigameWinStreaks: {},
+  minigameWinsTotal: {},
 };
 
 export const initialMetaState = {
@@ -119,6 +123,25 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
   updateStats: (partial: Partial<PlayerStats>) => {
     const state = get();
     set({ stats: { ...state.stats, ...partial } });
+  },
+
+  recordMinigameResult: (type: MinigameType, won: boolean) => {
+    const state = get();
+    const currentStreak = state.stats.minigameWinStreaks[type] ?? 0;
+    const currentTotal = state.stats.minigameWinsTotal[type] ?? 0;
+    set({
+      stats: {
+        ...state.stats,
+        minigameWinStreaks: {
+          ...state.stats.minigameWinStreaks,
+          [type]: won ? currentStreak + 1 : 0,
+        },
+        minigameWinsTotal: {
+          ...state.stats.minigameWinsTotal,
+          [type]: won ? currentTotal + 1 : currentTotal,
+        },
+      },
+    });
   },
 
   getUpgradeTier: (id: string) => {

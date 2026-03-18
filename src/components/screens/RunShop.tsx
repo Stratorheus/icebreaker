@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
+import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import {
   Clock,
   Zap,
@@ -134,6 +135,17 @@ export function RunShop() {
       generatedRef.current = true;
       generateRunShop(floor);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Check floor-related achievements once when shop first mounts
+  const achievementCheckedRef = useRef(false);
+  useEffect(() => {
+    if (achievementCheckedRef.current) return;
+    achievementCheckedRef.current = true;
+    // Floor was just cleared — evaluate floor-reached, floor-no-damage,
+    // floor-no-powerups, and speed-run conditions.
+    awardNewAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
