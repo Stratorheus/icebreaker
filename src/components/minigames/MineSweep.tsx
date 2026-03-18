@@ -116,6 +116,7 @@ export function MineSweep(props: MinigameProps) {
 
     return () => {
       cancelAnimationFrame(previewRafRef.current);
+      previewStartRef.current = null;
     };
   }, [phase, previewMs]);
 
@@ -228,7 +229,7 @@ export function MineSweep(props: MinigameProps) {
             {/* Preview sub-timer bar */}
             <div className="w-40 h-1 rounded-full bg-white/10 mx-auto">
               <div
-                className="h-full rounded-full transition-all duration-100 ease-linear"
+                className="h-full rounded-full"
                 style={{
                   width: `${previewProgress * 100}%`,
                   backgroundColor: "var(--color-cyber-magenta)",
