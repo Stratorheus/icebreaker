@@ -5,6 +5,7 @@ import { MainMenu } from "@/components/screens/MainMenu";
 import { MinigameScreen } from "@/components/screens/MinigameScreen";
 import { RunShop } from "@/components/screens/RunShop";
 import { DeathScreen } from "@/components/screens/DeathScreen";
+import { MetaShop } from "@/components/screens/MetaShop";
 
 // ---------------------------------------------------------------------------
 // Placeholder screens (implemented in later tasks)
@@ -24,16 +25,6 @@ function Codex() {
   const setStatus = useGameStore((s) => s.setStatus);
   return (
     <PlaceholderScreen title="CODEX" onBack={() => setStatus("menu")} />
-  );
-}
-
-function MetaShop() {
-  const setStatus = useGameStore((s) => s.setStatus);
-  return (
-    <PlaceholderScreen
-      title="META SHOP"
-      onBack={() => setStatus("menu")}
-    />
   );
 }
 
