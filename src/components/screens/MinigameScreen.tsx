@@ -2,6 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { TimerBar } from "@/components/layout/TimerBar";
 import type { MinigameResult } from "@/types/minigame";
+import type { MinigameType } from "@/types/game";
+import { getDifficulty, getTimeLimit } from "@/data/balancing";
+import { SlashTiming } from "@/components/minigames/SlashTiming";
+import { CloseBrackets } from "@/components/minigames/CloseBrackets";
+import { TypeBackward } from "@/components/minigames/TypeBackward";
+import { MatchArrows } from "@/components/minigames/MatchArrows";
+import { FindSymbol } from "@/components/minigames/FindSymbol";
+import { MineSweep } from "@/components/minigames/MineSweep";
+import { WireCutting } from "@/components/minigames/WireCutting";
+import { CipherCrack } from "@/components/minigames/CipherCrack";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -90,9 +100,9 @@ export function MinigameScreen() {
         )}
 
         {phase === "active" && (
-          <PlaceholderMinigame
-            minigameName={formatMinigameName(currentMinigame)}
-            minigameType={currentMinigame}
+          <MinigameRouter
+            type={currentMinigame}
+            floor={floor}
             onComplete={handleComplete}
           />
         )}
@@ -136,49 +146,52 @@ function CountdownPhase({
 }
 
 // ---------------------------------------------------------------------------
-// Placeholder minigame (auto-completes after 2 s)
+// Minigame router — renders the correct component by type
 // ---------------------------------------------------------------------------
 
-function PlaceholderMinigame({
-  minigameName,
-  minigameType,
+const BASE_TIME_LIMITS: Record<MinigameType, number> = {
+  "slash-timing": 12,
+  "close-brackets": 15,
+  "type-backward": 20,
+  "match-arrows": 15,
+  "find-symbol": 20,
+  "mine-sweep": 25,
+  "wire-cutting": 20,
+  "cipher-crack": 20,
+};
+
+const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/types/minigame").MinigameProps>> = {
+  "slash-timing": SlashTiming,
+  "close-brackets": CloseBrackets,
+  "type-backward": TypeBackward,
+  "match-arrows": MatchArrows,
+  "find-symbol": FindSymbol,
+  "mine-sweep": MineSweep,
+  "wire-cutting": WireCutting,
+  "cipher-crack": CipherCrack,
+};
+
+function MinigameRouter({
+  type,
+  floor,
   onComplete,
 }: {
-  minigameName: string;
-  minigameType: string;
+  type: MinigameType;
+  floor: number;
   onComplete: (result: MinigameResult) => void;
 }) {
-  const completedRef = useRef(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (completedRef.current) return;
-      completedRef.current = true;
-
-      onComplete({
-        success: true,
-        timeMs: 2000,
-        minigame: minigameType as MinigameResult["minigame"],
-      });
-    }, 2000);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const inventory = useGameStore((s) => s.inventory);
+  const difficulty = getDifficulty(floor);
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty);
+  const Component = MINIGAME_COMPONENTS[type];
 
   return (
-    <div className="text-center select-none">
-      <h2 className="text-2xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-6">
-        {minigameName}
-      </h2>
-      <div className="flex items-center justify-center gap-2 text-cyber-magenta/60 text-sm uppercase tracking-widest">
-        <span className="inline-block w-2 h-2 bg-cyber-magenta/60 rounded-full animate-pulse" />
-        SIMULATING...
-      </div>
-      <p className="mt-6 text-white/20 text-xs uppercase tracking-widest">
-        {">"}_&nbsp;PLACEHOLDER — REAL MINIGAME COMING SOON
-      </p>
-    </div>
+    <Component
+      difficulty={difficulty}
+      timeLimit={timeLimit}
+      activePowerUps={inventory}
+      onComplete={onComplete}
+    />
   );
 }
 
