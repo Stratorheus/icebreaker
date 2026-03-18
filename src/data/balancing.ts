@@ -3,14 +3,14 @@
  * All math comes directly from the design spec.
  */
 
-/** Returns difficulty scalar 0–1 based on current floor. */
+/** Returns difficulty scalar 0–1 based on current floor. Starts at 0.15 so floor 1 isn't trivial. */
 export function getDifficulty(floor: number): number {
-  return Math.min(floor / 20, 1.0);
+  return Math.min(0.15 + floor / 12, 1.0);
 }
 
 /** Returns damage dealt to player on a failed minigame. */
 export function getDamage(floor: number): number {
-  return 15 + floor * 3;
+  return 20 + floor * 4;
 }
 
 /**

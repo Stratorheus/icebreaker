@@ -36,7 +36,7 @@ export function TimerBar({ progress, className }: TimerBarProps) {
       aria-valuemax={100}
     >
       <div
-        className="h-full rounded-full transition-all duration-200 ease-linear"
+        className="h-full rounded-full transition-colors duration-500 ease-linear"
         style={{
           width: `${clamped * 100}%`,
           backgroundColor: color,

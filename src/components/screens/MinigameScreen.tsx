@@ -184,14 +184,14 @@ function CountdownPhase({
 // ---------------------------------------------------------------------------
 
 const BASE_TIME_LIMITS: Record<MinigameType, number> = {
-  "slash-timing": 12,
-  "close-brackets": 15,
-  "type-backward": 20,
-  "match-arrows": 15,
-  "find-symbol": 20,
-  "mine-sweep": 25,
-  "wire-cutting": 20,
-  "cipher-crack": 20,
+  "slash-timing": 8,
+  "close-brackets": 8,
+  "type-backward": 10,
+  "match-arrows": 8,
+  "find-symbol": 12,
+  "mine-sweep": 15,
+  "wire-cutting": 12,
+  "cipher-crack": 12,
 };
 
 const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/types/minigame").MinigameProps>> = {
