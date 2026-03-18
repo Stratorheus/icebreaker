@@ -27,6 +27,7 @@ export interface RunSlice {
   minigamesWonThisRun: number;
   minigamesPlayedThisRun: number;
   powerUpsUsedThisFloor: boolean;
+  trainingMinigame: MinigameType | null;
 
   // Actions
   startRun: () => void;
@@ -39,6 +40,7 @@ export interface RunSlice {
   usePowerUp: (id: string) => void;
   advanceFloor: () => void;
   setStatus: (status: GameStatus) => void;
+  setTrainingMinigame: (type: MinigameType | null) => void;
   endRun: () => void;
 }
 
@@ -77,6 +79,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   minigamesWonThisRun: 0,
   minigamesPlayedThisRun: 0,
   powerUpsUsedThisFloor: false,
+  trainingMinigame: null,
 };
 
 // Helper type: extract only action keys
@@ -238,6 +241,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   setStatus: (status: GameStatus) => {
     set({ status });
+  },
+
+  setTrainingMinigame: (type: MinigameType | null) => {
+    set({ trainingMinigame: type });
   },
 
   endRun: () => {

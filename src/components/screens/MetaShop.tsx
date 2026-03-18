@@ -128,6 +128,7 @@ export function MetaShop() {
   const purchaseUpgrade = useGameStore((s) => s.purchaseUpgrade);
   const unlockMinigame = useGameStore((s) => s.unlockMinigame);
   const setStatus = useGameStore((s) => s.setStatus);
+  const setTrainingMinigame = useGameStore((s) => s.setTrainingMinigame);
 
   const grouped = useMemo(() => groupByCategory(META_UPGRADE_POOL), []);
 
@@ -148,6 +149,7 @@ export function MetaShop() {
       const effect = upgrade.effects[currentTier];
       if (effect?.minigame) {
         unlockMinigame(effect.minigame);
+        setTrainingMinigame(effect.minigame);
         setStatus("training");
       }
     }

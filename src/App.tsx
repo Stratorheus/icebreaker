@@ -7,20 +7,7 @@ import { MinigameScreen } from "@/components/screens/MinigameScreen";
 import { RunShop } from "@/components/screens/RunShop";
 import { DeathScreen } from "@/components/screens/DeathScreen";
 import { MetaShop } from "@/components/screens/MetaShop";
-
-// ---------------------------------------------------------------------------
-// Placeholder screens (implemented in later tasks)
-// ---------------------------------------------------------------------------
-
-function Training() {
-  const setStatus = useGameStore((s) => s.setStatus);
-  return (
-    <PlaceholderScreen
-      title="TRAINING"
-      onBack={() => setStatus("menu")}
-    />
-  );
-}
+import { Training } from "@/components/screens/Training";
 
 function Codex() {
   const setStatus = useGameStore((s) => s.setStatus);
