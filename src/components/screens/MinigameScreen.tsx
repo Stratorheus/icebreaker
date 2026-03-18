@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import { TimerBar } from "@/components/layout/TimerBar";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getDifficulty, getTimeLimit } from "@/data/balancing";
@@ -120,9 +119,6 @@ export function MinigameScreen() {
 
   return (
     <div className="min-h-screen flex flex-col pt-12">
-      {/* Timer bar below HUD */}
-      <TimerBar progress={phase === "active" ? 0.7 : 1} className="mx-4" />
-
       {/* Phase content */}
       <div className="flex-1 flex items-center justify-center px-4">
         {phase === "countdown" && (
