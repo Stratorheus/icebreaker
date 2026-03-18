@@ -1,8 +1,11 @@
 import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getMinigamesPerFloor } from "@/data/balancing";
+import { getCredits, getDamage, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
+import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
+import { RUN_SHOP_POOL } from "@/data/power-ups";
+import type { PowerUpEffect } from "@/types/game";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
 
@@ -28,6 +31,10 @@ export interface RunSlice {
   minigamesPlayedThisRun: number;
   powerUpsUsedThisFloor: boolean;
   trainingMinigame: MinigameType | null;
+  /** Extra seconds added to every minigame timer on floor 1 (from Pre-Loaded meta upgrade). */
+  bonusTimeSecs: number;
+  /** Set to a milestone floor number (5/10/15/20) to trigger the overlay; 0 = no milestone. */
+  milestoneFloor: number;
 
   // Actions
   startRun: () => void;
@@ -39,6 +46,7 @@ export interface RunSlice {
   addPowerUp: (item: PowerUpInstance) => boolean;
   usePowerUp: (id: string) => void;
   advanceFloor: () => void;
+  dismissMilestone: () => void;
   setStatus: (status: GameStatus) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
   endRun: () => void;
@@ -80,6 +88,8 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   minigamesPlayedThisRun: 0,
   powerUpsUsedThisFloor: false,
   trainingMinigame: null,
+  bonusTimeSecs: 0,
+  milestoneFloor: 0,
 };
 
 // Helper type: extract only action keys
@@ -100,18 +110,68 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   ...initialRunState,
 
   startRun: () => {
-    const { unlockedMinigames } = get();
+    const { unlockedMinigames, purchasedUpgrades } = get();
     const count = getMinigamesPerFloor(1);
     const floorMinigames = pickRandom(unlockedMinigames, count);
 
+    // ── Apply meta upgrades ──────────────────────────────────────────────────
+
+    // Helper: get tier for an upgrade (0 = not purchased)
+    const tier = (id: string) => purchasedUpgrades[id] ?? 0;
+
+    // max-hp-boost: +10 / +20 / +30 maxHp
+    const maxHpBonusByTier = [10, 20, 30];
+    const maxHpBoostTier = tier("max-hp-boost");
+    const maxHpBonus = maxHpBoostTier > 0
+      ? (maxHpBonusByTier[maxHpBoostTier - 1] ?? 30)
+      : 0;
+    const actualMaxHp = 100 + maxHpBonus;
+
+    // overclocked: start with 110 HP (the +10 bonus stacks with max-hp-boost;
+    // result is capped at actualMaxHp so you never start over the ceiling)
+    const startHp = tier("overclocked") > 0
+      ? Math.min(110, actualMaxHp)
+      : actualMaxHp;
+
+    // head-start: +50 starting credits
+    const startCredits = tier("head-start") > 0 ? 50 : 0;
+
+    // pre-loaded: +1 s on every timer during floor 1
+    const preLoadedUpgrade = META_UPGRADE_POOL.find((u) => u.id === "pre-loaded");
+    const bonusTimeSecs = tier("pre-loaded") > 0 && preLoadedUpgrade
+      ? (preLoadedUpgrade.effects[0]?.value ?? 1)
+      : 0;
+
+    // quick-boot / dual-core: start with 1 or 2 random power-ups
+    // dual-core overrides quick-boot (requires it, gives 2)
+    const powerUpCount = tier("dual-core") > 0 ? 2 : tier("quick-boot") > 0 ? 1 : 0;
+    const startInventory: PowerUpInstance[] = [];
+    if (powerUpCount > 0) {
+      const shuffledPool = [...RUN_SHOP_POOL].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < Math.min(powerUpCount, shuffledPool.length); i++) {
+        const item = shuffledPool[i];
+        startInventory.push({
+          id: `start-powerup-${item.id}-${Date.now()}-${i}`,
+          type: item.id,
+          name: item.name,
+          description: item.description,
+          effect: {
+            type: item.effect.type as PowerUpEffect["type"],
+            value: item.effect.value,
+            minigame: item.effect.minigame,
+          },
+        });
+      }
+    }
+
     set({
-      hp: 100,
-      maxHp: 100,
+      hp: Math.min(startHp, actualMaxHp),
+      maxHp: actualMaxHp,
       floor: 1,
       currentMinigameIndex: 0,
       floorMinigames,
-      inventory: [],
-      credits: 0,
+      inventory: startInventory,
+      credits: startCredits,
       runScore: 0,
       status: "playing",
       runStartTime: Date.now(),
@@ -120,6 +180,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       minigamesWonThisRun: 0,
       minigamesPlayedThisRun: 0,
       powerUpsUsedThisFloor: false,
+      bonusTimeSecs,
+      milestoneFloor: 0,
     });
   },
 
@@ -228,15 +290,29 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
+    // Milestone floors: 5, 10, 15, 20
+    const isMilestone = getMilestoneBonus(nextFloor) > 0;
+
+    // Award milestone bonus data immediately
+    if (isMilestone) {
+      state.addData(getMilestoneBonus(nextFloor));
+    }
+
     set({
       floor: nextFloor,
       currentMinigameIndex: 0,
       floorMinigames,
       floorDamageTaken: false,
       powerUpsUsedThisFloor: false,
-      status: "playing",
+      // If milestone, show overlay before returning to playing
+      status: isMilestone ? "playing" : "playing",
+      milestoneFloor: isMilestone ? nextFloor : 0,
       runShopOffers: [], // clear so next shop generates fresh
     });
+  },
+
+  dismissMilestone: () => {
+    set({ milestoneFloor: 0 });
   },
 
   setStatus: (status: GameStatus) => {

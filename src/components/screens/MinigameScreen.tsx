@@ -34,6 +34,7 @@ export function MinigameScreen() {
   const usePowerUp = useGameStore((s) => s.usePowerUp);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
   const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
+  const bonusTimeSecs = useGameStore((s) => s.bonusTimeSecs);
 
   const currentMinigame = floorMinigames[currentMinigameIndex];
 
@@ -138,6 +139,7 @@ export function MinigameScreen() {
           <MinigameRouter
             type={currentMinigame}
             floor={floor}
+            bonusTimeSecs={floor === 1 ? bonusTimeSecs : 0}
             purchasedUpgrades={purchasedUpgrades}
             onComplete={handleComplete}
           />
@@ -295,17 +297,19 @@ function buildMetaPowerUps(
 function MinigameRouter({
   type,
   floor,
+  bonusTimeSecs,
   purchasedUpgrades,
   onComplete,
 }: {
   type: MinigameType;
   floor: number;
+  bonusTimeSecs: number;
   purchasedUpgrades: Record<string, number>;
   onComplete: (result: MinigameResult) => void;
 }) {
   const inventory = useGameStore((s) => s.inventory);
   const difficulty = getDifficulty(floor);
-  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty);
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty) + bonusTimeSecs;
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics

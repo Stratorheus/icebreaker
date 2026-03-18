@@ -10,6 +10,7 @@ import { MetaShop } from "@/components/screens/MetaShop";
 import { Training } from "@/components/screens/Training";
 import { Stats } from "@/components/screens/Stats";
 import { Codex } from "@/components/screens/Codex";
+import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -46,6 +47,7 @@ export default function App() {
       <ScanlineOverlay />
       <HUD />
       {renderScreen()}
+      <MilestoneOverlay />
       <Toaster
         position="bottom-right"
         theme="dark"
