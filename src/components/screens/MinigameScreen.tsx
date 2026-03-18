@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { TimerBar } from "@/components/layout/TimerBar";
 import type { MinigameResult } from "@/types/minigame";
-import type { MinigameType } from "@/types/game";
+import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getDifficulty, getTimeLimit } from "@/data/balancing";
+import { checkSkip } from "@/lib/power-up-effects";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
 import { CloseBrackets } from "@/components/minigames/CloseBrackets";
 import { TypeBackward } from "@/components/minigames/TypeBackward";
@@ -28,6 +29,9 @@ export function MinigameScreen() {
   const completeMinigame = useGameStore((s) => s.completeMinigame);
   const failMinigame = useGameStore((s) => s.failMinigame);
   const floor = useGameStore((s) => s.floor);
+  const inventory = useGameStore((s) => s.inventory);
+  const usePowerUp = useGameStore((s) => s.usePowerUp);
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
 
   const currentMinigame = floorMinigames[currentMinigameIndex];
 
@@ -48,11 +52,29 @@ export function MinigameScreen() {
     }
   }, [currentMinigameIndex]);
 
-  // Countdown timer
+  // Countdown timer — with skip check at the moment we would go "active"
   useEffect(() => {
     if (phase !== "countdown") return;
 
     if (countdownValue <= 0) {
+      // Check for skip power-up just before transitioning to active
+      const skipResult = checkSkip(inventory);
+      if (skipResult.skip && skipResult.consumeId) {
+        // Consume the power-up
+        usePowerUp(skipResult.consumeId);
+        // Auto-complete the minigame as a success (skip = no penalty)
+        setLastResult(true);
+        setPhase("result");
+        setTimeout(() => {
+          completeMinigame({
+            success: true,
+            timeMs: 0,
+            minigame: currentMinigame,
+          });
+        }, 1000);
+        return;
+      }
+
       setPhase("active");
       return;
     }
@@ -62,7 +84,7 @@ export function MinigameScreen() {
     }, 666); // ~2 seconds for 3-2-1
 
     return () => clearTimeout(timer);
-  }, [phase, countdownValue]);
+  }, [phase, countdownValue, inventory, usePowerUp, completeMinigame, currentMinigame]);
 
   // Handle minigame completion
   const handleComplete = useCallback(
@@ -103,6 +125,7 @@ export function MinigameScreen() {
           <MinigameRouter
             type={currentMinigame}
             floor={floor}
+            purchasedUpgrades={purchasedUpgrades}
             onComplete={handleComplete}
           />
         )}
@@ -171,13 +194,100 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "cipher-crack": CipherCrack,
 };
 
+/**
+ * Build synthetic PowerUpInstances from meta upgrades that apply to a specific
+ * minigame type, so they are passed through the standard `activePowerUps` API.
+ *
+ * These use the effect types already defined in PowerUpEffect but sourced from
+ * purchasedUpgrades (persistent meta progress) rather than the run inventory.
+ */
+function buildMetaPowerUps(
+  purchasedUpgrades: Record<string, number>,
+  type: MinigameType,
+): PowerUpInstance[] {
+  const synth: PowerUpInstance[] = [];
+
+  // Helper: add a synthetic power-up if the upgrade tier > 0
+  function addIfOwned(
+    upgradeId: string,
+    effectType: PowerUpInstance["effect"]["type"],
+    valueByTier: number[],
+    minigame?: MinigameType,
+  ) {
+    const tier = purchasedUpgrades[upgradeId] ?? 0;
+    if (tier <= 0) return;
+    const value = valueByTier[tier - 1] ?? valueByTier[valueByTier.length - 1];
+    synth.push({
+      id: `meta-${upgradeId}`,
+      type: `meta-${upgradeId}`,
+      name: upgradeId,
+      description: "",
+      effect: { type: effectType, value, minigame },
+    });
+  }
+
+  switch (type) {
+    case "close-brackets":
+      // bracket-reducer → bracket-type-removal (1 bracket type removed)
+      addIfOwned("bracket-reducer", "minigame-specific", [1], "close-brackets");
+      // bracket-mirror → auto-close repurposed as flash signal (value = 0.3 s)
+      addIfOwned("bracket-mirror", "auto-close", [0.3], "close-brackets");
+      break;
+
+    case "mine-sweep":
+      // mine-echo → mines-visible (1 / 2 / 3 mines shown during preview)
+      addIfOwned("mine-echo", "minigame-specific", [1, 2, 3], "mine-sweep");
+      break;
+
+    case "find-symbol":
+      // symbol-scanner → hint (proximity blink)
+      addIfOwned("symbol-scanner", "hint", [1], "find-symbol");
+      // symbol-magnifier → minigame-specific (scale value 1.3)
+      addIfOwned("symbol-magnifier", "minigame-specific", [1], "find-symbol");
+      break;
+
+    case "match-arrows":
+      // arrow-preview → reveal-first (1 / 2 / 3 pre-revealed)
+      addIfOwned("arrow-preview", "reveal-first", [1, 2, 3], "match-arrows");
+      break;
+
+    case "type-backward":
+      // type-assist → hint (first letter shown)
+      addIfOwned("type-assist", "hint", [1], "type-backward");
+      // reverse-trainer → minigame-specific (word length shown)
+      addIfOwned("reverse-trainer", "minigame-specific", [1], "type-backward");
+      break;
+
+    case "wire-cutting":
+      // wire-labels → hint (color labels)
+      addIfOwned("wire-labels", "hint", [1], "wire-cutting");
+      // wire-schematic → preview (preview duration ms, encoded as value)
+      addIfOwned("wire-schematic", "preview", [1500], "wire-cutting");
+      break;
+
+    case "cipher-crack":
+      // cipher-hint → hint (extra letter)
+      addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
+      break;
+
+    case "slash-timing":
+      // slash-window → window-extend (0.25 wider)
+      addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
+      break;
+  }
+
+  return synth;
+}
+
 function MinigameRouter({
   type,
   floor,
+  purchasedUpgrades,
   onComplete,
 }: {
   type: MinigameType;
   floor: number;
+  purchasedUpgrades: Record<string, number>;
   onComplete: (result: MinigameResult) => void;
 }) {
   const inventory = useGameStore((s) => s.inventory);
@@ -185,11 +295,24 @@ function MinigameRouter({
   const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty);
   const Component = MINIGAME_COMPONENTS[type];
 
+  // Merge run-time inventory power-ups with meta upgrade synthetics
+  const metaPowerUps = useMemo(
+    () => buildMetaPowerUps(purchasedUpgrades, type),
+    // purchasedUpgrades is a stable reference from the store (changes only in meta-shop)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [type],
+  );
+
+  const activePowerUps = useMemo(
+    () => [...inventory, ...metaPowerUps],
+    [inventory, metaPowerUps],
+  );
+
   return (
     <Component
       difficulty={difficulty}
       timeLimit={timeLimit}
-      activePowerUps={inventory}
+      activePowerUps={activePowerUps}
       onComplete={onComplete}
     />
   );

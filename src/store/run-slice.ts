@@ -2,6 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
 import { getCredits, getDamage, getMinigamesPerFloor } from "@/data/balancing";
+import { applyShield } from "@/lib/power-up-effects";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
 
@@ -140,16 +141,29 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   failMinigame: () => {
     const state = get();
-    const damage = getDamage(state.floor);
+    const baseDamage = getDamage(state.floor);
+
+    // Apply any shield / damage-reduction power-up from inventory
+    const { damage, consumed } = applyShield(state.inventory, baseDamage);
+
+    // Remove consumed power-up from inventory
+    const inventory = consumed
+      ? state.inventory.filter((p) => p.id !== consumed)
+      : state.inventory;
+
     const newHp = Math.max(0, state.hp - damage);
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
+    // Track whether any real damage was taken this floor/run
+    const tookDamage = damage > 0;
+
     if (newHp <= 0) {
       set({
         hp: 0,
-        floorDamageTaken: true,
-        runDamageTaken: true,
+        inventory,
+        floorDamageTaken: tookDamage ? true : state.floorDamageTaken,
+        runDamageTaken: tookDamage ? true : state.runDamageTaken,
         minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
         status: "dead",
       });
@@ -158,8 +172,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     set({
       hp: newHp,
-      floorDamageTaken: true,
-      runDamageTaken: true,
+      inventory,
+      floorDamageTaken: tookDamage ? true : state.floorDamageTaken,
+      runDamageTaken: tookDamage ? true : state.runDamageTaken,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
       currentMinigameIndex: isLastMinigame
         ? state.currentMinigameIndex
