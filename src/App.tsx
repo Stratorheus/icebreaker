@@ -8,53 +8,8 @@ import { RunShop } from "@/components/screens/RunShop";
 import { DeathScreen } from "@/components/screens/DeathScreen";
 import { MetaShop } from "@/components/screens/MetaShop";
 import { Training } from "@/components/screens/Training";
-
-function Codex() {
-  const setStatus = useGameStore((s) => s.setStatus);
-  return (
-    <PlaceholderScreen title="CODEX" onBack={() => setStatus("menu")} />
-  );
-}
-
-function Stats() {
-  const setStatus = useGameStore((s) => s.setStatus);
-  return (
-    <PlaceholderScreen title="STATS" onBack={() => setStatus("menu")} />
-  );
-}
-
-function PlaceholderScreen({
-  title,
-  onBack,
-}: {
-  title: string;
-  onBack: () => void;
-}) {
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
-      <h1 className="text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-4">
-        {title}
-      </h1>
-      <p className="text-white/30 text-sm uppercase tracking-widest mb-8">
-        {">"}_&nbsp;COMING SOON
-      </p>
-      <button
-        type="button"
-        onClick={onBack}
-        className="
-          py-2 px-6
-          text-sm uppercase tracking-widest font-mono
-          border border-white/20 text-white/50
-          hover:bg-white/5 hover:text-white/80
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
-      >
-        {">"}_&nbsp;BACK
-      </button>
-    </div>
-  );
-}
+import { Stats } from "@/components/screens/Stats";
+import { Codex } from "@/components/screens/Codex";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
