@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { PowerUpInstance } from "@/types/game";
+import type { PowerUpEffect, PowerUpInstance } from "@/types/game";
 import type { RunShopItem, MetaUpgrade } from "@/types/shop";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
@@ -86,7 +86,7 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       name: offer.name,
       description: offer.description,
       effect: {
-        type: offer.effect.type as PowerUpInstance["effect"]["type"],
+        type: offer.effect.type as PowerUpEffect["type"],
         value: offer.effect.value,
         minigame: offer.effect.minigame,
       },

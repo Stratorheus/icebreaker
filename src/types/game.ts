@@ -34,7 +34,26 @@ export interface PowerUpInstance {
 }
 
 export interface PowerUpEffect {
-  type: "time-bonus" | "shield" | "skip" | "heal" | "minigame-specific";
+  type:
+    | "time-bonus"
+    | "time-multiplier"
+    | "time-pause"
+    | "shield"
+    | "damage-reduction"
+    | "damage-reduction-stacked"
+    | "skip"
+    | "skip-floor"
+    | "skip-silent"
+    | "heal"
+    | "heal-on-success"
+    | "preview"
+    | "hint"
+    | "highlight-danger"
+    | "window-extend"
+    | "auto-close"
+    | "reveal-first"
+    | "flag-mine"
+    | "minigame-specific";
   value: number;
   minigame?: MinigameType;
 }

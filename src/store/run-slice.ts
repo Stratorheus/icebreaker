@@ -217,6 +217,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       floorDamageTaken: false,
       powerUpsUsedThisFloor: false,
       status: "playing",
+      runShopOffers: [], // clear so next shop generates fresh
     });
   },
 
