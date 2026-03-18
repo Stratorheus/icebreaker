@@ -61,8 +61,7 @@ export function CloseBrackets(props: MinigameProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(0);
 
-  // Track which closers have been correctly typed (for visual feedback)
-  const [typedClosers, setTypedClosers] = useState<string[]>([]);
+  // Track typed count for visual feedback (derived from currentIndex)
 
   // Sync ref with state for use in keyboard handler
   useEffect(() => {
@@ -80,7 +79,6 @@ export function CloseBrackets(props: MinigameProps) {
         // Correct key
         const nextIndex = idx + 1;
         setCurrentIndex(nextIndex);
-        setTypedClosers((prev) => [...prev, key]);
 
         if (nextIndex >= expectedClosers.length) {
           // All brackets closed — success
