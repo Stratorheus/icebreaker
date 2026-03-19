@@ -10,8 +10,8 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import { Defrag } from "@/components/minigames/Defrag";
 import {
-  DefragPlaceholder,
   NetworkTracePlaceholder,
   DataStreamPlaceholder,
   SignalEchoPlaceholder,
@@ -165,15 +165,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "defrag": {
     title: "DEFRAG",
     rules: [
-      "Fragmented data blocks are scattered across a grid",
-      "Drag or move blocks into the correct sequential order",
-      "Blocks snap into place when positioned correctly",
-      "Complete the defragmentation before time runs out",
+      "Grid of hidden cells — some contain mines",
+      "Uncover cells to reveal numbers (count of adjacent mines)",
+      "Cells with 0 adjacent mines auto-expand in a flood fill",
+      "Uncover all safe cells to win — hitting a mine = fail",
     ],
-    controls: "Arrow keys + ENTER to select/move, or drag with mouse",
+    controls: "Arrow keys to move, SPACE to uncover, ENTER to flag. Mouse: L-click uncover, R-click flag",
     tips: [
-      "Start from the edges and work inward for efficiency",
-      "Higher difficulty adds more blocks and decoy fragments",
+      "Use numbers to deduce mine positions — flag suspected mines",
+      "Start near the center for better odds of hitting a 0-cell cascade",
     ],
   },
   "network-trace": {
@@ -292,7 +292,7 @@ const MINIGAME_COMPONENTS: Record<
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
-  "defrag": DefragPlaceholder,
+  "defrag": Defrag,
   "network-trace": NetworkTracePlaceholder,
   "data-stream": DataStreamPlaceholder,
   "signal-echo": SignalEchoPlaceholder,

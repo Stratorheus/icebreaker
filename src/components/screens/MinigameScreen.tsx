@@ -14,8 +14,8 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import { Defrag } from "@/components/minigames/Defrag";
 import {
-  DefragPlaceholder,
   NetworkTracePlaceholder,
   DataStreamPlaceholder,
   SignalEchoPlaceholder,
@@ -292,7 +292,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
-  "defrag": DefragPlaceholder,
+  "defrag": Defrag,
   "network-trace": NetworkTracePlaceholder,
   "data-stream": DataStreamPlaceholder,
   "signal-echo": SignalEchoPlaceholder,
@@ -491,7 +491,7 @@ function getMinigameHint(type: MinigameType): string {
     case "cipher-crack":
       return "Reverse the letter shift to find the original word.";
     case "defrag":
-      return "Drag fragmented blocks into the correct order.";
+      return "Uncover cells, avoid mines. Numbers show adjacent mine count.";
     case "network-trace":
       return "Follow the packet route through the network graph.";
     case "data-stream":
