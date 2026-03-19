@@ -45,7 +45,7 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
   },
   "minigame-unlock": {
     label: "MINIGAME LICENSES",
-    description: "Unlock new minigames — expands the pool, reduces repetition, and grants +5 max HP per unlock",
+    description: "Unlock new minigames — expands the pool, reduces repetition, grants +5 max HP per unlock, and increases credit earnings by +5% per unlock",
     colors: {
       border: "border-cyber-magenta/40",
       text: "text-cyber-magenta",
@@ -493,7 +493,7 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "guaranteed-heal-shop":
       return "Guaranteed heal in floor 1 shop";
     case "unlock-minigame":
-      return "Unlocks minigame";
+      return "Unlocks minigame (+5 max HP, +5% credits)";
     case "death-penalty-reduction":
       return `-${Math.round(effect.value * 100)}% death penalty`;
     default:

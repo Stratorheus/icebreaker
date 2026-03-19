@@ -379,9 +379,9 @@ function MinigameRouter({
   const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
   const difficulty = Math.max(0, getDifficulty(floor) - diffReducerTier * 0.02);
 
-  // Timer extension (stackable): +0.3s per purchase
+  // Timer extension (stackable): +0.2s per purchase
   const timerExtTier = purchasedUpgrades["timer-extension"] ?? 0;
-  const timerExtBonus = timerExtTier * 0.3;
+  const timerExtBonus = timerExtTier * 0.2;
 
   const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs + timerExtBonus;
   const Component = MINIGAME_COMPONENTS[type];
