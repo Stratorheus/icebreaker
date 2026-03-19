@@ -20,6 +20,9 @@ type ArrowKey = (typeof ARROWS)[number]["key"];
  * A row of hidden arrows is generated. The first arrow is revealed;
  * the player must press the matching arrow key. Correct key reveals
  * the next arrow. Wrong key = immediate fail. All matched = success.
+ *
+ * The large "Press [arrow]" hint is removed by default. It only shows
+ * if the player has the relevant meta upgrade (hint + match-arrows).
  */
 export function MatchArrows(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
@@ -32,6 +35,13 @@ export function MatchArrows(props: MinigameProps) {
   const peekAhead = useMemo(() => {
     const peek = activePowerUps.find((p) => p.effect.type === "peek-ahead");
     return peek ? peek.effect.value : 0;
+  }, [activePowerUps]);
+
+  // Check if player has the "direction hint" meta upgrade
+  const hasDirectionHint = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "match-arrows",
+    );
   }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
@@ -147,8 +157,8 @@ export function MatchArrows(props: MinigameProps) {
           })}
         </div>
 
-        {/* Current arrow indicator */}
-        {currentIndex < sequence.length && (
+        {/* Current arrow indicator -- ONLY if player has meta upgrade */}
+        {hasDirectionHint && currentIndex < sequence.length && (
           <div className="flex flex-col items-center gap-2">
             <p className="text-white/40 text-xs uppercase tracking-widest">
               Press
@@ -170,7 +180,7 @@ export function MatchArrows(props: MinigameProps) {
         )}
       </div>
 
-      {/* Arrow key hints */}
+      {/* Arrow key hints (layout reference -- always shown) */}
       <div className="mt-8 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Match the arrow with arrow keys
