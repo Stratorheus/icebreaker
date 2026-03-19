@@ -408,7 +408,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
           OPERATION MANUAL
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          CODEX — MINIGAME PROTOCOLS
+          CODEX — PROTOCOL REFERENCE
         </p>
       </div>
 

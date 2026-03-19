@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { getDataReward } from "@/data/balancing";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { Hexagon } from "lucide-react";
 
 /**
  * Death screen — shown when HP reaches 0.
@@ -18,6 +19,7 @@ export function DeathScreen() {
   const updateStats = useGameStore((s) => s.updateStats);
   const stats = useGameStore((s) => s.stats);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const quitVoluntarily = useGameStore((s) => s.quitVoluntarily);
 
   const floor = useGameStore((s) => s.floor);
   const minigamesPlayedThisRun = useGameStore(
@@ -43,8 +45,9 @@ export function DeathScreen() {
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
+  // Voluntary quit = NO penalty
   const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
-  const penaltyPct = Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
+  const penaltyPct = quitVoluntarily ? 0 : Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
   const penaltyAmount = Math.floor(prePenaltyData * penaltyPct);
   const dataAfterPenalty = prePenaltyData - penaltyAmount;
 
@@ -62,7 +65,7 @@ export function DeathScreen() {
     // Snapshot data balance before awards
     const dataBefore = useGameStore.getState().data;
 
-    // Award data with death penalty applied (includes creditsSaved)
+    // Award data (no penalty if quit voluntarily)
     if (dataAfterPenalty > 0) {
       addData(dataAfterPenalty);
     }
@@ -96,18 +99,18 @@ export function DeathScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Title */}
-      <h1 className="text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 text-cyber-magenta glitch-text-strong">
-        CONNECTION LOST
+      <h1 className={`text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 glitch-text-strong ${quitVoluntarily ? "text-cyber-cyan" : "text-cyber-magenta"}`}>
+        {quitVoluntarily ? "RUN TERMINATED" : "CONNECTION LOST"}
       </h1>
       <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8 glitch-subtle">
-        {">"}_&nbsp;SYSTEM BREACH FAILED
+        {">"}_&nbsp;{quitVoluntarily ? "VOLUNTARY DISCONNECT" : "SYSTEM BREACH FAILED"}
       </p>
 
       {/* Run summary */}
       <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm uppercase tracking-widest glitch-subtle">
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
-          label="MINIGAMES"
+          label="PROTOCOLS"
           value={`${minigamesWonThisRun}W / ${minigamesPlayedThisRun}P`}
         />
         <SummaryRow label="CREDITS EARNED" value={`${runScore} CR`} />
@@ -115,12 +118,12 @@ export function DeathScreen() {
 
       {/* Data breakdown */}
       <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
-        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={"\u25C6"} />
+        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
         {creditsSaved > 0 && (
           <BreakdownRow
             label="CREDITS SAVED"
             value={`+${creditsSaved}`}
-            suffix={"\u25C6"}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
             className="text-cyber-green/70"
           />
         )}
@@ -128,17 +131,19 @@ export function DeathScreen() {
           <BreakdownRow
             label="ACHIEVEMENT BONUS"
             value={`+${achievementBonus}`}
-            suffix={"\u25C6"}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
             className="text-cyber-cyan/70"
           />
         )}
-        <BreakdownRow
-          label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
-          value={`-${penaltyAmount}`}
-          suffix={"\u25C6"}
-          className="text-cyber-magenta/70"
-        />
-        {dataRecoveryTier > 0 && (
+        {!quitVoluntarily && (
+          <BreakdownRow
+            label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
+            value={`-${penaltyAmount}`}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            className="text-cyber-magenta/70"
+          />
+        )}
+        {!quitVoluntarily && dataRecoveryTier > 0 && (
           <p className="text-cyber-green/40 text-[10px] tracking-widest mt-0.5 mb-1 text-right">
             DATA RECOVERY LVL {dataRecoveryTier} ACTIVE
           </p>
@@ -147,7 +152,7 @@ export function DeathScreen() {
         <BreakdownRow
           label="TOTAL"
           value={`${totalDataEarned}`}
-          suffix={"\u25C6"}
+          suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
           className="text-cyber-magenta font-bold text-sm"
         />
       </div>
@@ -208,13 +213,13 @@ function BreakdownRow({
 }: {
   label: string;
   value: string;
-  suffix: string;
+  suffix: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={`flex justify-between items-baseline py-0.5 ${className || "text-white/60"}`}>
+    <div className={`flex justify-between items-center py-0.5 ${className || "text-white/60"}`}>
       <span>{label}</span>
-      <span className="tabular-nums">
+      <span className="tabular-nums flex items-center gap-1">
         {value} {suffix}
       </span>
     </div>

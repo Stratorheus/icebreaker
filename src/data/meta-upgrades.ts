@@ -54,7 +54,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "credit-multiplier",
     name: "Credit Multiplier",
-    description: "Earn 10 / 20 / 30 % more credits from every minigame.",
+    description: "Earn 10 / 20 / 30 % more credits from every protocol.",
     category: "stat",
     maxTier: 3,
     prices: [100, 250, 500],
@@ -166,11 +166,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     requires: "quick-boot",
   },
 
-  // ── MINIGAME UNLOCK ───────────────────────────────────────────────────────
+  // ── PROTOCOL UNLOCK ──────────────────────────────────────────────────────
   {
     id: "find-symbol-license",
     name: "Find Symbol License",
-    description: "Unlocks the Find Symbol minigame for future runs.",
+    description: "Unlocks the Find Symbol protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -179,7 +179,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "wire-cutting-toolkit",
     name: "Wire Cutting Toolkit",
-    description: "Unlocks the Wire Cutting minigame for future runs.",
+    description: "Unlocks the Wire Cutting protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -188,7 +188,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "cipher-crack-license",
     name: "Cipher Crack License",
-    description: "Unlocks the Cipher Crack minigame for future runs.",
+    description: "Unlocks the Cipher Crack protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -197,7 +197,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "defrag-license",
     name: "Defrag License",
-    description: "Unlocks the Defrag minigame.",
+    description: "Unlocks the Defrag protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -206,7 +206,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "network-trace-license",
     name: "Network Trace License",
-    description: "Unlocks the Network Trace minigame.",
+    description: "Unlocks the Network Trace protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -215,7 +215,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "data-stream-license",
     name: "Data Stream License",
-    description: "Unlocks the Data Stream minigame.",
+    description: "Unlocks the Data Stream protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -224,7 +224,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "signal-echo-license",
     name: "Signal Echo License",
-    description: "Unlocks the Signal Echo minigame.",
+    description: "Unlocks the Signal Echo protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -233,7 +233,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "checksum-verify-license",
     name: "Checksum Verify License",
-    description: "Unlocks the Checksum Verify minigame.",
+    description: "Unlocks the Checksum Verify protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -242,7 +242,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "port-scan-license",
     name: "Port Scan License",
-    description: "Unlocks the Port Scan minigame.",
+    description: "Unlocks the Port Scan protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -251,7 +251,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "subnet-scan-license",
     name: "Subnet Scan License",
-    description: "Unlocks the Subnet Scan minigame.",
+    description: "Unlocks the Subnet Scan protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -260,7 +260,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "cipher-crack-v2-license",
     name: "Cipher Crack V2 License",
-    description: "Unlocks the advanced Cipher Crack V2 minigame.",
+    description: "Unlocks the advanced Cipher Crack V2 protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -281,14 +281,14 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "mine-echo",
     name: "Mine Echo",
-    description: "1 / 2 / 3 mines remain briefly visible at the start of Mine Sweep.",
+    description: "20 / 35 / 50 % of mines remain visible at the start of Memory Scan.",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 500],
     effects: [
-      { type: "mines-visible", value: 1, minigame: "mine-sweep" },
-      { type: "mines-visible", value: 2, minigame: "mine-sweep" },
-      { type: "mines-visible", value: 3, minigame: "mine-sweep" },
+      { type: "mines-visible", value: 0.20, minigame: "mine-sweep" },
+      { type: "mines-visible", value: 0.35, minigame: "mine-sweep" },
+      { type: "mines-visible", value: 0.50, minigame: "mine-sweep" },
     ],
   },
   {
@@ -303,14 +303,14 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "arrow-preview",
     name: "Arrow Preview",
-    description: "1 / 2 / 3 arrows are pre-revealed in Match Arrows.",
+    description: "15 / 25 / 40 % of the arrow sequence is pre-revealed in Packet Route.",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 450],
     effects: [
-      { type: "arrows-revealed", value: 1, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 2, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 3, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.15, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.25, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.40, minigame: "match-arrows" },
     ],
   },
   {
@@ -370,7 +370,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "reverse-trainer",
     name: "Reverse Trainer",
-    description: "During Type Backward the word length is shown before you start.",
+    description: "Words are shown in normal order (not reversed) in Decrypt Signal — just type them.",
     category: "game-specific",
     maxTier: 1,
     prices: [150],
@@ -393,5 +393,70 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     maxTier: 1,
     prices: [150],
     effects: [{ type: "audio-cue-offset", value: 500, minigame: "slash-timing" }],
+  },
+
+  // ── NEW MINIGAME MODULES ────────────────────────────────────────────────────
+  {
+    id: "defrag-safe-start",
+    name: "Safe Start",
+    description: "First click in Defrag is always safe (guaranteed non-mine).",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [200],
+    effects: [{ type: "minigame-specific", value: 1, minigame: "defrag" }],
+  },
+  {
+    id: "network-trace-highlight",
+    name: "Path Highlight",
+    description: "Briefly flashes the correct path at the start of Network Trace (1 s).",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [200],
+    effects: [{ type: "minigame-specific", value: 1000, minigame: "network-trace" }],
+  },
+  {
+    id: "data-stream-beacon",
+    name: "Node Beacon",
+    description: "Next required node pulses/blinks in Data Stream.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [175],
+    effects: [{ type: "minigame-specific", value: 1, minigame: "data-stream" }],
+  },
+  {
+    id: "signal-echo-slow",
+    name: "Slow Replay",
+    description: "Sequence plays 30 % slower in Signal Echo.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [200],
+    effects: [{ type: "minigame-specific", value: 0.3, minigame: "signal-echo" }],
+  },
+  {
+    id: "checksum-calculator",
+    name: "Calculator",
+    description: "Shows an intermediate result hint in Checksum Verify.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [175],
+    effects: [{ type: "minigame-specific", value: 1, minigame: "checksum-verify" }],
+  },
+  {
+    id: "port-scan-deep",
+    name: "Deep Scan",
+    description: "Open ports flash twice instead of once in Port Scan.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [200],
+    effects: [{ type: "minigame-specific", value: 2, minigame: "port-scan" }],
+  },
+  {
+    id: "subnet-cidr-helper",
+    name: "CIDR Helper",
+    description: "Shows expanded IP range instead of just CIDR notation in Subnet Scan.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [225],
+    effects: [{ type: "minigame-specific", value: 1, minigame: "subnet-scan" }],
   },
 ];

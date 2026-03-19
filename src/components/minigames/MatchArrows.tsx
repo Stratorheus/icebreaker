@@ -31,11 +31,26 @@ export function MatchArrows(props: MinigameProps) {
     props,
   );
 
-  // Peek-ahead: how many arrows ahead of the current one to reveal
+  // Row length: 4 (d=0) -> 10 (d=1)
+  const rowLength = Math.round(4 + difficulty * 6);
+
+  // Peek-ahead: how many arrows ahead of the current one to reveal (percentage-based from meta, fixed from run-shop)
   const peekAhead = useMemo(() => {
-    const peek = activePowerUps.find((p) => p.effect.type === "peek-ahead");
-    return peek ? peek.effect.value : 0;
-  }, [activePowerUps]);
+    let count = 0;
+    for (const pu of activePowerUps) {
+      if (pu.effect.type === "peek-ahead") {
+        const val = pu.effect.value;
+        if (val < 1) {
+          // Percentage-based (meta upgrade): compute from sequence length
+          count = Math.max(count, Math.round(rowLength * val));
+        } else {
+          // Fixed count (run-shop power-up)
+          count = Math.max(count, val);
+        }
+      }
+    }
+    return count;
+  }, [activePowerUps, rowLength]);
 
   // Check if player has the "direction hint" meta upgrade
   const hasDirectionHint = useMemo(() => {
@@ -45,9 +60,6 @@ export function MatchArrows(props: MinigameProps) {
   }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
-
-  // Row length: 4 (d=0) -> 10 (d=1)
-  const rowLength = Math.round(4 + difficulty * 6);
 
   // Generate random arrow sequence on mount
   const sequence = useMemo(() => {

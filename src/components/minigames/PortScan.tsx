@@ -80,10 +80,18 @@ function generatePuzzle(params: Params): PuzzleData {
  *   d=1.0: 5x5 grid, 6 open, 250ms flash
  */
 export function PortScan(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("port-scan", props);
 
   const resolvedRef = useRef(false);
+
+  // Deep Scan module: flash ports multiple times
+  const flashRepeat = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "port-scan",
+    );
+    return pu ? pu.effect.value : 1;
+  }, [activePowerUps]);
 
   // -- Difficulty params (stable on mount) --
   const params = useMemo(() => getParams(difficulty),
@@ -152,24 +160,31 @@ export function PortScan(props: MinigameProps) {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
     const initialDelay = 500;
 
-    for (let i = 0; i < openArr.length; i++) {
-      const onTime = initialDelay + i * (ms + gapMs);
-      // Flash on
-      timeouts.push(
-        setTimeout(() => {
-          setFlashingIndex(openArr[i]);
-        }, onTime),
-      );
-      // Flash off
-      timeouts.push(
-        setTimeout(() => {
-          setFlashingIndex(null);
-        }, onTime + ms),
-      );
+    // Flash each open port `flashRepeat` times (Deep Scan = 2x)
+    let t = initialDelay;
+    for (let rep = 0; rep < flashRepeat; rep++) {
+      for (let i = 0; i < openArr.length; i++) {
+        const onTime = t;
+        // Flash on
+        timeouts.push(
+          setTimeout(() => {
+            setFlashingIndex(openArr[i]);
+          }, onTime),
+        );
+        // Flash off
+        timeouts.push(
+          setTimeout(() => {
+            setFlashingIndex(null);
+          }, onTime + ms),
+        );
+        t += ms + gapMs;
+      }
+      // Gap between repeats
+      if (rep < flashRepeat - 1) t += 200;
     }
 
     // Transition to select phase after all flashes
-    const totalDisplayTime = initialDelay + openArr.length * (ms + gapMs) + 200;
+    const totalDisplayTime = t + 200;
     timeouts.push(
       setTimeout(() => {
         if (resolvedRef.current) return;

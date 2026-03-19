@@ -109,10 +109,18 @@ function generateBoard(difficulty: number): GeneratedBoard {
  * Arrow keys navigate cursor, Space = uncover, Enter = flag.
  */
 export function Defrag(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("defrag", props);
 
   const resolvedRef = useRef(false);
+
+  // Safe Start module: first click is always safe (relocate mine if needed)
+  const hasSafeStart = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "defrag",
+    );
+  }, [activePowerUps]);
+  const firstClickRef = useRef(true);
 
   // Generate board on mount (stable across re-renders)
   const board = useMemo(
@@ -202,6 +210,28 @@ export function Defrag(props: MinigameProps) {
       if (currentState !== "hidden") return; // already revealed or flagged
 
       const cell = cells[cellIndex];
+
+      // Safe Start: if first click hits a mine, relocate it to a random safe cell
+      if (cell.isMine && firstClickRef.current && hasSafeStart) {
+        firstClickRef.current = false;
+        // Find a non-mine cell to swap with
+        const safeCells = cells.filter((c) => !c.isMine && c.id !== cellIndex);
+        if (safeCells.length > 0) {
+          const target = safeCells[Math.floor(Math.random() * safeCells.length)];
+          // Swap mine status
+          cell.isMine = false;
+          target.isMine = true;
+          // Recompute adjacency for affected area
+          for (const c of cells) {
+            if (!c.isMine) {
+              const neighbors = getNeighbors(c.id, cols, rows);
+              c.adjacentMines = neighbors.filter((n) => cells[n].isMine).length;
+            }
+          }
+        }
+      } else {
+        firstClickRef.current = false;
+      }
 
       if (cell.isMine) {
         // Hit a mine — show all mines briefly, then fail

@@ -504,7 +504,7 @@ function PickerPhase({
           SELECT PROTOCOL
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          PRACTICE ANY UNLOCKED MINIGAME — RESULTS NOT RECORDED
+          PRACTICE ANY UNLOCKED PROTOCOL — RESULTS NOT RECORDED
         </p>
       </div>
 
@@ -621,7 +621,7 @@ function BriefingPhase({
           {briefing.title}
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
-          MINIGAME ID: <span className="text-white/40">{type}</span>
+          PROTOCOL ID: <span className="text-white/40">{type}</span>
         </p>
       </div>
 
@@ -841,10 +841,10 @@ function CompletePhase({
       </p>
       <p className="text-white/25 text-xs uppercase tracking-wider mb-10">
         {wins === total
-          ? "PERFECT SCORE — MINIGAME MASTERED"
+          ? "PERFECT SCORE — PROTOCOL MASTERED"
           : wins >= Math.ceil(total / 2)
             ? "SOLID PERFORMANCE — TRAINING RECORDED"
-            : "KEEP PRACTICING — MINIGAME NOW UNLOCKED"}
+            : "KEEP PRACTICING — PROTOCOL NOW UNLOCKED"}
       </p>
 
       {/* Briefing note */}

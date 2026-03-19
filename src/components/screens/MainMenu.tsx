@@ -1,4 +1,5 @@
 import { useGameStore } from "@/store/game-store";
+import { Hexagon } from "lucide-react";
 
 /**
  * Main menu screen — entry point of the game.
@@ -37,8 +38,8 @@ export function MainMenu() {
         <span className="text-cyber-cyan/60 glitch-subtle">
           BEST: FLOOR {stats.bestFloor}
         </span>
-        <span className="text-cyber-magenta/60 glitch-subtle">
-          {"\u25C6"} {data}
+        <span className="glitch-subtle flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.6 }}>
+          <Hexagon size={12} /> {data}
         </span>
       </div>
 

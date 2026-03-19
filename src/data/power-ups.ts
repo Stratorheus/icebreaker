@@ -9,7 +9,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "time-freeze",
     name: "Time Freeze",
-    description: "Adds +2 s to the next minigame's timer.",
+    description: "Adds +2 s to the next protocol's timer.",
     category: "time",
     basePrice: 30,
     effect: { type: "time-bonus", value: 2 },
@@ -18,7 +18,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "quick-hack",
     name: "Quick Hack",
-    description: "Adds +4 s to the next minigame's timer.",
+    description: "Adds +4 s to the next protocol's timer.",
     category: "time",
     basePrice: 45,
     effect: { type: "time-bonus", value: 4 },
@@ -27,7 +27,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "chrono-surge",
     name: "Chrono Surge",
-    description: "Adds +3 s to every minigame on the current floor.",
+    description: "Adds +3 s to every protocol on the current floor.",
     category: "time",
     basePrice: 65,
     effect: { type: "time-bonus", value: 3 },
@@ -36,7 +36,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "lag-spike",
     name: "Lag Spike",
-    description: "Adds +1.5 s to the next minigame's timer.",
+    description: "Adds +1.5 s to the next protocol's timer.",
     category: "time",
     basePrice: 40,
     effect: { type: "time-bonus", value: 1.5 },
@@ -76,7 +76,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "backdoor",
     name: "Backdoor",
-    description: "Skip 1 minigame on this floor without penalty.",
+    description: "Skip 1 protocol on this floor without penalty.",
     category: "skip",
     basePrice: 55,
     effect: { type: "skip", value: 1 },
@@ -85,7 +85,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "emergency-exit",
     name: "Emergency Exit",
-    description: "Skip 1 minigame on this floor without penalty.",
+    description: "Skip 1 protocol on this floor without penalty.",
     category: "skip",
     basePrice: 80,
     effect: { type: "skip", value: 1 },
@@ -94,7 +94,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "null-route",
     name: "Null Route",
-    description: "Auto-pass the next minigame but earn no credits for it.",
+    description: "Auto-pass the next protocol but earn no credits for it.",
     category: "skip",
     basePrice: 50,
     effect: { type: "skip-silent", value: 1 },
@@ -123,7 +123,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "nano-repair",
     name: "Nano Repair",
-    description: "Restore +10 HP after each successful minigame this floor.",
+    description: "Restore +10 HP after each successful protocol this floor.",
     category: "healing",
     basePrice: 45,
     effect: { type: "heal-on-success", value: 10 },
@@ -134,7 +134,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "scan-module",
     name: "Scan Module",
-    description: "Adds +3 s to the next minigame's timer.",
+    description: "Adds +3 s to the next protocol's timer.",
     category: "time",
     basePrice: 35,
     effect: { type: "time-bonus", value: 3 },
@@ -143,7 +143,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "hint-module",
     name: "Hint Module",
-    description: "Reveals a small contextual hint during the next minigame.",
+    description: "Reveals a small contextual hint during the next protocol.",
     category: "vision",
     basePrice: 40,
     effect: { type: "hint", value: 1 },

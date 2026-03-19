@@ -24,6 +24,7 @@ import {
   Code,
   Compass,
   Radio,
+  Coins,
   type LucideIcon,
 } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
@@ -222,8 +223,8 @@ export function RunShop() {
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             CR
           </span>
-          <span className="text-cyber-magenta font-bold text-lg tabular-nums">
-            {"\u2B26"} {credits.toLocaleString()}
+          <span className="font-bold text-lg tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-credits)" }}>
+            <Coins size={16} /> {credits.toLocaleString()}
           </span>
         </div>
       </div>
@@ -310,11 +311,12 @@ export function RunShop() {
               <div className="flex items-center justify-between mt-auto pt-2">
                 <span
                   className={cn(
-                    "text-sm font-bold tabular-nums",
-                    offer.purchased ? "text-white/20" : "text-cyber-magenta",
+                    "text-sm font-bold tabular-nums flex items-center gap-1",
+                    offer.purchased ? "text-white/20" : "",
                   )}
+                  style={!offer.purchased ? { color: "var(--color-currency-credits)" } : undefined}
                 >
-                  {"\u2B26"} {offer.price} CR
+                  <Coins size={12} /> {offer.price} CR
                 </span>
 
                 {alreadyOwned && !offer.purchased ? (
@@ -359,7 +361,7 @@ export function RunShop() {
             : "border-white/10 text-white/20 cursor-not-allowed",
         )}
       >
-        {">"}_&nbsp;REROLL STOCK ({"\u2B26"} {rerollPrice} CR)
+        {">"}_&nbsp;REROLL STOCK ({rerollPrice} CR)
       </button>
 
       {/* Continue button */}
@@ -424,7 +426,7 @@ export function RunShop() {
               cursor-pointer select-none
             "
           >
-            QUIT RUN (+{dataReward} {"\u25C6"})
+            QUIT RUN (+{dataReward} DATA)
           </button>
         ) : (
           <div className="flex items-center gap-2">

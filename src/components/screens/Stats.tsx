@@ -3,6 +3,7 @@ import { ACHIEVEMENT_POOL } from "@/data/achievements";
 import { getMinigameDisplayName } from "@/data/minigame-names";
 import type { MinigameType, PlayerStats } from "@/types/game";
 import type { Achievement } from "@/types/shop";
+import { Hexagon } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -45,11 +46,11 @@ function getAchievementProgress(
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function StatRow({ label, value }: { label: string; value: string }) {
+function StatRow({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5 border-b border-white/5 last:border-0">
+    <div className="flex items-center justify-between gap-4 py-1.5 border-b border-white/5 last:border-0">
       <span className="text-white/40 text-xs uppercase tracking-widest">{label}</span>
-      <span className="text-white/90 text-sm font-mono tabular-nums">{value}</span>
+      <span className="text-white/90 text-sm font-mono tabular-nums flex items-center gap-1">{icon}{value}</span>
     </div>
   );
 }
@@ -80,14 +81,14 @@ function AchievementCard({
   if (earned) {
     return (
       <div className="border border-cyber-cyan/20 bg-cyber-cyan/[0.03] p-3 flex items-start gap-3">
-        <span className="text-cyber-cyan text-base select-none mt-0.5">◆</span>
+        <Hexagon size={14} className="text-cyber-cyan shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <span className="text-cyber-cyan text-xs font-bold uppercase tracking-wider">
               {achievement.name}
             </span>
-            <span className="text-cyber-cyan/70 text-[10px] uppercase tracking-widest font-mono shrink-0">
-              ◆ +{achievement.reward}
+            <span className="text-[10px] uppercase tracking-widest font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.7 }}>
+              <Hexagon size={8} /> +{achievement.reward}
             </span>
           </div>
           <p className="text-white/40 text-[10px] mt-0.5 leading-relaxed">
@@ -169,14 +170,14 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
         <div className="space-y-0">
           <StatRow label="Total Runs" value={String(stats.totalRuns)} />
           <StatRow label="Best Floor" value={stats.bestFloor > 0 ? `Floor ${stats.bestFloor}` : "—"} />
-          <StatRow label="Minigames Played" value={String(stats.totalMinigamesPlayed)} />
-          <StatRow label="Minigames Won" value={String(stats.totalMinigamesWon)} />
+          <StatRow label="Protocols Played" value={String(stats.totalMinigamesPlayed)} />
+          <StatRow label="Protocols Won" value={String(stats.totalMinigamesWon)} />
           <StatRow
             label="Win Rate"
             value={calcWinRate(stats.totalMinigamesPlayed, stats.totalMinigamesWon)}
           />
-          <StatRow label="Credits Earned" value={`¢${stats.totalCreditsEarned}`} />
-          <StatRow label="Data Earned" value={`◆ ${stats.totalDataEarned}`} />
+          <StatRow label="Credits Earned" value={`${stats.totalCreditsEarned} CR`} />
+          <StatRow label="Data Earned" value={`${stats.totalDataEarned}`} icon={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
           <StatRow label="Total Play Time" value={formatPlayTime(stats.totalPlayTimeMs)} />
         </div>
       </section>
@@ -185,7 +186,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
       {Object.keys(stats.minigameWinsTotal).length > 0 && (
         <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
-            {">"}_&nbsp;MINIGAME RECORD
+            {">"}_&nbsp;PROTOCOL RECORD
           </h2>
           <div className="space-y-0">
             {(Object.entries(stats.minigameWinsTotal) as [MinigameType, number][]).map(

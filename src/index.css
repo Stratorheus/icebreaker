@@ -8,6 +8,9 @@
   --color-cyber-orange: #ff6600;
   --color-cyber-bg: #06060e;
 
+  --color-currency-credits: #FFD700;
+  --color-currency-data: #A855F7;
+
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace,
     monospace;
 }

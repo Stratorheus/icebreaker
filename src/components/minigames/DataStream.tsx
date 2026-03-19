@@ -58,7 +58,11 @@ interface GeneratedPuzzle {
  *
  * Difficulty scaling (0-1):
  * - size = Math.round(4 + difficulty * 2)  →  4x4 to 6x6
- * - nodeCount = Math.round(2 + difficulty * 3)  →  2 to 5
+ * - nodeCount = Math.round(3 + difficulty * 4)  →  3 to 7
+ *
+ * The LAST cell of the Hamiltonian path (final snake move) always
+ * contains the highest-numbered checkpoint so the snake naturally
+ * finishes there.
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
   const size = Math.round(4 + difficulty * 2);
@@ -77,20 +81,22 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     }
   }
 
-  // Determine number of checkpoints
-  const nodeCount = Math.round(2 + difficulty * 3);
+  // Determine number of checkpoints (increased: 3 at d=0, 7 at d=1)
+  const nodeCount = Math.round(3 + difficulty * 4);
 
   // Place checkpoints at random (non-start) positions along the path,
   // maintaining their order along the path.
   // Reserve index 0 for the snake start (not a checkpoint).
+  // Reserve the LAST path index (totalCells - 1) for the highest checkpoint.
   const availableIndices: number[] = [];
-  for (let i = 1; i < totalCells; i++) {
+  for (let i = 1; i < totalCells - 1; i++) {
     availableIndices.push(i);
   }
 
-  // Fisher-Yates partial shuffle to pick nodeCount positions
+  // We need nodeCount - 1 random positions (the last checkpoint is at the end)
+  const innerCount = nodeCount - 1;
   const chosenPathIndices: number[] = [];
-  for (let i = 0; i < nodeCount && i < availableIndices.length; i++) {
+  for (let i = 0; i < innerCount && i < availableIndices.length; i++) {
     const j = i + Math.floor(Math.random() * (availableIndices.length - i));
     [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
     chosenPathIndices.push(availableIndices[i]);
@@ -98,6 +104,9 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
 
   // Sort chosen indices so checkpoints are numbered in path order
   chosenPathIndices.sort((a, b) => a - b);
+
+  // Append the last path cell as the final (highest) checkpoint
+  chosenPathIndices.push(totalCells - 1);
 
   // Build grid
   const grid: GridNode[][] = Array.from({ length: rows }, () =>
@@ -140,8 +149,15 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
  * Fail: timeout only.
  */
 export function DataStream(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, isActive } = useMinigame("data-stream", props);
+
+  // Node Beacon module: next node pulses more prominently
+  const hasNodeBeacon = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "data-stream",
+    );
+  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -406,7 +422,9 @@ export function DataStream(props: MinigameProps) {
                 const checkpointClass = isVisited
                   ? "bg-cyber-green/15 border-cyber-green/40"
                   : isNextTarget
-                    ? "bg-cyber-magenta/20 border-cyber-magenta/60 animate-pulse"
+                    ? hasNodeBeacon
+                      ? "bg-cyber-magenta/30 border-cyber-magenta/80 animate-pulse shadow-[0_0_16px_rgba(255,0,102,0.5)]"
+                      : "bg-cyber-magenta/20 border-cyber-magenta/60 animate-pulse"
                     : "bg-cyber-magenta/10 border-cyber-magenta/30";
 
                 cellClass = checkpointClass;
