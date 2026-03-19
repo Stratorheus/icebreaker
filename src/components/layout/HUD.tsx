@@ -15,18 +15,18 @@ export function HUD() {
   const maxHp = useGameStore((s) => s.maxHp);
   const credits = useGameStore((s) => s.credits);
   const inventory = useGameStore((s) => s.inventory);
-  const setStatus = useGameStore((s) => s.setStatus);
+  const pauseRun = useGameStore((s) => s.pauseRun);
 
   // Escape key opens pause menu during gameplay or shop
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape" && (status === "playing" || status === "shop")) {
-        setStatus("paused");
+        pauseRun();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [status, setStatus]);
+  }, [status, pauseRun]);
 
   // Only show during active gameplay / shop / milestone
   if (status !== "playing" && status !== "shop" && status !== "milestone") return null;
@@ -58,7 +58,7 @@ export function HUD() {
         {/* Pause button */}
         <button
           type="button"
-          onClick={() => setStatus("paused")}
+          onClick={pauseRun}
           className="
             text-[10px] uppercase tracking-widest
             border border-white/15 text-white/40

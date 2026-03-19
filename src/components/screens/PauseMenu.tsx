@@ -21,7 +21,7 @@ type PauseView = "menu" | "codex" | "stats";
  * Codex and Stats render in-place with their back buttons returning here.
  */
 export function PauseMenu() {
-  const setStatus = useGameStore((s) => s.setStatus);
+  const resumeRun = useGameStore((s) => s.resumeRun);
   const quitRun = useGameStore((s) => s.quitRun);
   const floor = useGameStore((s) => s.floor);
   const hp = useGameStore((s) => s.hp);
@@ -37,13 +37,13 @@ export function PauseMenu() {
         if (view !== "menu") {
           setView("menu");
         } else {
-          setStatus("playing");
+          resumeRun();
         }
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [view, setStatus]);
+  }, [view, resumeRun]);
 
   // Sub-views: Codex and Stats with back button returning to pause menu
   if (view === "codex") {
@@ -75,7 +75,7 @@ export function PauseMenu() {
 
       {/* Menu buttons */}
       <div className="flex flex-col gap-3 w-64">
-        <PauseButton onClick={() => setStatus("playing")} primary>
+        <PauseButton onClick={resumeRun} primary>
           {">"}_&nbsp;RESUME
         </PauseButton>
         <PauseButton onClick={() => setView("codex")}>

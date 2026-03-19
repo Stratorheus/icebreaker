@@ -36,6 +36,8 @@ export interface RunSlice {
   bonusTimeSecs: number;
   /** Set to a milestone floor number (5/10/15/20) to trigger the overlay; 0 = no milestone. */
   milestoneFloor: number;
+  /** Tracks the status before entering pause, so we can resume to the correct screen. */
+  previousStatus: GameStatus | null;
 
   // Actions
   startRun: () => void;
@@ -49,6 +51,8 @@ export interface RunSlice {
   advanceFloor: () => void;
   dismissMilestone: () => void;
   quitRun: () => void;
+  pauseRun: () => void;
+  resumeRun: () => void;
   setStatus: (status: GameStatus) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
   endRun: () => void;
@@ -92,6 +96,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   trainingMinigame: null,
   bonusTimeSecs: 0,
   milestoneFloor: 0,
+  previousStatus: null,
 };
 
 // Helper type: extract only action keys
@@ -329,6 +334,17 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   dismissMilestone: () => {
     // After dismissing milestone overlay, proceed to vendor/shop screen
     set({ milestoneFloor: 0, status: "shop" });
+  },
+
+  pauseRun: () => {
+    const state = get();
+    set({ previousStatus: state.status, status: "paused" });
+  },
+
+  resumeRun: () => {
+    const state = get();
+    const target = state.previousStatus ?? "playing";
+    set({ status: target, previousStatus: null });
   },
 
   setStatus: (status: GameStatus) => {
