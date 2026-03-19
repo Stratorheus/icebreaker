@@ -228,15 +228,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "cipher-crack-v2": {
     title: "CIPHER CRACK V2",
     rules: [
-      "An advanced multi-layer cipher is applied to the plaintext",
-      "Decode each layer in sequence — substitution, then transposition",
-      "Type the fully decoded word letter by letter",
-      "Any mistake at any layer = immediate failure",
+      "An encrypted word is shown — it uses only ROT ciphers",
+      "An alphabet reference chart is always displayed for decoding",
+      "Find the encrypted letter on the bottom row, read the original above",
+      "Type the decrypted word letter by letter; any mistake = failure",
     ],
     controls: "Keyboard — type the decoded letters",
     tips: [
-      "Solve the outermost cipher layer first, then work inward",
-      "The hint panel shows which cipher methods are stacked",
+      "At low difficulty it's a simple ROT shift — each letter moves the same amount",
+      "At higher difficulty the word is reversed before shifting — decode then un-reverse",
     ],
   },
 };

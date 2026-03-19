@@ -21,9 +21,7 @@ import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import { PortScan } from "@/components/minigames/PortScan";
 import { SubnetScan } from "@/components/minigames/SubnetScan";
-import {
-  CipherCrackV2Placeholder,
-} from "@/components/minigames/PlaceholderGame";
+import { CipherCrackV2 } from "@/components/minigames/CipherCrackV2";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -299,7 +297,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "checksum-verify": ChecksumVerify,
   "port-scan": PortScan,
   "subnet-scan": SubnetScan,
-  "cipher-crack-v2": CipherCrackV2Placeholder,
+  "cipher-crack-v2": CipherCrackV2,
 };
 
 /**
@@ -505,6 +503,6 @@ function getMinigameHint(type: MinigameType): string {
     case "subnet-scan":
       return "Select IPs that belong to the displayed CIDR range.";
     case "cipher-crack-v2":
-      return "Decode the advanced cipher using multiple layers.";
+      return "Use the alphabet chart to decode the ROT cipher.";
   }
 }
