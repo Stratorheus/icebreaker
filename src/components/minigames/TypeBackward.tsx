@@ -22,11 +22,12 @@ function getWordPool(difficulty: number): readonly string[] {
 }
 
 /**
- * TypeBackward -- word-reversal typing minigame.
+ * TypeBackward -- word-reversal typing minigame (redesigned).
  *
- * A tech word is displayed. The player must type it BACKWARD, one
- * character at a time. Wrong character = immediate fail. Complete all
- * words in sequence to succeed.
+ * ALL reversed words are displayed at the top of the screen.
+ * The player reads each reversed word and types it exactly as shown,
+ * working through them one by one. Wrong character = immediate fail.
+ * Complete all words to succeed.
  */
 export function TypeBackward(props: MinigameProps) {
   const { difficulty } = props;
@@ -47,9 +48,15 @@ export function TypeBackward(props: MinigameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The reversed version of each word (what is displayed and what the player types)
+  const reversedWords = useMemo(
+    () => words.map((w) => w.split("").reverse().join("")),
+    [words],
+  );
+
   // Current word index
   const [wordIndex, setWordIndex] = useState(0);
-  // Current character position within the reversed word
+  // Current character position within the current reversed word
   const [charIndex, setCharIndex] = useState(0);
 
   // Refs for use inside the keydown handler (avoids stale closures)
@@ -63,12 +70,6 @@ export function TypeBackward(props: MinigameProps) {
   useEffect(() => {
     charIndexRef.current = charIndex;
   }, [charIndex]);
-
-  // The reversed version of each word
-  const reversedWords = useMemo(
-    () => words.map((w) => w.split("").reverse().join("")),
-    [words],
-  );
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -119,8 +120,7 @@ export function TypeBackward(props: MinigameProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  // Derived display values
-  const currentWord = words[wordIndex] ?? "";
+  // Current word's typed/remaining for input display
   const currentReversed = reversedWords[wordIndex] ?? "";
   const typedPortion = currentReversed.slice(0, charIndex);
   const remainingPortion = currentReversed.slice(charIndex);
@@ -128,27 +128,56 @@ export function TypeBackward(props: MinigameProps) {
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-8" />
+      <TimerBar progress={timer.progress} className="w-full max-w-md mb-6" />
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full max-w-lg">
-        {/* Word counter */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          Word {wordIndex + 1}/{words.length}
-        </p>
-
-        {/* Current word displayed large */}
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-lg">
+        {/* All reversed words displayed at top */}
         <div className="text-center">
-          <p className="text-white/30 text-xs uppercase tracking-widest mb-3">
-            Type this word backward
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
+            Type each word as shown
           </p>
-          <span className="text-4xl sm:text-5xl font-mono font-bold text-cyber-cyan tracking-wider">
-            {currentWord}
-          </span>
+          <div className="flex items-center justify-center gap-4 flex-wrap">
+            {reversedWords.map((rev, i) => {
+              const isCompleted = i < wordIndex;
+              const isCurrent = i === wordIndex;
+              const isPending = i > wordIndex;
+
+              return (
+                <div key={i} className="flex items-center gap-1.5">
+                  {isCompleted && (
+                    <span className="text-cyber-green text-sm">&#10003;</span>
+                  )}
+                  <span
+                    className={`
+                      text-2xl sm:text-3xl font-mono font-bold tracking-wider
+                      transition-all duration-200
+                      ${
+                        isCompleted
+                          ? "text-white/25 line-through decoration-white/20"
+                          : isCurrent
+                            ? "text-cyber-cyan"
+                            : isPending
+                              ? "text-white/40"
+                              : ""
+                      }
+                    `}
+                  >
+                    {rev}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Divider */}
         <div className="w-24 h-px bg-white/10" />
+
+        {/* Word counter */}
+        <p className="text-white/40 text-xs uppercase tracking-widest">
+          Word {wordIndex + 1}/{words.length}
+        </p>
 
         {/* Typed progress display */}
         <div className="text-center">
@@ -183,7 +212,7 @@ export function TypeBackward(props: MinigameProps) {
           </div>
         </div>
 
-        {/* Completed words indicator */}
+        {/* Completed words indicator dots */}
         {words.length > 1 && (
           <div className="flex items-center gap-2 mt-2">
             {words.map((_, i) => (
@@ -206,9 +235,9 @@ export function TypeBackward(props: MinigameProps) {
       </div>
 
       {/* Instruction */}
-      <div className="mt-8 text-center">
+      <div className="mt-6 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          Type each letter in reverse order &mdash; wrong key = fail
+          Read the reversed word and type it exactly &mdash; wrong key = fail
         </p>
       </div>
     </div>
