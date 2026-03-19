@@ -136,16 +136,15 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
     const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
 
-    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus;
-
-    // overclocked: add +10/+15/+20 bonus HP on top of base (100).
-    // Capped at actualMaxHp so you never start over the ceiling.
+    // overclocked: add +10/+15/+20 bonus HP (raises both max and starting HP)
     const overclockedTier = tier("overclocked");
     const overclockedBonusByTier = [10, 15, 20];
     const overclockedBonus = overclockedTier > 0
       ? (overclockedBonusByTier[overclockedTier - 1] ?? 20)
       : 0;
-    const startHp = Math.min(100 + overclockedBonus, actualMaxHp);
+
+    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus + overclockedBonus;
+    const startHp = actualMaxHp;
 
     // head-start: +50 starting credits
     const startCredits = tier("head-start") > 0 ? 50 : 0;
