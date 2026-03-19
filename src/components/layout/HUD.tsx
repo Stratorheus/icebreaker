@@ -100,7 +100,7 @@ export function HUD() {
                   : "text-cyber-magenta",
             )}
           >
-            {hpPct}%
+            {hp}/{maxHp}
           </span>
         </div>
 

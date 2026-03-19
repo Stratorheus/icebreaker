@@ -141,44 +141,53 @@ export function MineSweep(props: MinigameProps) {
     markedCellsRef.current = markedCells;
   }, [markedCells]);
 
-  /** Toggle a cell's mark and auto-check when mark count == mine count */
+  /** Toggle a cell's mark. Wrong mark = immediate fail. Auto-complete when all mines found. */
   const toggleMark = useCallback(
     (cellIndex: number) => {
       if (!isActive || resolvedRef.current) return;
       if (phaseRef.current !== "mark") return;
 
+      const cell = cells[cellIndex];
+
+      // Un-marking is always allowed
+      if (markedCellsRef.current.has(cellIndex)) {
+        setMarkedCells((prev) => {
+          const next = new Set(prev);
+          next.delete(cellIndex);
+          return next;
+        });
+        return;
+      }
+
+      // Don't allow marking more than mineCount
+      if (markedCellsRef.current.size >= mineCount) return;
+
+      // Wrong mark = immediate fail
+      if (!cell.isMine) {
+        resolvedRef.current = true;
+        fail();
+        return;
+      }
+
+      // Correct mark
       setMarkedCells((prev) => {
         const next = new Set(prev);
-        if (next.has(cellIndex)) {
-          next.delete(cellIndex);
-        } else {
-          // Don't allow marking more than mineCount
-          if (next.size >= mineCount) return prev;
-          next.add(cellIndex);
-        }
+        next.add(cellIndex);
         return next;
       });
     },
-    [isActive, mineCount],
+    [isActive, mineCount, cells, fail],
   );
 
-  // Auto-check when marked count equals mine count
+  // Auto-complete when all mines are correctly marked
   useEffect(() => {
     if (phase !== "mark" || resolvedRef.current) return;
     if (markedCells.size !== mineCount) return;
 
-    // Check correctness
-    const allCorrect = [...markedCells].every(
-      (idx) => cells[idx].isMine,
-    );
-
+    // All marks are guaranteed correct (wrong marks cause immediate fail above)
     resolvedRef.current = true;
-    if (allCorrect) {
-      complete(true);
-    } else {
-      fail();
-    }
-  }, [markedCells, mineCount, phase, cells, complete, fail]);
+    complete(true);
+  }, [markedCells, mineCount, phase, complete]);
 
   // ── Keyboard navigation ───────────────────────────────────────────
   const keyMap = useMemo(() => {

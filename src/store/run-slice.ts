@@ -136,13 +136,15 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
     const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
 
-    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus;
+    // overclocked: add +10/+15/+20 bonus HP (raises both max and starting HP)
+    const overclockedTier = tier("overclocked");
+    const overclockedBonusByTier = [10, 15, 20];
+    const overclockedBonus = overclockedTier > 0
+      ? (overclockedBonusByTier[overclockedTier - 1] ?? 20)
+      : 0;
 
-    // overclocked: start with 110 HP (the +10 bonus stacks with max-hp-boost;
-    // result is capped at actualMaxHp so you never start over the ceiling)
-    const startHp = tier("overclocked") > 0
-      ? Math.min(110, actualMaxHp)
-      : actualMaxHp;
+    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus + overclockedBonus;
+    const startHp = actualMaxHp;
 
     // head-start: +50 starting credits
     const startCredits = tier("head-start") > 0 ? 50 : 0;
@@ -203,6 +205,17 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
+    // Apply heal-on-success power-ups (e.g. Nano Repair)
+    let healAmount = 0;
+    for (const pu of state.inventory) {
+      if (pu.effect.type === "heal-on-success") {
+        healAmount += pu.effect.value;
+      }
+    }
+    const newHp = healAmount > 0
+      ? Math.min(state.maxHp, state.hp + healAmount)
+      : state.hp;
+
     // When floor is complete, check if it's a milestone floor
     let nextStatus = state.status;
     let milestoneFloor = 0;
@@ -219,6 +232,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     }
 
     set({
+      hp: newHp,
       credits: state.credits + earned,
       runScore: state.runScore + earned,
       minigamesWonThisRun: state.minigamesWonThisRun + 1,
@@ -319,10 +333,16 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
+    // Consume floor-scoped power-ups (e.g. heal-on-success)
+    const inventory = state.inventory.filter(
+      (p) => p.effect.type !== "heal-on-success",
+    );
+
     set({
       floor: nextFloor,
       currentMinigameIndex: 0,
       floorMinigames,
+      inventory,
       floorDamageTaken: false,
       powerUpsUsedThisFloor: false,
       status: "playing",

@@ -93,7 +93,7 @@ export function DeathScreen() {
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
           label="MINIGAMES"
-          value={`${minigamesWonThisRun} / ${minigamesPlayedThisRun}`}
+          value={`${minigamesWonThisRun}W / ${minigamesPlayedThisRun}P`}
         />
         <SummaryRow label="CREDITS EARNED" value={`${runScore} CR`} />
         <SummaryRow

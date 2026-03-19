@@ -91,7 +91,7 @@ function buildRules(
   const rules: Rule[] = [];
 
   for (const idx of skippedIndices) {
-    rules.push({ text: `Skip ${wires[idx]}` });
+    rules.push({ text: `DO NOT CUT ${wires[idx]}` });
   }
 
   const orderLength = correctOrder.length;
@@ -299,7 +299,8 @@ export function WireCutting(props: MinigameProps) {
 
         {/* Progress */}
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          {cutIndex}/{puzzle.correctOrder.length} wires cut
+          CUT {cutIndex} OF {puzzle.correctOrder.length} WIRES
+          <span className="text-white/25 ml-2">({puzzle.wires.length} total)</span>
         </p>
 
         {/* Wires display -- cleaner design */}
