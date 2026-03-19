@@ -8,24 +8,11 @@ import { TECH_WORDS } from "@/data/words";
 // Cipher helpers
 // ---------------------------------------------------------------------------
 
-type CipherMethod = "letter-swap" | "remove-vowels" | "scramble" | "rot" | "reverse-rot";
+type CipherMethod = "letter-swap" | "remove-vowels" | "scramble";
 
 const VOWELS = "aeiou";
 
-/** Apply ROT-N encryption to a lowercase letter. */
-function rotChar(ch: string, n: number): string {
-  return String.fromCharCode(((ch.charCodeAt(0) - 97 + n) % 26 + 26) % 26 + 97);
-}
 
-/** Apply ROT-N to every letter in a word. */
-function rotWord(word: string, n: number): string {
-  return word.split("").map((ch) => rotChar(ch, n)).join("");
-}
-
-/** Reverse a word. */
-function reverseWord(word: string): string {
-  return word.split("").reverse().join("");
-}
 
 /** Swap two adjacent letters. */
 function letterSwapEncrypt(word: string, pos: number): string {
@@ -65,10 +52,6 @@ function encrypt(word: string, method: CipherMethod, rotN: number): string {
       return removeVowelsEncrypt(word);
     case "scramble":
       return scrambleEncrypt(word);
-    case "rot":
-      return rotWord(word, rotN);
-    case "reverse-rot":
-      return rotWord(reverseWord(word), rotN);
   }
 }
 
@@ -81,10 +64,6 @@ function buildMethodLabel(method: CipherMethod, rotN: number): string {
       return "VOWELS REMOVED";
     case "scramble":
       return "LETTERS SCRAMBLED";
-    case "rot":
-      return `SHIFTED +${rotN}`;
-    case "reverse-rot":
-      return `REVERSED then SHIFTED +${rotN}`;
   }
 }
 
@@ -106,13 +85,6 @@ function buildExamples(method: CipherMethod, rotN: number): string[] {
         "All letters are present but in wrong order",
         "To decode: figure out the original tech word",
       ];
-    case "rot":
-      return ["Use the alphabet chart below to decode each letter"];
-    case "reverse-rot":
-      return [
-        "Word was reversed, then each letter shifted",
-        "To decode: use chart to unshift, then reverse",
-      ];
   }
 }
 
@@ -127,11 +99,9 @@ function getWordPool(difficulty: number): readonly string[] {
 }
 
 function pickMethod(difficulty: number): CipherMethod {
-  if (difficulty < 0.15) return "letter-swap";
-  if (difficulty < 0.3) return "remove-vowels";
-  if (difficulty < 0.5) return "scramble";
-  if (difficulty < 0.75) return "rot";
-  return "reverse-rot";
+  if (difficulty < 0.2) return "letter-swap";
+  if (difficulty < 0.5) return "remove-vowels";
+  return "scramble";
 }
 
 function pickRotN(_difficulty: number, method: CipherMethod, wordLength: number): number {
@@ -153,42 +123,7 @@ function pickOne<T>(arr: readonly T[]): T {
 // Alphabet chart component (shown for ROT ciphers)
 // ---------------------------------------------------------------------------
 
-const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-function AlphabetChart({ rotN }: { rotN: number }) {
-  return (
-    <div className="w-full max-w-md mx-auto mt-2 px-2">
-      <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1 text-center">
-        Alphabet reference (shift +{rotN})
-      </p>
-      <div className="grid grid-cols-13 gap-0 text-center font-mono text-[11px] leading-tight">
-        {/* First row: original A-M */}
-        {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`o1-${i}`} className="text-white/30 py-0.5">{ch}</div>
-        ))}
-        {/* Second row: shifted A-M */}
-        {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`s1-${i}`} className="text-cyber-cyan/70 py-0.5 font-bold">
-            {String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65)}
-          </div>
-        ))}
-        {/* Third row: original N-Z */}
-        {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`o2-${i}`} className="text-white/30 py-0.5">{ch}</div>
-        ))}
-        {/* Fourth row: shifted N-Z */}
-        {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`s2-${i}`} className="text-cyber-cyan/70 py-0.5 font-bold">
-            {String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65)}
-          </div>
-        ))}
-      </div>
-      <p className="text-white/20 text-[9px] text-center mt-1">
-        Top = original, bottom = encrypted. Find encrypted letter on bottom, read original above.
-      </p>
-    </div>
-  );
-}
+// AlphabetChart lives only in CipherCrackV2 — V1 uses simple ciphers only
 
 // ---------------------------------------------------------------------------
 // Component
@@ -264,7 +199,7 @@ export function CipherCrack(props: MinigameProps) {
 
   const typedPortion = puzzle.word.slice(0, charIndex);
   const remainingCount = puzzle.word.length - charIndex;
-  const showAlphabet = puzzle.method === "rot" || puzzle.method === "reverse-rot";
+  // V1 never uses ROT — no alphabet chart needed
 
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
@@ -312,7 +247,7 @@ export function CipherCrack(props: MinigameProps) {
         </div>
 
         {/* Alphabet chart for ROT ciphers */}
-        {showAlphabet && <AlphabetChart rotN={puzzle.rotN} />}
+        {/* Alphabet chart only in V2 — V1 uses simple ciphers */}
 
         {/* Extra hint from meta upgrade */}
         {extraHintLetter > 0 && puzzle.word.length > 0 && (
