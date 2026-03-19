@@ -67,24 +67,46 @@ function encrypt(
   }
 }
 
-/** Build the hint string shown to the player. */
-function buildHint(method: CipherMethod, rotN: number): string {
+/** Build the method label shown to the player. */
+function buildMethodLabel(method: CipherMethod, rotN: number): string {
   switch (method) {
     case "rot":
       return `SHIFTED +${rotN}`;
     case "reverse-rot":
-      return `REVERSE + SHIFTED +${rotN}`;
+      return `REVERSED then SHIFTED +${rotN}`;
     case "substitution":
-      return `VOWEL SHIFT + SHIFTED +${rotN}`;
+      return `VOWELS ROTATED + SHIFTED +${rotN}`;
   }
 }
 
-/** Build a small example showing the shift direction. */
-function buildExample(rotN: number): string {
-  // Show two example mappings: A -> A+rotN, B -> B+rotN
-  const a = String.fromCharCode(65 + rotN); // e.g. rotN=3 -> D
-  const b = String.fromCharCode(66 + rotN); // e.g. rotN=3 -> E
-  return `A\u2192${a}, B\u2192${b}`;
+/**
+ * Build clear, labeled example lines explaining the cipher operation.
+ * Returns an array of example strings for multi-line display.
+ */
+function buildExamples(method: CipherMethod, rotN: number): string[] {
+  // Shift examples: A -> shifted, B -> shifted, C -> shifted
+  const a = String.fromCharCode(65 + rotN);
+  const b = String.fromCharCode(66 + rotN);
+  const c = String.fromCharCode(67 + rotN);
+  const shiftExample = `Shift: A\u2192${a}, B\u2192${b}, C\u2192${c}`;
+
+  switch (method) {
+    case "rot":
+      // Simple shift — one example line is enough
+      return [shiftExample, `To decode: shift each letter back by ${rotN}`];
+    case "reverse-rot":
+      return [
+        shiftExample,
+        "Order: word was reversed, then shifted",
+        `To decode: shift back by ${rotN}, then reverse`,
+      ];
+    case "substitution":
+      return [
+        "Vowels: A\u2192E\u2192I\u2192O\u2192U\u2192A",
+        shiftExample + " (consonants only)",
+        `To decode: shift consonants back by ${rotN}, rotate vowels back`,
+      ];
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -147,9 +169,9 @@ export function CipherCrack(props: MinigameProps) {
     const method = pickMethod(difficulty);
     const rotN = pickRotN(difficulty);
     const encrypted = encrypt(word, method, rotN);
-    const hint = buildHint(method, rotN);
-    const example = buildExample(rotN);
-    return { word, encrypted, hint, example };
+    const methodLabel = buildMethodLabel(method, rotN);
+    const examples = buildExamples(method, rotN);
+    return { word, encrypted, methodLabel, examples, method };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -219,17 +241,32 @@ export function CipherCrack(props: MinigameProps) {
           {puzzle.encrypted.toUpperCase()}
         </span>
 
-        {/* Cipher hint */}
+        {/* Cipher hint — clearly labeled method + examples */}
         <div
-          className="px-4 py-2 border rounded text-sm font-mono tracking-wider text-center"
+          className="px-5 py-3 border rounded-lg text-sm font-mono text-center max-w-sm w-full"
           style={{
             borderColor: "var(--color-cyber-magenta)",
             color: "var(--color-cyber-magenta)",
             backgroundColor: "rgba(255, 0, 102, 0.08)",
           }}
         >
-          <div>METHOD: {puzzle.hint}</div>
-          <div className="text-xs mt-1 opacity-70">{puzzle.example}</div>
+          <div className="font-bold tracking-wider mb-2">
+            METHOD: {puzzle.methodLabel}
+          </div>
+          <div className="flex flex-col gap-1">
+            {puzzle.examples.map((ex, i) => (
+              <div
+                key={i}
+                className={`text-xs leading-relaxed ${
+                  i === puzzle.examples.length - 1
+                    ? "opacity-90 mt-1 font-bold"
+                    : "opacity-60"
+                }`}
+              >
+                {ex}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Divider */}
