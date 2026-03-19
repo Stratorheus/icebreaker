@@ -19,9 +19,13 @@ const TRAINING_TIME_LIMIT = 30; // generous 30s for all trial rounds
 const TOTAL_ROUNDS = 3;
 
 const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
-  { label: "EASY", value: 0.1 },
+  { label: "TRIVIAL", value: 0.05 },
+  { label: "EASY", value: 0.15 },
+  { label: "NORMAL", value: 0.3 },
   { label: "MEDIUM", value: 0.5 },
-  { label: "HARD", value: 0.9 },
+  { label: "HARD", value: 0.7 },
+  { label: "EXPERT", value: 0.85 },
+  { label: "INSANE", value: 1.0 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -193,7 +197,7 @@ export function Training() {
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastSuccess, setLastSuccess] = useState<boolean | null>(null);
   const [roundResults, setRoundResults] = useState<boolean[]>([]);
-  const [selectedDifficulty, setSelectedDifficulty] = useState(0.1);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
 
   const type = trainingMinigame;
 
@@ -359,7 +363,7 @@ function PickerPhase({
   onPick: (type: MinigameType, difficulty: number) => void;
   onBack: () => void;
 }) {
-  const [selectedDifficulty, setSelectedDifficulty] = useState(0.1);
+  const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
 
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
@@ -381,15 +385,15 @@ function PickerPhase({
         <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-3">
           DIFFICULTY
         </p>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
           {DIFFICULTY_OPTIONS.map((opt) => (
             <button
               key={opt.label}
               type="button"
               onClick={() => setSelectedDifficulty(opt.value)}
               className={`
-                flex-1 py-2 px-4
-                text-xs uppercase tracking-widest font-mono
+                py-1.5 px-2
+                text-[10px] uppercase tracking-widest font-mono
                 border transition-colors duration-150
                 cursor-pointer select-none
                 ${

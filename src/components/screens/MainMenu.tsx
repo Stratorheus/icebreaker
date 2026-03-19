@@ -64,7 +64,7 @@ export function MainMenu() {
       {/* Reset + Version */}
       <div className="mt-12 flex flex-col items-center gap-2">
         <p className="text-white/20 text-[10px] uppercase tracking-widest glitch-flicker">
-          v1.0.0 // PROTOTYPE
+          {`v${__APP_VERSION__}`} // PROTOTYPE
         </p>
         <button
           type="button"

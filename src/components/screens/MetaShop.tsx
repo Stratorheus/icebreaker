@@ -188,6 +188,22 @@ export function MetaShop() {
         {">"}_&nbsp;DATA MARKET // PERSISTENT UPGRADES
       </p>
 
+      {/* Back button — top nav */}
+      <button
+        type="button"
+        onClick={() => setStatus("menu")}
+        className="
+          mb-6 py-1.5 px-6
+          text-xs uppercase tracking-widest font-mono
+          border border-white/15 text-white/40
+          hover:bg-white/5 hover:text-white/70 hover:border-white/30
+          transition-colors duration-150
+          cursor-pointer select-none
+        "
+      >
+        {">"}_&nbsp;BACK TO MENU
+      </button>
+
       {/* Data balance + price multiplier */}
       <div className="flex flex-col items-center gap-2 mb-10">
         <div className="flex items-center gap-2 px-6 py-3 border border-cyber-magenta/30 bg-cyber-magenta/5">
@@ -256,21 +272,6 @@ export function MetaShop() {
         })}
       </div>
 
-      {/* Back button */}
-      <button
-        type="button"
-        onClick={() => setStatus("menu")}
-        className="
-          mt-12 py-3 px-10
-          text-sm uppercase tracking-widest font-mono
-          border border-white/20 text-white/50
-          hover:bg-white/5 hover:text-white/80 hover:border-white/40
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
-      >
-        {">"}_&nbsp;BACK TO MENU
-      </button>
     </div>
   );
 }
