@@ -55,7 +55,15 @@ export function getRunShopPrice(basePrice: number, floor: number): number {
  * Higher difficulty compresses the available window.
  * At difficulty 0 the full baseTime is available;
  * at difficulty 1 the player gets 60 % of baseTime.
+ *
+ * After floor 10, time keeps shrinking by 3% per floor down to 50%
+ * of the already-reduced time, so late-game stays challenging even
+ * after minigame difficulty maxes out.
  */
-export function getTimeLimit(baseTime: number, difficulty: number): number {
-  return Math.round(baseTime * (1 - difficulty * 0.4));
+export function getTimeLimit(baseTime: number, difficulty: number, floor?: number): number {
+  const difficultyScale = 1 - difficulty * 0.4;
+  const floorScale = floor && floor > 10
+    ? Math.max(0.5, 1 - (floor - 10) * 0.03)
+    : 1;
+  return Math.round(baseTime * difficultyScale * floorScale);
 }

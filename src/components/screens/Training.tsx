@@ -39,15 +39,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "slash-timing": {
     title: "SLASH TIMING",
     rules: [
-      "Three phases cycle in sequence: GUARD \u2192 PREPARE \u2192 ATTACK",
+      "Three phases cycle in sequence: GUARD → PREPARE → ATTACK",
       "Press SPACE only during the green ATTACK window to succeed",
       "Pressing SPACE during GUARD or PREPARE causes immediate failure",
-      "Missing the ATTACK window restarts the cycle \u2014 keep waiting",
+      "Missing the ATTACK window restarts the cycle — keep waiting",
     ],
-    controls: "SPACE \u2014 strike",
+    controls: "SPACE — strike",
     tips: [
       "Watch for the PREPARE phase as your cue to get ready",
-      "At higher difficulty the ATTACK window shrinks \u2014 precision matters",
+      "At higher difficulty the ATTACK window shrinks — precision matters",
     ],
   },
   "close-brackets": {
@@ -55,7 +55,7 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     rules: [
       "A sequence of opening brackets is displayed",
       "Type the matching closing brackets in REVERSE order (stack style)",
-      "Bracket pairs: ( \u2192 )  [ \u2192 ]  { \u2192 }  < \u2192 >  | \u2192 |  \\ \u2192 /",
+      "Bracket pairs: ( → )  [ → ]  { → }  < → >  | → |  \\ → /",
       "Any wrong key causes immediate failure",
     ],
     controls: "Keyboard keys: ) ] } > | /",
@@ -67,29 +67,29 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "type-backward": {
     title: "TYPE BACKWARD",
     rules: [
-      "A word is shown on screen \u2014 type it in reverse letter by letter",
-      "Only the letters of the reversed word are accepted",
-      "Any incorrect key causes immediate failure",
-      "Complete all letters to succeed",
+      "Mirrored (reversed) words are displayed in scrambled order",
+      "Read each mirrored word and type the ORIGINAL word it represents",
+      "Work through them left to right — any wrong key = immediate failure",
+      "Decode and type all words to succeed",
     ],
-    controls: "Keyboard \u2014 type each letter",
+    controls: "Keyboard — type each letter of the original word",
     tips: [
-      "Say the word aloud in reverse before typing to lock in the order",
-      "Short words first \u2014 longer words appear at higher difficulty",
+      "Read the mirrored word backwards in your head to find the original",
+      "Short words first — longer words appear at higher difficulty",
     ],
   },
   "match-arrows": {
     title: "MATCH ARROWS",
     rules: [
-      "A row of hidden arrow slots is shown \u2014 one is revealed at a time",
+      "A row of hidden arrow slots is shown — one is revealed at a time",
       "Press the matching arrow key to advance to the next slot",
       "Wrong arrow key = immediate failure",
       "Match all arrows in sequence to complete",
     ],
-    controls: "Arrow keys: \u2191 \u2193 \u2190 \u2192",
+    controls: "Arrow keys: ↑ ↓ ← →",
     tips: [
       "Focus on each revealed arrow one at a time, not the full row",
-      "At higher difficulty the row gets longer \u2014 stay calm and methodical",
+      "At higher difficulty the row gets longer — stay calm and methodical",
     ],
   },
   "find-symbol": {
@@ -97,27 +97,27 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     rules: [
       "A target sequence is shown at the top of the screen",
       "Find and select the current target symbol in the grid below",
-      "Match all targets in order to complete \u2014 wrong pick = failure",
+      "Match all targets in order to complete — wrong pick = failure",
       "Both keyboard navigation and mouse click are supported",
     ],
     controls: "Arrow keys + ENTER to navigate, or click with mouse",
     tips: [
-      "At higher difficulty visually similar symbols are mixed in \u2014 look carefully",
+      "At higher difficulty visually similar symbols are mixed in — look carefully",
       "Use the cursor highlight to track your grid position with keyboard",
     ],
   },
   "mine-sweep": {
     title: "MINE SWEEP",
     rules: [
-      "Mines are revealed briefly in a PREVIEW phase \u2014 memorise their locations",
-      "Mines hide during the MARK phase \u2014 mark the cells you memorised",
+      "Mines are revealed briefly in a PREVIEW phase — memorise their locations",
+      "Mines hide during the MARK phase — mark the cells you memorised",
       "Marking exactly the correct cells wins; any wrong mark = failure",
       "The grid auto-checks when you've marked the same count as mines",
     ],
     controls: "Arrow keys + SPACE to mark, or click cells",
     tips: [
       "Group mines by row or region in your mind during preview",
-      "Higher difficulty = more mines, smaller preview window \u2014 act fast",
+      "Higher difficulty = more mines, smaller preview window — act fast",
     ],
   },
   "wire-cutting": {
@@ -130,19 +130,19 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
     controls: "Number keys 1\u20139 to cut wires, or click a wire",
     tips: [
-      "Some wires may be SKIP \u2014 do not cut those at all",
+      "Some wires are marked DO NOT CUT — leave those alone",
       "Work out the full order on paper mentally before making the first cut",
     ],
   },
   "cipher-crack": {
     title: "CIPHER CRACK",
     rules: [
-      "An encrypted word is shown \u2014 decode it by typing the plaintext",
+      "An encrypted word is shown — decode it by typing the plaintext",
       "The cipher method (ROT-N or substitution) is hinted on screen",
       "Type the decrypted word letter by letter; any mistake = failure",
       "Decode all letters to complete the breach",
     ],
-    controls: "Keyboard \u2014 type the decoded letters",
+    controls: "Keyboard — type the decoded letters",
     tips: [
       "ROT ciphers: shift each letter back by the stated amount",
       "Substitution: map each letter using the shown key table",
@@ -527,7 +527,7 @@ function BriefingPhase({
           <ul className="space-y-2">
             {briefing.tips.map((tip, i) => (
               <li key={i} className="flex items-start gap-2 text-sm text-white/50 leading-relaxed">
-                <span className="text-cyber-magenta/60 shrink-0 select-none">{"\u25C6"}</span>
+                <span className="text-cyber-magenta/60 shrink-0 select-none">◆</span>
                 <span>{tip}</span>
               </li>
             ))}
@@ -596,7 +596,7 @@ function CountdownPhase({
   return (
     <div className="text-center select-none">
       <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
-        TRAINING \u2014 ROUND {round}/{total}
+        TRAINING — ROUND {round}/{total}
       </p>
       <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
         {BRIEFINGS[type].title}
@@ -655,7 +655,7 @@ function RoundResultFlash({
         {success ? "SUCCESS" : "FAILED"}
       </h2>
       <p className="mt-4 text-white/30 text-sm uppercase tracking-widest">
-        {round < total ? `ROUND ${round} COMPLETE \u2014 NEXT ROUND` : "FINAL ROUND COMPLETE"}
+        {round < total ? `ROUND ${round} COMPLETE — NEXT ROUND` : "FINAL ROUND COMPLETE"}
       </p>
     </div>
   );
@@ -694,7 +694,7 @@ function CompletePhase({
             <span
               className={`text-2xl font-bold ${success ? "text-cyber-cyan" : "text-cyber-magenta"}`}
             >
-              {success ? "\u25CF" : "\u25CB"}
+              {success ? "●" : "○"}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-white/30">
               R{i + 1}
@@ -709,15 +709,15 @@ function CompletePhase({
       </p>
       <p className="text-white/25 text-xs uppercase tracking-wider mb-10">
         {wins === total
-          ? "PERFECT SCORE \u2014 MINIGAME MASTERED"
+          ? "PERFECT SCORE — MINIGAME MASTERED"
           : wins >= Math.ceil(total / 2)
-            ? "SOLID PERFORMANCE \u2014 TRAINING RECORDED"
-            : "KEEP PRACTICING \u2014 MINIGAME NOW UNLOCKED"}
+            ? "SOLID PERFORMANCE — TRAINING RECORDED"
+            : "KEEP PRACTICING — MINIGAME NOW UNLOCKED"}
       </p>
 
       {/* Briefing note */}
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-8 border border-dashed border-white/10 px-4 py-2">
-        BRIEFING MARKED AS SEEN \u2014 TRAINING RESULTS NOT RECORDED TO STATS
+        BRIEFING MARKED AS SEEN — TRAINING RESULTS NOT RECORDED TO STATS
       </p>
 
       <button
