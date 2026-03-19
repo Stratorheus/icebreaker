@@ -4,17 +4,30 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 
-/**
- * Full symbol pool. At low difficulty we pick from clearly distinct symbols;
- * at high difficulty we include visually similar pairs.
- */
-const DISTINCT_SYMBOLS = ["◆", "■", "▲", "●", "★", "♠", "♣", "♥", "⬟", "◉", "⊕", "⊗", "▼"];
-const SIMILAR_PAIRS = ["◇", "□", "△", "○", "☆", "♦", "⬡", "◎", "⊘", "⊙", "▽"];
+/** Hex alphabet characters */
+const HEX_CHARS = "0123456789ABCDEF";
 
-function getSymbolPool(difficulty: number): string[] {
-  // At d=0 use only distinct symbols; at d=1 mix in all similar ones
-  const similarCount = Math.round(difficulty * SIMILAR_PAIRS.length);
-  return [...DISTINCT_SYMBOLS, ...SIMILAR_PAIRS.slice(0, similarCount)];
+/** Generate a random two-character hex code (e.g. "A1", "FE", "08") */
+function randomHexCode(): string {
+  const a = HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)];
+  const b = HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)];
+  return a + b;
+}
+
+/**
+ * At higher difficulty, generate hex codes that look similar to a reference
+ * code — differing by only one character.
+ */
+function similarHexCode(ref: string): string {
+  const pos = Math.random() < 0.5 ? 0 : 1;
+  const chars = [...ref];
+  // Pick a different character for the chosen position
+  let newCh: string;
+  do {
+    newCh = HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)];
+  } while (newCh === chars[pos]);
+  chars[pos] = newCh;
+  return chars.join("");
 }
 
 /** Shuffle an array in place (Fisher-Yates) and return it */
@@ -27,7 +40,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 interface GridCell {
-  symbol: string;
+  code: string;
   /** Unique id for React keys */
   id: number;
 }
@@ -40,12 +53,11 @@ interface GeneratedPuzzle {
 }
 
 /**
- * Generate a grid and a target sequence.
+ * Generate a grid and a target sequence using hex codes.
  *
- * 1. Pick `seqLen` target symbols (may repeat across the sequence).
- * 2. Fill the grid with random symbols from the pool, ensuring each
- *    target appears at least once.
- * 3. Shuffle grid positions.
+ * 1. Pick `seqLen` target hex codes (unique).
+ * 2. Fill the grid ensuring each target appears at least once.
+ * 3. At higher difficulty, fill remaining cells with similar-looking codes.
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
   const cols = Math.round(4 + difficulty * 2);
@@ -53,41 +65,46 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   const totalCells = rows * cols;
   const seqLen = Math.round(2 + difficulty * 3);
 
-  const pool = getSymbolPool(difficulty);
-
-  // Pick target symbols for the sequence
-  const targets: string[] = [];
-  for (let i = 0; i < seqLen; i++) {
-    targets.push(pool[Math.floor(Math.random() * pool.length)]);
+  // Generate unique target codes
+  const targetSet = new Set<string>();
+  while (targetSet.size < seqLen) {
+    targetSet.add(randomHexCode());
   }
+  const targets = [...targetSet];
 
-  // Unique set of target symbols that must appear in the grid
-  const uniqueTargets = [...new Set(targets)];
+  // Start with one guaranteed copy of each target
+  const cells: string[] = [...targets];
 
-  // Start by placing one guaranteed copy of each unique target
-  const cells: string[] = [...uniqueTargets];
-
-  // Fill remaining cells with random symbols from the pool
+  // Fill remaining cells
   while (cells.length < totalCells) {
-    cells.push(pool[Math.floor(Math.random() * pool.length)]);
+    if (difficulty > 0.4 && Math.random() < difficulty * 0.6) {
+      // At higher difficulty, add similar-looking codes to confuse
+      const refTarget = targets[Math.floor(Math.random() * targets.length)];
+      const similar = similarHexCode(refTarget);
+      // Avoid duplicating an existing target code
+      if (!targets.includes(similar)) {
+        cells.push(similar);
+        continue;
+      }
+    }
+    cells.push(randomHexCode());
   }
 
-  // Shuffle
   shuffle(cells);
 
-  const grid: GridCell[] = cells.map((symbol, i) => ({ symbol, id: i }));
+  const grid: GridCell[] = cells.map((code, i) => ({ code, id: i }));
 
   return { grid, targets, cols, rows };
 }
 
 /**
- * FindSymbol -- grid-based symbol-finding minigame.
+ * FindSymbol -- grid-based hex-code finding minigame (redesigned).
  *
- * A target sequence of symbols is shown at the top. The player must
- * find and click/select the current target symbol in the grid, in order.
+ * A target sequence of hex codes is shown at the top. The player must
+ * find and select the current target code in the grid, in order.
  * Wrong cell = immediate fail. All targets found = success.
  *
- * Supports both mouse click and arrow-key + Enter navigation.
+ * Supports mouse click and arrow-key + Enter navigation.
  */
 export function FindSymbol(props: MinigameProps) {
   const { difficulty } = props;
@@ -142,7 +159,7 @@ export function FindSymbol(props: MinigameProps) {
       const cell = grid[cellIndex];
       const expected = targets[idx];
 
-      if (cell.symbol === expected) {
+      if (cell.code === expected) {
         // Correct -- mark cell, advance target
         const nextTarget = idx + 1;
         setTargetIndex(nextTarget);
@@ -181,6 +198,11 @@ export function FindSymbol(props: MinigameProps) {
       const cellIndex = cursorRowRef.current * cols + cursorColRef.current;
       handleSelect(cellIndex);
     };
+    // Also support Space for confirmation
+    map[" "] = () => {
+      const cellIndex = cursorRowRef.current * cols + cursorColRef.current;
+      handleSelect(cellIndex);
+    };
 
     return map;
   }, [rows, cols, handleSelect]);
@@ -200,7 +222,7 @@ export function FindSymbol(props: MinigameProps) {
             Find in order
           </p>
           <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-            {targets.map((symbol, i) => {
+            {targets.map((code, i) => {
               const isCompleted = i < targetIndex;
               const isCurrent = i === targetIndex;
 
@@ -209,9 +231,9 @@ export function FindSymbol(props: MinigameProps) {
                   key={i}
                   className={`
                     flex items-center justify-center
-                    w-10 h-10 sm:w-12 sm:h-12
+                    w-12 h-10 sm:w-14 sm:h-12
                     rounded-lg border-2 font-mono font-bold
-                    text-xl sm:text-2xl
+                    text-base sm:text-lg
                     transition-all duration-200
                     ${
                       isCompleted
@@ -223,9 +245,9 @@ export function FindSymbol(props: MinigameProps) {
                   `}
                 >
                   {isCompleted ? (
-                    <span className="text-cyber-green text-base">&#10003;</span>
+                    <span className="text-cyber-green text-sm">&#10003;</span>
                   ) : (
-                    symbol
+                    code
                   )}
                 </div>
               );
@@ -236,7 +258,7 @@ export function FindSymbol(props: MinigameProps) {
         {/* Divider */}
         <div className="w-24 h-px bg-white/10" />
 
-        {/* Symbol grid */}
+        {/* Hex code grid */}
         <div
           className="grid gap-1.5 sm:gap-2"
           style={{
@@ -257,9 +279,9 @@ export function FindSymbol(props: MinigameProps) {
                 onClick={() => handleSelect(i)}
                 className={`
                   flex items-center justify-center
-                  w-10 h-10 sm:w-12 sm:h-12
+                  w-12 h-10 sm:w-14 sm:h-12
                   rounded-md border-2 font-mono font-bold
-                  text-lg sm:text-xl
+                  text-sm sm:text-base
                   transition-all duration-150
                   cursor-pointer
                   focus:outline-none
@@ -275,7 +297,7 @@ export function FindSymbol(props: MinigameProps) {
                 {isSelected ? (
                   <span className="text-cyber-green text-sm">&#10003;</span>
                 ) : (
-                  cell.symbol
+                  cell.code
                 )}
               </button>
             );
