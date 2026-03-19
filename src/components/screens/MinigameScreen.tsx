@@ -20,8 +20,8 @@ import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import { PortScan } from "@/components/minigames/PortScan";
+import { SubnetScan } from "@/components/minigames/SubnetScan";
 import {
-  SubnetScanPlaceholder,
   CipherCrackV2Placeholder,
 } from "@/components/minigames/PlaceholderGame";
 
@@ -298,7 +298,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerify,
   "port-scan": PortScan,
-  "subnet-scan": SubnetScanPlaceholder,
+  "subnet-scan": SubnetScan,
   "cipher-crack-v2": CipherCrackV2Placeholder,
 };
 
@@ -503,7 +503,7 @@ function getMinigameHint(type: MinigameType): string {
     case "port-scan":
       return "Memorize which ports flash green, then select them all.";
     case "subnet-scan":
-      return "Map the subnet by selecting active nodes.";
+      return "Select IPs that belong to the displayed CIDR range.";
     case "cipher-crack-v2":
       return "Decode the advanced cipher using multiple layers.";
   }

@@ -214,15 +214,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "subnet-scan": {
     title: "SUBNET SCAN",
     rules: [
-      "A subnet map with nodes is displayed",
-      "Active nodes pulse briefly during a preview phase",
-      "After preview, select all active nodes from memory",
-      "Wrong selection or missing a node = failure",
+      "An IP range (CIDR notation) is displayed at the top",
+      "A list of IP addresses is shown below the range",
+      "Select all addresses that belong to the displayed subnet",
+      "Wrong selection = immediate failure; all correct = success",
     ],
-    controls: "Click nodes or use Arrow keys + ENTER",
+    controls: "Arrow keys to navigate, SPACE to toggle, or click",
     tips: [
-      "Group active nodes by quadrant during the preview phase",
-      "Higher difficulty increases node count and shortens preview time",
+      "/24 = first 3 numbers must match, /16 = first 2, /8 = first 1",
+      "A help box at the bottom explains the current subnet mask",
     ],
   },
   "cipher-crack-v2": {
