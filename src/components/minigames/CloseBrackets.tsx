@@ -4,7 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 
-/** Opener → closer mapping */
+/** Opener -> closer mapping */
 const BRACKET_PAIRS: Record<string, string> = {
   "(": ")",
   "[": "]",
@@ -20,17 +20,19 @@ const OPENERS = Object.keys(BRACKET_PAIRS);
 const CLOSER_KEYS = [")", "]", "}", ">", "|", "/"];
 
 /**
- * CloseBrackets — pattern-matching minigame.
+ * CloseBrackets -- pattern-matching minigame (redesigned).
  *
- * Shows a random sequence of opening brackets. The player must type
- * the matching closers in REVERSE order (stack-style).
+ * Shows opening brackets on one line. The player types matching closers
+ * in REVERSE order (stack-style). Closers appear inline next to the
+ * openers as they are typed.
  *
- * Example: `( [ { \` → player types `/ } ] )`
+ * Example: `( [ { \` -> player types `/ } ] )` and sees them appear inline.
  *
+ * No "Next character" hint by default — that's a meta upgrade.
  * Wrong key = immediate fail. All correct = success.
  */
 export function CloseBrackets(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "close-brackets",
     props,
@@ -38,7 +40,16 @@ export function CloseBrackets(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // Bracket count: 3 (d=0) → 8 (d=1)
+  // Check if player has the "next char hint" meta upgrade
+  const hasNextCharHint = useMemo(() => {
+    return activePowerUps.some(
+      (p) =>
+        (p.effect.type === "hint" && p.effect.minigame === "close-brackets") ||
+        (p.effect.type === "minigame-specific" && p.effect.minigame === "close-brackets"),
+    );
+  }, [activePowerUps]);
+
+  // Bracket count: 3 (d=0) -> 8 (d=1)
   const bracketCount = Math.round(3 + difficulty * 5);
 
   // Generate a random opening sequence on mount
@@ -61,8 +72,6 @@ export function CloseBrackets(props: MinigameProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentIndexRef = useRef(0);
 
-  // Track typed count for visual feedback (derived from currentIndex)
-
   // Sync ref with state for use in keyboard handler
   useEffect(() => {
     currentIndexRef.current = currentIndex;
@@ -81,12 +90,12 @@ export function CloseBrackets(props: MinigameProps) {
         setCurrentIndex(nextIndex);
 
         if (nextIndex >= expectedClosers.length) {
-          // All brackets closed — success
+          // All brackets closed -- success
           resolvedRef.current = true;
           complete(true);
         }
       } else {
-        // Wrong key — immediate fail
+        // Wrong key -- immediate fail
         resolvedRef.current = true;
         fail();
       }
@@ -94,7 +103,7 @@ export function CloseBrackets(props: MinigameProps) {
     [isActive, expectedClosers, complete, fail],
   );
 
-  // Build the key map for useKeyboard — only closer keys
+  // Build the key map for useKeyboard -- only closer keys
   const keyMap = useMemo(() => {
     const map: Record<string, () => void> = {};
     for (const key of CLOSER_KEYS) {
@@ -105,8 +114,10 @@ export function CloseBrackets(props: MinigameProps) {
 
   useKeyboard(keyMap);
 
-  // How many closers remain
-  const remaining = expectedClosers.length - currentIndex;
+  // Build the inline display: openers | cursor/closers
+  // Closers are typed in reverse order, so the first typed closer goes
+  // at the rightmost position (matching the last opener).
+  const typedClosers = expectedClosers.slice(0, currentIndex);
   const nextExpected = currentIndex < expectedClosers.length ? expectedClosers[currentIndex] : null;
 
   return (
@@ -116,63 +127,65 @@ export function CloseBrackets(props: MinigameProps) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full max-w-lg">
-        {/* Opening sequence display */}
-        <div className="text-center">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
-            Opening Sequence
-          </p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
+        {/* Label */}
+        <p className="text-white/40 text-xs uppercase tracking-widest">
+          Close the brackets
+        </p>
+
+        {/* Inline bracket display */}
+        <div className="flex items-center justify-center flex-wrap">
+          <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl font-bold tracking-wider">
+            {/* Opening brackets */}
             {sequence.map((opener, i) => {
-              // Reverse index: this opener corresponds to expectedClosers[sequence.length - 1 - i]
-              const closerIndex = sequence.length - 1 - i;
-              const isCompleted = closerIndex < currentIndex;
-              const isNext = closerIndex === currentIndex;
+              // This opener corresponds to closer index = sequence.length - 1 - i
+              const closerIdx = sequence.length - 1 - i;
+              const isMatched = closerIdx < currentIndex;
 
               return (
                 <span
-                  key={i}
+                  key={`o-${i}`}
                   className={`
-                    text-3xl sm:text-4xl font-mono font-bold transition-all duration-200
-                    ${isCompleted ? "text-cyber-green opacity-50" : isNext ? "text-cyber-cyan" : "text-white/60"}
+                    transition-all duration-200
+                    ${isMatched ? "text-cyber-green/50" : "text-cyber-cyan"}
                   `}
                 >
                   {opener}
                 </span>
               );
             })}
+
+            {/* Separator + cursor area */}
+            <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-1" />
+
+            {/* Typed closers (appear in reverse -- last typed is leftmost) */}
+            {[...typedClosers].reverse().map((closer, i) => (
+              <span
+                key={`c-${i}`}
+                className="text-cyber-green transition-all duration-150"
+              >
+                {closer}
+              </span>
+            ))}
+
+            {/* Remaining closer slots as dim placeholders */}
+            {Array.from({ length: expectedClosers.length - currentIndex }).map((_, i) => (
+              <span
+                key={`p-${i}`}
+                className="text-white/10"
+              >
+                _
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="w-24 h-px bg-white/10" />
+        {/* Progress */}
+        <p className="text-white/40 text-xs uppercase tracking-widest">
+          {currentIndex}/{expectedClosers.length} closed
+        </p>
 
-        {/* Closers progress display */}
-        <div className="text-center">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
-            Type Closers (Reverse Order)
-          </p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            {expectedClosers.map((closer, i) => {
-              const isTyped = i < currentIndex;
-              const isNext = i === currentIndex;
-
-              return (
-                <span
-                  key={i}
-                  className={`
-                    text-3xl sm:text-4xl font-mono font-bold transition-all duration-200
-                    ${isTyped ? "text-cyber-green" : isNext ? "text-cyber-cyan animate-pulse" : "text-white/20"}
-                  `}
-                >
-                  {isTyped || isNext ? closer : "?"}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Next expected indicator */}
-        {nextExpected && (
+        {/* Next character hint -- ONLY if player has the meta upgrade */}
+        {hasNextCharHint && nextExpected && (
           <div className="flex flex-col items-center gap-2">
             <p className="text-white/40 text-xs uppercase tracking-widest">
               Next
@@ -180,19 +193,16 @@ export function CloseBrackets(props: MinigameProps) {
             <div
               className={`
                 flex items-center justify-center
-                w-16 h-16 sm:w-20 sm:h-20
-                rounded-xl border-2 border-cyber-cyan
-                shadow-[0_0_20px_rgba(0,255,255,0.2)]
+                w-14 h-14 sm:w-16 sm:h-16
+                rounded-xl border-2 border-cyber-cyan/60
+                shadow-[0_0_12px_rgba(0,255,255,0.15)]
                 bg-cyber-bg/80
               `}
             >
-              <span className="text-4xl sm:text-5xl font-mono font-bold text-cyber-cyan">
+              <span className="text-3xl sm:text-4xl font-mono font-bold text-cyber-cyan">
                 {nextExpected}
               </span>
             </div>
-            <p className="text-white/30 text-xs">
-              {remaining} remaining
-            </p>
           </div>
         )}
       </div>
