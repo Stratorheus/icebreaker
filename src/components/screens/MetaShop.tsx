@@ -137,9 +137,9 @@ export function MetaShop() {
     return Object.values(purchasedUpgrades).reduce((sum, tier) => sum + tier, 0);
   }, [purchasedUpgrades]);
 
-  /** Compute scaled price: basePrice * (1 + totalPurchasesMade * 0.1) */
+  /** Compute scaled price: basePrice * (1 + totalPurchasesMade * 0.15) */
   const getScaledPrice = (basePrice: number) => {
-    return Math.round(basePrice * (1 + totalPurchasesMade * 0.1));
+    return Math.round(basePrice * (1 + totalPurchasesMade * 0.15));
   };
 
   const handlePurchase = (upgrade: MetaUpgrade) => {
@@ -188,7 +188,7 @@ export function MetaShop() {
         </div>
         {totalPurchasesMade > 0 && (
           <p className="text-white/25 text-[10px] uppercase tracking-widest">
-            PRICE MULTIPLIER: {(1 + totalPurchasesMade * 0.1).toFixed(1)}x
+            PRICE MULTIPLIER: {(1 + totalPurchasesMade * 0.15).toFixed(1)}x
             <span className="text-white/15 ml-2">
               ({totalPurchasesMade} UPGRADE{totalPurchasesMade !== 1 ? "S" : ""} PURCHASED)
             </span>
@@ -445,7 +445,7 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "start-random-powerup":
       return `${effect.value} random power-up(s)`;
     case "start-hp":
-      return `Start with ${effect.value} HP`;
+      return `+${effect.value} bonus starting HP`;
     case "start-credits":
       return `+${effect.value} starting credits`;
     case "floor1-time-bonus":

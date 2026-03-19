@@ -112,11 +112,15 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "overclocked",
     name: "Overclocked",
-    description: "Start every run with 110 HP instead of 100.",
+    description: "Start every run with +10 / +15 / +20 bonus HP above base.",
     category: "starting-bonus",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "start-hp", value: 110 }],
+    maxTier: 3,
+    prices: [150, 300, 500],
+    effects: [
+      { type: "start-hp", value: 10 },
+      { type: "start-hp", value: 15 },
+      { type: "start-hp", value: 20 },
+    ],
   },
   {
     id: "head-start",
