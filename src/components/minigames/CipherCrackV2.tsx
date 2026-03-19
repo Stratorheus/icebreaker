@@ -8,7 +8,7 @@ import { TECH_WORDS } from "@/data/words";
 // Cipher helpers (duplicated from CipherCrack — tiny, not worth a shared file)
 // ---------------------------------------------------------------------------
 
-type CipherMethod = "rot" | "reverse-rot";
+type CipherMethod = "rot";
 
 /** Apply ROT-N encryption to a lowercase letter. */
 function rotChar(ch: string, n: number): string {
@@ -20,42 +20,19 @@ function rotWord(word: string, n: number): string {
   return word.split("").map((ch) => rotChar(ch, n)).join("");
 }
 
-/** Reverse a word. */
-function reverseWord(word: string): string {
-  return word.split("").reverse().join("");
+/** Encrypt a word — always plain ROT. */
+function encrypt(word: string, _method: CipherMethod, rotN: number): string {
+  return rotWord(word, rotN);
 }
 
-/** Encrypt a word using the given method. */
-function encrypt(word: string, method: CipherMethod, rotN: number): string {
-  switch (method) {
-    case "rot":
-      return rotWord(word, rotN);
-    case "reverse-rot":
-      return rotWord(reverseWord(word), rotN);
-  }
+/** Build the method label. */
+function buildMethodLabel(_method: CipherMethod, rotN: number): string {
+  return `SHIFTED +${rotN}`;
 }
 
-/** Build the method label shown to the player. */
-function buildMethodLabel(method: CipherMethod, rotN: number): string {
-  switch (method) {
-    case "rot":
-      return `SHIFTED +${rotN}`;
-    case "reverse-rot":
-      return `REVERSED then SHIFTED +${rotN}`;
-  }
-}
-
-/** Build help text lines. */
-function buildExamples(method: CipherMethod): string[] {
-  switch (method) {
-    case "rot":
-      return ["Use the alphabet chart below to decode each letter"];
-    case "reverse-rot":
-      return [
-        "Word was reversed, then each letter shifted",
-        "To decode: use chart to unshift, then reverse",
-      ];
-  }
+/** Build help text. */
+function buildExamples(_method: CipherMethod): string[] {
+  return ["Use the alphabet chart below to decode each letter"];
 }
 
 // ---------------------------------------------------------------------------
@@ -68,9 +45,8 @@ function getWordPool(difficulty: number): readonly string[] {
   return [...TECH_WORDS.medium, ...TECH_WORDS.long];
 }
 
-function pickMethod(difficulty: number): CipherMethod {
-  if (difficulty < 0.5) return "rot";
-  return "reverse-rot";
+function pickMethod(_difficulty: number): CipherMethod {
+  return "rot";
 }
 
 function pickRotN(): number {
