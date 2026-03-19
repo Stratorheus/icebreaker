@@ -429,6 +429,8 @@ function formatEffect(effect: { type: string; value: number }): string {
       return "Guaranteed heal in floor 1 shop";
     case "unlock-minigame":
       return "Unlocks minigame";
+    case "death-penalty-reduction":
+      return `-${Math.round(effect.value * 100)}% death penalty`;
     default:
       return effect.type.replace(/-/g, " ");
   }

@@ -6,14 +6,16 @@ import { awardNewAchievements } from "@/hooks/use-achievement-check";
 /**
  * Death screen — shown when HP reaches 0.
  *
- * Displays run summary, awards persistent data, updates stats,
- * and provides a return-to-menu button.
+ * Displays run summary, awards persistent data (with 25% death penalty,
+ * reducible via Data Recovery meta upgrade), updates stats, and provides
+ * a return-to-menu button.
  */
 export function DeathScreen() {
   const setStatus = useGameStore((s) => s.setStatus);
   const addData = useGameStore((s) => s.addData);
   const updateStats = useGameStore((s) => s.updateStats);
   const stats = useGameStore((s) => s.stats);
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
 
   const floor = useGameStore((s) => s.floor);
   const minigamesPlayedThisRun = useGameStore(
@@ -24,12 +26,19 @@ export function DeathScreen() {
   const runStartTime = useGameStore((s) => s.runStartTime);
 
   // Base run data reward (no milestone bonus — milestones are already
-  // awarded during advanceFloor() so including them here double-counts)
+  // awarded during completeMinigame() so including them here double-counts)
   const baseDataEarned = getDataReward(floor);
 
-  // Total data earned this run (base + achievement bonuses), updated after
-  // awards are processed so the display reflects the real total.
-  const [totalDataEarned, setTotalDataEarned] = useState(baseDataEarned);
+  // Death penalty: lose 25% of earned data, reducible via Data Recovery
+  // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
+  const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
+  const penaltyPct = Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
+  const penaltyAmount = Math.floor(baseDataEarned * penaltyPct);
+  const dataAfterPenalty = baseDataEarned - penaltyAmount;
+
+  // Total data earned this run (base minus penalty + achievement bonuses),
+  // updated after awards are processed so the display reflects the real total.
+  const [totalDataEarned, setTotalDataEarned] = useState(dataAfterPenalty);
 
   // Prevent double-award in React Strict Mode
   const awardedRef = useRef(false);
@@ -41,9 +50,9 @@ export function DeathScreen() {
     // Snapshot data balance before awards
     const dataBefore = useGameStore.getState().data;
 
-    // Award base run data to persistent store
-    if (baseDataEarned > 0) {
-      addData(baseDataEarned);
+    // Award data with death penalty applied
+    if (dataAfterPenalty > 0) {
+      addData(dataAfterPenalty);
     }
 
     // Update stats
@@ -55,7 +64,7 @@ export function DeathScreen() {
         stats.totalMinigamesPlayed + minigamesPlayedThisRun,
       totalMinigamesWon: stats.totalMinigamesWon + minigamesWonThisRun,
       totalCreditsEarned: stats.totalCreditsEarned + runScore,
-      totalDataEarned: stats.totalDataEarned + baseDataEarned,
+      totalDataEarned: stats.totalDataEarned + dataAfterPenalty,
       totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
     });
 
@@ -63,9 +72,9 @@ export function DeathScreen() {
     // are updated. Zustand set() is synchronous so getState() is fresh.
     awardNewAchievements();
 
-    // Calculate total data actually added (base + any achievement bonuses)
-    const dataAfter = useGameStore.getState().data;
-    setTotalDataEarned(dataAfter - dataBefore);
+    // Calculate total data actually added (base - penalty + achievement bonuses)
+    const dataAfterAll = useGameStore.getState().data;
+    setTotalDataEarned(dataAfterAll - dataBefore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -80,7 +89,7 @@ export function DeathScreen() {
       </p>
 
       {/* Run summary grid */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-10 text-sm uppercase tracking-widest">
+      <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-6 text-sm uppercase tracking-widest">
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
           label="MINIGAMES"
@@ -92,6 +101,21 @@ export function DeathScreen() {
           value={`${"\u25C6"} ${totalDataEarned}`}
           highlight
         />
+      </div>
+
+      {/* Death penalty notice */}
+      <div className="mb-10 text-center">
+        <p className="text-cyber-magenta/60 text-[10px] uppercase tracking-widest">
+          DEATH PENALTY: -{Math.round(penaltyPct * 100)}% DATA
+          {penaltyAmount > 0 && (
+            <span className="text-white/30 ml-2">(-{penaltyAmount})</span>
+          )}
+        </p>
+        {dataRecoveryTier > 0 && (
+          <p className="text-cyber-green/40 text-[10px] uppercase tracking-widest mt-1">
+            DATA RECOVERY LVL {dataRecoveryTier} ACTIVE
+          </p>
+        )}
       </div>
 
       {/* Return button */}

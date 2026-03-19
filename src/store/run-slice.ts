@@ -47,6 +47,7 @@ export interface RunSlice {
   usePowerUp: (id: string) => void;
   advanceFloor: () => void;
   dismissMilestone: () => void;
+  quitRun: () => void;
   setStatus: (status: GameStatus) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
   endRun: () => void;
@@ -192,6 +193,21 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
+    // When floor is complete, check if it's a milestone floor
+    let nextStatus = state.status;
+    let milestoneFloor = 0;
+    if (isLastMinigame) {
+      const isMilestone = getMilestoneBonus(state.floor) > 0;
+      if (isMilestone) {
+        // Award milestone bonus data immediately
+        state.addData(getMilestoneBonus(state.floor));
+        nextStatus = "milestone";
+        milestoneFloor = state.floor;
+      } else {
+        nextStatus = "shop";
+      }
+    }
+
     set({
       credits: state.credits + earned,
       runScore: state.runScore + earned,
@@ -200,7 +216,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       currentMinigameIndex: isLastMinigame
         ? state.currentMinigameIndex
         : state.currentMinigameIndex + 1,
-      status: isLastMinigame ? "shop" : state.status,
+      status: nextStatus,
+      milestoneFloor,
     });
   },
 
@@ -292,29 +309,21 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
-    // Milestone floors: 5, 10, 15, 20
-    const isMilestone = getMilestoneBonus(nextFloor) > 0;
-
-    // Award milestone bonus data immediately
-    if (isMilestone) {
-      state.addData(getMilestoneBonus(nextFloor));
-    }
-
     set({
       floor: nextFloor,
       currentMinigameIndex: 0,
       floorMinigames,
       floorDamageTaken: false,
       powerUpsUsedThisFloor: false,
-      // If milestone, show overlay before returning to playing
-      status: isMilestone ? "playing" : "playing",
-      milestoneFloor: isMilestone ? nextFloor : 0,
+      status: "playing",
+      milestoneFloor: 0,
       runShopOffers: [], // clear so next shop generates fresh
     });
   },
 
   dismissMilestone: () => {
-    set({ milestoneFloor: 0 });
+    // After dismissing milestone overlay, proceed to vendor/shop screen
+    set({ milestoneFloor: 0, status: "shop" });
   },
 
   setStatus: (status: GameStatus) => {
@@ -323,6 +332,30 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   setTrainingMinigame: (type: MinigameType | null) => {
     set({ trainingMinigame: type });
+  },
+
+  quitRun: () => {
+    const state = get();
+    // Full data reward (no penalty) — getDataReward(floor) + any milestone bonuses already awarded
+    const dataReward = getDataReward(state.floor);
+    if (dataReward > 0) {
+      state.addData(dataReward);
+    }
+
+    // Update stats
+    const playTimeMs = Date.now() - state.runStartTime;
+    const stats = state.stats;
+    state.updateStats({
+      totalRuns: stats.totalRuns + 1,
+      bestFloor: Math.max(stats.bestFloor, state.floor),
+      totalMinigamesPlayed: stats.totalMinigamesPlayed + state.minigamesPlayedThisRun,
+      totalMinigamesWon: stats.totalMinigamesWon + state.minigamesWonThisRun,
+      totalCreditsEarned: stats.totalCreditsEarned + state.runScore,
+      totalDataEarned: stats.totalDataEarned + dataReward,
+      totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
+    });
+
+    set({ status: "menu" });
   },
 
   endRun: () => {

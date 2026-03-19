@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useGameStore } from "@/store/game-store";
 
 // ---------------------------------------------------------------------------
@@ -24,37 +24,19 @@ const MILESTONE_BONUS: Record<number, number> = {
 // ---------------------------------------------------------------------------
 
 /**
- * Full-screen overlay shown when the player reaches a milestone floor
- * (5, 10, 15, 20). Auto-dismisses after 3 seconds or on any keypress.
- *
- * The overlay is layered above the game content via fixed positioning and
- * a high z-index. It renders null when `milestoneFloor` is 0.
+ * Full-screen milestone screen shown when the player completes a milestone
+ * floor (5, 10, 15, 20). Dismisses on any keypress or click, then
+ * transitions to the vendor/shop screen.
  */
 export function MilestoneOverlay() {
   const milestoneFloor = useGameStore((s) => s.milestoneFloor);
   const dismissMilestone = useGameStore((s) => s.dismissMilestone);
-
-  // Auto-dismiss after 3 s
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (milestoneFloor === 0) return;
-
-    timerRef.current = setTimeout(() => {
-      dismissMilestone();
-    }, 3000);
-
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, [milestoneFloor, dismissMilestone]);
 
   // Dismiss on any keypress
   useEffect(() => {
     if (milestoneFloor === 0) return;
 
     const handler = () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
       dismissMilestone();
     };
 
@@ -65,18 +47,19 @@ export function MilestoneOverlay() {
   if (milestoneFloor === 0) return null;
 
   const data = MILESTONE_DATA[milestoneFloor];
-  if (!data) return null;
+  if (!data) {
+    // Unknown milestone floor — just dismiss to shop
+    dismissMilestone();
+    return null;
+  }
 
   const bonus = MILESTONE_BONUS[milestoneFloor] ?? 0;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center"
+      className="min-h-screen flex flex-col items-center justify-center px-4 relative"
       style={{ background: "rgba(0,0,0,0.88)" }}
-      onClick={() => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        dismissMilestone();
-      }}
+      onClick={() => dismissMilestone()}
     >
       {/* Scanline decoration */}
       <div
@@ -117,7 +100,7 @@ export function MilestoneOverlay() {
       {/* Bonus data */}
       {bonus > 0 && (
         <div className="mt-8 flex items-center gap-2 border border-cyber-cyan/30 px-6 py-3">
-          <span className="text-cyber-cyan text-2xl font-bold">◆</span>
+          <span className="text-cyber-cyan text-2xl font-bold">{"\u25C6"}</span>
           <span className="text-cyber-cyan font-bold uppercase tracking-widest text-lg">
             +{bonus} DATA
           </span>
