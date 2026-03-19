@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
+import { Coins } from "lucide-react";
 
 /**
  * Top bar HUD — visible during "playing", "shop", and "milestone" statuses.
@@ -96,8 +97,8 @@ export function HUD() {
         </div>
 
         {/* Credits */}
-        <div className="flex items-center gap-1 text-cyber-magenta glitch-subtle">
-          <span aria-hidden="true">{"\u2B26"}</span>
+        <div className="flex items-center gap-1 glitch-subtle" style={{ color: "var(--color-currency-credits)" }}>
+          <Coins size={14} />
           <span className="tabular-nums">
             {credits.toLocaleString()} CR
           </span>

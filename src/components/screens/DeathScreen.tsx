@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { getDataReward } from "@/data/balancing";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { Hexagon } from "lucide-react";
 
 /**
  * Death screen — shown when HP reaches 0.
@@ -109,7 +110,7 @@ export function DeathScreen() {
       <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm uppercase tracking-widest glitch-subtle">
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
-          label="MINIGAMES"
+          label="PROTOCOLS"
           value={`${minigamesWonThisRun}W / ${minigamesPlayedThisRun}P`}
         />
         <SummaryRow label="CREDITS EARNED" value={`${runScore} CR`} />
@@ -117,12 +118,12 @@ export function DeathScreen() {
 
       {/* Data breakdown */}
       <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
-        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={"\u25C6"} />
+        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
         {creditsSaved > 0 && (
           <BreakdownRow
             label="CREDITS SAVED"
             value={`+${creditsSaved}`}
-            suffix={"\u25C6"}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
             className="text-cyber-green/70"
           />
         )}
@@ -130,7 +131,7 @@ export function DeathScreen() {
           <BreakdownRow
             label="ACHIEVEMENT BONUS"
             value={`+${achievementBonus}`}
-            suffix={"\u25C6"}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
             className="text-cyber-cyan/70"
           />
         )}
@@ -138,7 +139,7 @@ export function DeathScreen() {
           <BreakdownRow
             label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
             value={`-${penaltyAmount}`}
-            suffix={"\u25C6"}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
             className="text-cyber-magenta/70"
           />
         )}
@@ -151,7 +152,7 @@ export function DeathScreen() {
         <BreakdownRow
           label="TOTAL"
           value={`${totalDataEarned}`}
-          suffix={"\u25C6"}
+          suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
           className="text-cyber-magenta font-bold text-sm"
         />
       </div>
@@ -212,13 +213,13 @@ function BreakdownRow({
 }: {
   label: string;
   value: string;
-  suffix: string;
+  suffix: React.ReactNode;
   className?: string;
 }) {
   return (
-    <div className={`flex justify-between items-baseline py-0.5 ${className || "text-white/60"}`}>
+    <div className={`flex justify-between items-center py-0.5 ${className || "text-white/60"}`}>
       <span>{label}</span>
-      <span className="tabular-nums">
+      <span className="tabular-nums flex items-center gap-1">
         {value} {suffix}
       </span>
     </div>

@@ -241,7 +241,7 @@ function CountdownPhase({
   return (
     <div className="text-center select-none">
       <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
-        FLOOR {floor} // MINIGAME {index + 1} OF {total}
+        FLOOR {floor} // PROTOCOL {index + 1} OF {total}
       </p>
       <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}

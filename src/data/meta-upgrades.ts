@@ -54,7 +54,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "credit-multiplier",
     name: "Credit Multiplier",
-    description: "Earn 10 / 20 / 30 % more credits from every minigame.",
+    description: "Earn 10 / 20 / 30 % more credits from every protocol.",
     category: "stat",
     maxTier: 3,
     prices: [100, 250, 500],
@@ -166,11 +166,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     requires: "quick-boot",
   },
 
-  // ── MINIGAME UNLOCK ───────────────────────────────────────────────────────
+  // ── PROTOCOL UNLOCK ──────────────────────────────────────────────────────
   {
     id: "find-symbol-license",
     name: "Find Symbol License",
-    description: "Unlocks the Find Symbol minigame for future runs.",
+    description: "Unlocks the Find Symbol protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -179,7 +179,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "wire-cutting-toolkit",
     name: "Wire Cutting Toolkit",
-    description: "Unlocks the Wire Cutting minigame for future runs.",
+    description: "Unlocks the Wire Cutting protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -188,7 +188,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "cipher-crack-license",
     name: "Cipher Crack License",
-    description: "Unlocks the Cipher Crack minigame for future runs.",
+    description: "Unlocks the Cipher Crack protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -197,7 +197,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "defrag-license",
     name: "Defrag License",
-    description: "Unlocks the Defrag minigame.",
+    description: "Unlocks the Defrag protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -206,7 +206,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "network-trace-license",
     name: "Network Trace License",
-    description: "Unlocks the Network Trace minigame.",
+    description: "Unlocks the Network Trace protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -215,7 +215,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "data-stream-license",
     name: "Data Stream License",
-    description: "Unlocks the Data Stream minigame.",
+    description: "Unlocks the Data Stream protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -224,7 +224,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "signal-echo-license",
     name: "Signal Echo License",
-    description: "Unlocks the Signal Echo minigame.",
+    description: "Unlocks the Signal Echo protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -233,7 +233,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "checksum-verify-license",
     name: "Checksum Verify License",
-    description: "Unlocks the Checksum Verify minigame.",
+    description: "Unlocks the Checksum Verify protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -242,7 +242,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "port-scan-license",
     name: "Port Scan License",
-    description: "Unlocks the Port Scan minigame.",
+    description: "Unlocks the Port Scan protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -251,7 +251,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "subnet-scan-license",
     name: "Subnet Scan License",
-    description: "Unlocks the Subnet Scan minigame.",
+    description: "Unlocks the Subnet Scan protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100
@@ -260,7 +260,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "cipher-crack-v2-license",
     name: "Cipher Crack V2 License",
-    description: "Unlocks the advanced Cipher Crack V2 minigame.",
+    description: "Unlocks the advanced Cipher Crack V2 protocol.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [0], // dynamic: 200 + (unlocksOwned) * 100

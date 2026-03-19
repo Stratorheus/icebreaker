@@ -4,6 +4,7 @@ import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { STARTING_MINIGAMES } from "@/types/game";
 import { cn } from "@/lib/utils";
 import type { MetaUpgrade } from "@/types/shop";
+import { Hexagon } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -45,8 +46,8 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
     },
   },
   "minigame-unlock": {
-    label: "MINIGAME LICENSES",
-    description: "Unlock new minigames — expands the pool, reduces repetition, grants +5 max HP per unlock, and increases credit earnings by +5% per unlock",
+    label: "PROTOCOL LICENSES",
+    description: "Unlock new protocols — expands the pool, reduces repetition, grants +5 max HP per unlock, and increases credit earnings by +5% per unlock",
     colors: {
       border: "border-cyber-magenta/40",
       text: "text-cyber-magenta",
@@ -57,7 +58,7 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
   },
   "game-specific": {
     label: "GAME MODULES",
-    description: "Minigame-specific advantages and assists",
+    description: "Protocol-specific advantages and assists",
     colors: {
       border: "border-cyber-orange/40",
       text: "text-cyber-orange",
@@ -227,8 +228,8 @@ export function MetaShop() {
           <span className="text-white/50 text-xs uppercase tracking-widest glitch-subtle">
             DATA BALANCE
           </span>
-          <span className="text-cyber-magenta font-bold text-xl tabular-nums">
-            {"\u25C6"} {data.toLocaleString()}
+          <span className="font-bold text-xl tabular-nums flex items-center gap-1.5" style={{ color: "var(--color-currency-data)" }}>
+            <Hexagon size={16} /> {data.toLocaleString()}
           </span>
         </div>
         {totalPurchasesMade > 0 && (
@@ -245,8 +246,18 @@ export function MetaShop() {
       <div className="w-full max-w-4xl space-y-10">
         {CATEGORY_ORDER.map((cat) => {
           const config = CATEGORIES[cat];
-          const upgrades = grouped.get(cat);
+          let upgrades = grouped.get(cat);
           if (!upgrades || upgrades.length === 0) return null;
+
+          // Filter game-specific upgrades: only show modules for unlocked minigames
+          if (cat === "game-specific") {
+            const unlockedSet = new Set(unlockedMinigames);
+            upgrades = upgrades.filter((u) => {
+              const mg = u.effects[0]?.minigame;
+              return !mg || unlockedSet.has(mg);
+            });
+            if (upgrades.length === 0) return null;
+          }
 
           return (
             <section key={cat}>
@@ -441,11 +452,12 @@ function UpgradeCard({
           {!isMaxed && nextPrice !== null && (
             <span
               className={cn(
-                "text-xs font-bold tabular-nums",
-                canAfford ? "text-cyber-magenta" : "text-white/20",
+                "text-xs font-bold tabular-nums flex items-center gap-1",
+                canAfford ? "" : "text-white/20",
               )}
+              style={canAfford ? { color: "var(--color-currency-data)" } : undefined}
             >
-              {"\u25C6"} {nextPrice}
+              <Hexagon size={10} /> {nextPrice}
             </span>
           )}
         </div>
@@ -517,7 +529,7 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "guaranteed-heal-shop":
       return "Guaranteed heal in floor 1 shop";
     case "unlock-minigame":
-      return "Unlocks minigame (+5 max HP, +5% credits)";
+      return "Unlocks protocol (+5 max HP, +5% credits)";
     case "death-penalty-reduction":
       return `-${Math.round(effect.value * 100)}% death penalty`;
     default:
