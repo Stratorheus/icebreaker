@@ -13,8 +13,8 @@ import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
+import { SignalEcho } from "@/components/minigames/SignalEcho";
 import {
-  SignalEchoPlaceholder,
   ChecksumVerifyPlaceholder,
   PortScanPlaceholder,
   SubnetScanPlaceholder,
@@ -207,15 +207,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "signal-echo": {
     title: "SIGNAL ECHO",
     rules: [
-      "A signal pattern plays as a sequence of highlighted cells",
-      "After the pattern plays, repeat it by selecting cells in order",
-      "Each round adds one more step to the pattern",
-      "Any wrong selection = immediate failure",
+      "4 colored panels (Up=Cyan, Right=Magenta, Down=Green, Left=Orange)",
+      "Watch the sequence light up, then repeat it with arrow keys or clicks",
+      "Each successful round adds one more step to the sequence",
+      "Any wrong input = immediate failure",
     ],
-    controls: "Click cells or use number keys to select positions",
+    controls: "Arrow keys or click the panels to repeat the sequence",
     tips: [
-      "Verbalize the pattern positions to aid memorisation",
-      "Higher difficulty increases pattern length and reduces replay time",
+      "Verbalize the directions as the sequence plays (e.g. 'up, left, down...')",
+      "Higher difficulty starts with longer sequences and faster display speed",
     ],
   },
   "checksum-verify": {
@@ -295,7 +295,7 @@ const MINIGAME_COMPONENTS: Record<
   "defrag": Defrag,
   "network-trace": NetworkTrace,
   "data-stream": DataStream,
-  "signal-echo": SignalEchoPlaceholder,
+  "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerifyPlaceholder,
   "port-scan": PortScanPlaceholder,
   "subnet-scan": SubnetScanPlaceholder,

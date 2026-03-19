@@ -17,8 +17,8 @@ import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
+import { SignalEcho } from "@/components/minigames/SignalEcho";
 import {
-  SignalEchoPlaceholder,
   ChecksumVerifyPlaceholder,
   PortScanPlaceholder,
   SubnetScanPlaceholder,
@@ -295,7 +295,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "defrag": Defrag,
   "network-trace": NetworkTrace,
   "data-stream": DataStream,
-  "signal-echo": SignalEchoPlaceholder,
+  "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerifyPlaceholder,
   "port-scan": PortScanPlaceholder,
   "subnet-scan": SubnetScanPlaceholder,
