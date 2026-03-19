@@ -27,7 +27,10 @@ export function DeathScreen() {
 
   // Base run data reward (no milestone bonus — milestones are already
   // awarded during completeMinigame() so including them here double-counts)
-  const baseDataEarned = getDataReward(floor);
+  // 1c. Data Siphon meta upgrade: +10/20/30% data
+  const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
+  const dataMultiplier = 1 + dataTier * 0.1;
+  const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)

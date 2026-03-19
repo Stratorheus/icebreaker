@@ -339,7 +339,12 @@ function MinigameRouter({
 }) {
   const inventory = useGameStore((s) => s.inventory);
   const difficulty = getDifficulty(floor);
-  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs;
+
+  // 1d. Overclock Chip meta upgrade: +1/2/3s to ALL minigame timers
+  const overclockTier = purchasedUpgrades["overclock-chip"] ?? 0;
+  const overclockBonus = overclockTier > 0 ? [1, 2, 3][overclockTier - 1] : 0;
+
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs + overclockBonus;
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics
