@@ -47,11 +47,15 @@ export function MilestoneOverlay() {
   if (milestoneFloor === 0) return null;
 
   const data = MILESTONE_DATA[milestoneFloor];
-  if (!data) {
-    // Unknown milestone floor — just dismiss to shop
-    dismissMilestone();
-    return null;
-  }
+
+  // Unknown milestone floor — dismiss via effect (not during render)
+  useEffect(() => {
+    if (milestoneFloor !== 0 && !MILESTONE_DATA[milestoneFloor]) {
+      dismissMilestone();
+    }
+  }, [milestoneFloor, dismissMilestone]);
+
+  if (!data) return null;
 
   const bonus = MILESTONE_BONUS[milestoneFloor] ?? 0;
 
