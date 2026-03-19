@@ -250,9 +250,10 @@ function LockedEntry({ type }: { type: MinigameType }) {
 // Codex screen
 // ---------------------------------------------------------------------------
 
-export function Codex() {
+export function Codex({ onBack }: { onBack?: () => void } = {}) {
   const setStatus = useGameStore((s) => s.setStatus);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
+  const handleBack = onBack ?? (() => setStatus("menu"));
 
   const unlockedSet = new Set(unlockedMinigames);
   const unlockedCount = unlockedMinigames.length;
@@ -326,8 +327,8 @@ export function Codex() {
         )}
       </div>
 
-      {/* Unlock hint — only show if some are locked */}
-      {unlockedCount < totalCount && (
+      {/* Unlock hint — only show if some are locked and not in pause context */}
+      {unlockedCount < totalCount && !onBack && (
         <div className="w-full max-w-2xl border border-dashed border-white/10 px-4 py-3 mb-6 text-center">
           <p className="text-white/20 text-[10px] uppercase tracking-widest">
             Locked protocols can be purchased in the{" "}
@@ -346,7 +347,7 @@ export function Codex() {
       <div className="w-full max-w-2xl">
         <button
           type="button"
-          onClick={() => setStatus("menu")}
+          onClick={handleBack}
           className="
             py-2 px-6
             text-sm uppercase tracking-widest font-mono
@@ -356,7 +357,7 @@ export function Codex() {
             cursor-pointer select-none
           "
         >
-          {">"}_&nbsp;BACK TO MENU
+          {">"}_&nbsp;{onBack ? "BACK TO PAUSE" : "BACK TO MENU"}
         </button>
       </div>
     </div>

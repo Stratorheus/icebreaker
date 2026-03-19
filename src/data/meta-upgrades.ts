@@ -85,6 +85,20 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     ],
   },
 
+  {
+    id: "data-recovery",
+    name: "Data Recovery",
+    description: "Reduces death penalty from 25% to 20 / 15 / 10 %.",
+    category: "stat",
+    maxTier: 3,
+    prices: [150, 300, 500],
+    effects: [
+      { type: "death-penalty-reduction", value: 0.05 },
+      { type: "death-penalty-reduction", value: 0.10 },
+      { type: "death-penalty-reduction", value: 0.15 },
+    ],
+  },
+
   // ── STARTING BONUS ────────────────────────────────────────────────────────
   {
     id: "quick-boot",
