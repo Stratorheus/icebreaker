@@ -3,6 +3,7 @@ import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getCredits, getDifficulty, getTimeLimit } from "@/data/balancing";
+import { getMinigameDisplayName } from "@/data/minigame-names";
 import { checkSkip } from "@/lib/power-up-effects";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
@@ -13,6 +14,16 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import {
+  DefragPlaceholder,
+  NetworkTracePlaceholder,
+  DataStreamPlaceholder,
+  SignalEchoPlaceholder,
+  ChecksumVerifyPlaceholder,
+  PortScanPlaceholder,
+  SubnetScanPlaceholder,
+  CipherCrackV2Placeholder,
+} from "@/components/minigames/PlaceholderGame";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -180,7 +191,7 @@ export function MinigameScreen() {
       <div className="flex-1 flex items-center justify-center px-4">
         {phase === "countdown" && (
           <CountdownPhase
-            minigameName={formatMinigameName(currentMinigame)}
+            minigameName={getMinigameDisplayName(currentMinigame)}
             value={countdownValue}
             floor={floor}
             index={currentMinigameIndex}
@@ -262,6 +273,14 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "mine-sweep": 15,
   "wire-cutting": 12,
   "cipher-crack": 12,
+  "defrag": 30,
+  "network-trace": 20,
+  "data-stream": 25,
+  "signal-echo": 20,
+  "checksum-verify": 15,
+  "port-scan": 15,
+  "subnet-scan": 20,
+  "cipher-crack-v2": 15,
 };
 
 const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/types/minigame").MinigameProps>> = {
@@ -273,6 +292,14 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
+  "defrag": DefragPlaceholder,
+  "network-trace": NetworkTracePlaceholder,
+  "data-stream": DataStreamPlaceholder,
+  "signal-echo": SignalEchoPlaceholder,
+  "checksum-verify": ChecksumVerifyPlaceholder,
+  "port-scan": PortScanPlaceholder,
+  "subnet-scan": SubnetScanPlaceholder,
+  "cipher-crack-v2": CipherCrackV2Placeholder,
 };
 
 /**
@@ -444,13 +471,6 @@ function ResultFlash({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatMinigameName(type: string): string {
-  return type
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 /** Brief contextual hint for each minigame type (shown when Hint Module is active). */
 function getMinigameHint(type: MinigameType): string {
   switch (type) {
@@ -470,5 +490,21 @@ function getMinigameHint(type: MinigameType): string {
       return "Cut wires in the order shown by the sequence.";
     case "cipher-crack":
       return "Reverse the letter shift to find the original word.";
+    case "defrag":
+      return "Drag fragmented blocks into the correct order.";
+    case "network-trace":
+      return "Follow the packet route through the network graph.";
+    case "data-stream":
+      return "Catch valid data packets, avoid corrupted ones.";
+    case "signal-echo":
+      return "Repeat the signal pattern in the correct sequence.";
+    case "checksum-verify":
+      return "Calculate and verify the checksum value.";
+    case "port-scan":
+      return "Identify the open ports from the scan results.";
+    case "subnet-scan":
+      return "Map the subnet by selecting active nodes.";
+    case "cipher-crack-v2":
+      return "Decode the advanced cipher using multiple layers.";
   }
 }

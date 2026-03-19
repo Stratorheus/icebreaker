@@ -10,6 +10,16 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import {
+  DefragPlaceholder,
+  NetworkTracePlaceholder,
+  DataStreamPlaceholder,
+  SignalEchoPlaceholder,
+  ChecksumVerifyPlaceholder,
+  PortScanPlaceholder,
+  SubnetScanPlaceholder,
+  CipherCrackV2Placeholder,
+} from "@/components/minigames/PlaceholderGame";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -152,6 +162,118 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
       "Substitution: map each letter using the shown key table",
     ],
   },
+  "defrag": {
+    title: "DEFRAG",
+    rules: [
+      "Fragmented data blocks are scattered across a grid",
+      "Drag or move blocks into the correct sequential order",
+      "Blocks snap into place when positioned correctly",
+      "Complete the defragmentation before time runs out",
+    ],
+    controls: "Arrow keys + ENTER to select/move, or drag with mouse",
+    tips: [
+      "Start from the edges and work inward for efficiency",
+      "Higher difficulty adds more blocks and decoy fragments",
+    ],
+  },
+  "network-trace": {
+    title: "NETWORK TRACE",
+    rules: [
+      "A network graph with nodes and links is displayed",
+      "Trace the highlighted packet route from source to destination",
+      "Select nodes in the correct order to follow the route",
+      "Wrong node selection = immediate failure",
+    ],
+    controls: "Click nodes or use Tab + ENTER to navigate",
+    tips: [
+      "Look for the pulsing source node to start your trace",
+      "Higher difficulty adds more branching paths and decoy routes",
+    ],
+  },
+  "data-stream": {
+    title: "DATA STREAM",
+    rules: [
+      "Data packets scroll across the screen in real time",
+      "Catch valid packets by pressing the correct key when aligned",
+      "Avoid corrupted packets — catching one causes failure",
+      "Catch all required valid packets to succeed",
+    ],
+    controls: "SPACE to catch, or click packets directly",
+    tips: [
+      "Valid packets have a subtle glow; corrupted ones flicker erratically",
+      "At higher difficulty the stream speeds up and more corrupted packets appear",
+    ],
+  },
+  "signal-echo": {
+    title: "SIGNAL ECHO",
+    rules: [
+      "A signal pattern plays as a sequence of highlighted cells",
+      "After the pattern plays, repeat it by selecting cells in order",
+      "Each round adds one more step to the pattern",
+      "Any wrong selection = immediate failure",
+    ],
+    controls: "Click cells or use number keys to select positions",
+    tips: [
+      "Verbalize the pattern positions to aid memorisation",
+      "Higher difficulty increases pattern length and reduces replay time",
+    ],
+  },
+  "checksum-verify": {
+    title: "CHECKSUM VERIFY",
+    rules: [
+      "A data block with a target checksum is displayed",
+      "Calculate the correct checksum from the shown values",
+      "Type the computed checksum to verify the data integrity",
+      "Wrong answer = failure; partial attempts are allowed",
+    ],
+    controls: "Keyboard — type the checksum digits",
+    tips: [
+      "Addition-based checksums: sum all digits, take modulus",
+      "At higher difficulty the data blocks are longer and operations more complex",
+    ],
+  },
+  "port-scan": {
+    title: "PORT SCAN",
+    rules: [
+      "A list of ports with status indicators is shown",
+      "Identify and select all open ports from the scan results",
+      "Selecting a closed or filtered port = immediate failure",
+      "Mark all open ports to complete the scan",
+    ],
+    controls: "Click ports or use number keys to select",
+    tips: [
+      "Open ports show a steady signal; closed ports show static",
+      "Higher difficulty adds more ambiguous port states to confuse you",
+    ],
+  },
+  "subnet-scan": {
+    title: "SUBNET SCAN",
+    rules: [
+      "A subnet map with nodes is displayed",
+      "Active nodes pulse briefly during a preview phase",
+      "After preview, select all active nodes from memory",
+      "Wrong selection or missing a node = failure",
+    ],
+    controls: "Click nodes or use Arrow keys + ENTER",
+    tips: [
+      "Group active nodes by quadrant during the preview phase",
+      "Higher difficulty increases node count and shortens preview time",
+    ],
+  },
+  "cipher-crack-v2": {
+    title: "CIPHER CRACK V2",
+    rules: [
+      "An advanced multi-layer cipher is applied to the plaintext",
+      "Decode each layer in sequence — substitution, then transposition",
+      "Type the fully decoded word letter by letter",
+      "Any mistake at any layer = immediate failure",
+    ],
+    controls: "Keyboard — type the decoded letters",
+    tips: [
+      "Solve the outermost cipher layer first, then work inward",
+      "The hint panel shows which cipher methods are stacked",
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -170,6 +292,14 @@ const MINIGAME_COMPONENTS: Record<
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
+  "defrag": DefragPlaceholder,
+  "network-trace": NetworkTracePlaceholder,
+  "data-stream": DataStreamPlaceholder,
+  "signal-echo": SignalEchoPlaceholder,
+  "checksum-verify": ChecksumVerifyPlaceholder,
+  "port-scan": PortScanPlaceholder,
+  "subnet-scan": SubnetScanPlaceholder,
+  "cipher-crack-v2": CipherCrackV2Placeholder,
 };
 
 // ---------------------------------------------------------------------------

@@ -9,7 +9,15 @@ export type MinigameType =
   | "find-symbol"
   | "mine-sweep"
   | "wire-cutting"
-  | "cipher-crack";
+  | "cipher-crack"
+  | "defrag"
+  | "network-trace"
+  | "data-stream"
+  | "signal-echo"
+  | "checksum-verify"
+  | "port-scan"
+  | "subnet-scan"
+  | "cipher-crack-v2";
 
 export const STARTING_MINIGAMES: MinigameType[] = [
   "slash-timing",
@@ -23,6 +31,14 @@ export const UNLOCKABLE_MINIGAMES: MinigameType[] = [
   "find-symbol",
   "wire-cutting",
   "cipher-crack",
+  "defrag",
+  "network-trace",
+  "data-stream",
+  "signal-echo",
+  "checksum-verify",
+  "port-scan",
+  "subnet-scan",
+  "cipher-crack-v2",
 ];
 
 export interface PowerUpInstance {

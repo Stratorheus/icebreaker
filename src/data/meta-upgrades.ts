@@ -194,6 +194,79 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [300],
     effects: [{ type: "unlock-minigame", value: 1, minigame: "cipher-crack" }],
   },
+  {
+    id: "defrag-license",
+    name: "Defrag License",
+    description: "Unlocks the Defrag minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "defrag" }],
+  },
+  {
+    id: "network-trace-license",
+    name: "Network Trace License",
+    description: "Unlocks the Network Trace minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "network-trace" }],
+  },
+  {
+    id: "data-stream-license",
+    name: "Data Stream License",
+    description: "Unlocks the Data Stream minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "data-stream" }],
+  },
+  {
+    id: "signal-echo-license",
+    name: "Signal Echo License",
+    description: "Unlocks the Signal Echo minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "signal-echo" }],
+  },
+  {
+    id: "checksum-verify-license",
+    name: "Checksum Verify License",
+    description: "Unlocks the Checksum Verify minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "checksum-verify" }],
+  },
+  {
+    id: "port-scan-license",
+    name: "Port Scan License",
+    description: "Unlocks the Port Scan minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "port-scan" }],
+  },
+  {
+    id: "subnet-scan-license",
+    name: "Subnet Scan License",
+    description: "Unlocks the Subnet Scan minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "subnet-scan" }],
+  },
+  {
+    id: "cipher-crack-v2-license",
+    name: "Cipher Crack V2 License",
+    description: "Unlocks the advanced Cipher Crack V2 minigame.",
+    category: "minigame-unlock",
+    maxTier: 1,
+    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
+    effects: [{ type: "unlock-minigame", value: 1, minigame: "cipher-crack-v2" }],
+    requires: "cipher-crack-license",
+  },
 
   // ── GAME-SPECIFIC ─────────────────────────────────────────────────────────
   {
