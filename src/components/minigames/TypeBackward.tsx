@@ -22,12 +22,17 @@ function getWordPool(difficulty: number): readonly string[] {
 }
 
 /**
- * TypeBackward -- word-reversal typing minigame (redesigned).
+ * TypeBackward -- word-reversal typing minigame.
  *
- * ALL reversed words are displayed at the top of the screen.
- * The player reads each reversed word and types it exactly as shown,
- * working through them one by one. Wrong character = immediate fail.
- * Complete all words to succeed.
+ * Mechanic:
+ * 1. Original words are picked (e.g. ["kernel", "proxy", "cache"])
+ * 2. Each word is mirrored/reversed (e.g. ["lenrek", "yxorp", "ehcac"])
+ * 3. The mirrored words are displayed in REVERSE order: ["ehcac", "yxorp", "lenrek"]
+ * 4. Player types the ORIGINAL (un-mirrored) word for each displayed word,
+ *    starting from the first displayed mirrored word.
+ *    So they type: "cache" (for "ehcac"), then "proxy" (for "yxorp"), then "kernel" (for "lenrek")
+ *
+ * Wrong character = immediate fail. Complete all words to succeed.
  */
 export function TypeBackward(props: MinigameProps) {
   const { difficulty } = props;
@@ -42,21 +47,34 @@ export function TypeBackward(props: MinigameProps) {
   const wordCount = Math.round(2 + difficulty * 3);
 
   // Generate word sequence on mount
-  const words = useMemo(() => {
+  const originalWords = useMemo(() => {
     const pool = getWordPool(difficulty);
     return pickRandom(pool, wordCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The reversed version of each word (what is displayed and what the player types)
-  const reversedWords = useMemo(
-    () => words.map((w) => w.split("").reverse().join("")),
-    [words],
+  // Mirror each word
+  const mirroredWords = useMemo(
+    () => originalWords.map((w) => w.split("").reverse().join("")),
+    [originalWords],
   );
 
-  // Current word index
+  // Display order: reversed list of mirrored words
+  // displayWords[0] = last mirrored word, displayWords[N-1] = first mirrored word
+  const displayWords = useMemo(() => [...mirroredWords].reverse(), [mirroredWords]);
+
+  // The expected answers: un-mirror each displayed word (i.e. the original word
+  // corresponding to each displayed mirrored word, in display order)
+  // displayWords[i] is mirroredWords[N-1-i], which is originalWords[N-1-i] reversed.
+  // So the answer for displayWords[i] is originalWords[N-1-i].
+  const expectedAnswers = useMemo(
+    () => displayWords.map((dw) => dw.split("").reverse().join("")),
+    [displayWords],
+  );
+
+  // Current word index (in display order)
   const [wordIndex, setWordIndex] = useState(0);
-  // Current character position within the current reversed word
+  // Current character position within the current answer
   const [charIndex, setCharIndex] = useState(0);
 
   // Refs for use inside the keydown handler (avoids stale closures)
@@ -84,17 +102,17 @@ export function TypeBackward(props: MinigameProps) {
 
       const wi = wordIndexRef.current;
       const ci = charIndexRef.current;
-      const reversed = reversedWords[wi];
-      const expected = reversed[ci];
+      const answer = expectedAnswers[wi];
+      const expected = answer[ci];
 
       if (key === expected) {
         // Correct character
         const nextChar = ci + 1;
 
-        if (nextChar >= reversed.length) {
+        if (nextChar >= answer.length) {
           // Word complete -- advance to next word or finish
           const nextWord = wi + 1;
-          if (nextWord >= words.length) {
+          if (nextWord >= expectedAnswers.length) {
             // All words done -- success!
             resolvedRef.current = true;
             complete(true);
@@ -111,7 +129,7 @@ export function TypeBackward(props: MinigameProps) {
         fail();
       }
     },
-    [isActive, reversedWords, words.length, complete, fail],
+    [isActive, expectedAnswers, complete, fail],
   );
 
   // Attach keydown listener for ALL letter input
@@ -120,10 +138,10 @@ export function TypeBackward(props: MinigameProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  // Current word's typed/remaining for input display
-  const currentReversed = reversedWords[wordIndex] ?? "";
-  const typedPortion = currentReversed.slice(0, charIndex);
-  const remainingPortion = currentReversed.slice(charIndex);
+  // Current answer's typed/remaining for input display
+  const currentAnswer = expectedAnswers[wordIndex] ?? "";
+  const typedPortion = currentAnswer.slice(0, charIndex);
+  const remainingPortion = currentAnswer.slice(charIndex);
 
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
@@ -132,13 +150,13 @@ export function TypeBackward(props: MinigameProps) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-lg">
-        {/* All reversed words displayed at top */}
+        {/* All mirrored words displayed in reverse order */}
         <div className="text-center">
           <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
-            Type each word as shown
+            Unscramble each mirrored word
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            {reversedWords.map((rev, i) => {
+            {displayWords.map((mirrored, i) => {
               const isCompleted = i < wordIndex;
               const isCurrent = i === wordIndex;
               const isPending = i > wordIndex;
@@ -156,14 +174,14 @@ export function TypeBackward(props: MinigameProps) {
                         isCompleted
                           ? "text-white/25 line-through decoration-white/20"
                           : isCurrent
-                            ? "text-cyber-cyan"
+                            ? "text-cyber-magenta"
                             : isPending
                               ? "text-white/40"
                               : ""
                       }
                     `}
                   >
-                    {rev}
+                    {mirrored}
                   </span>
                 </div>
               );
@@ -176,13 +194,13 @@ export function TypeBackward(props: MinigameProps) {
 
         {/* Word counter */}
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          Word {wordIndex + 1}/{words.length}
+          Word {wordIndex + 1}/{displayWords.length}
         </p>
 
         {/* Typed progress display */}
         <div className="text-center">
           <p className="text-white/30 text-xs uppercase tracking-widest mb-3">
-            Your input
+            Type the original word
           </p>
           <div className="flex items-center justify-center min-h-[3.5rem]">
             <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl tracking-wider">
@@ -213,9 +231,9 @@ export function TypeBackward(props: MinigameProps) {
         </div>
 
         {/* Completed words indicator dots */}
-        {words.length > 1 && (
+        {displayWords.length > 1 && (
           <div className="flex items-center gap-2 mt-2">
-            {words.map((_, i) => (
+            {displayWords.map((_, i) => (
               <div
                 key={i}
                 className={`
@@ -237,7 +255,7 @@ export function TypeBackward(props: MinigameProps) {
       {/* Instruction */}
       <div className="mt-6 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          Read the reversed word and type it exactly &mdash; wrong key = fail
+          Read the mirrored word, type the original &mdash; wrong key = fail
         </p>
       </div>
     </div>

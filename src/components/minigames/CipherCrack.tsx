@@ -8,7 +8,7 @@ import { TECH_WORDS } from "@/data/words";
 // Cipher helpers
 // ---------------------------------------------------------------------------
 
-type CipherMethod = "rot" | "reverse-rot" | "substitution";
+type CipherMethod = "letter-swap" | "rot" | "reverse-rot" | "substitution";
 
 /** Apply ROT-N encryption to a lowercase letter. */
 function rotChar(ch: string, n: number): string {
@@ -51,6 +51,17 @@ function substitutionEncrypt(word: string, n: number): string {
     .join("");
 }
 
+/**
+ * Letter-swap encryption: swap two adjacent letters at positions pos and pos+1.
+ * `rotN` is repurposed as the swap position (0-based).
+ */
+function letterSwapEncrypt(word: string, pos: number): string {
+  const chars = [...word];
+  const safePos = Math.min(pos, chars.length - 2);
+  [chars[safePos], chars[safePos + 1]] = [chars[safePos + 1], chars[safePos]];
+  return chars.join("");
+}
+
 /** Encrypt `word` using the given method + parameters. */
 function encrypt(
   word: string,
@@ -58,6 +69,8 @@ function encrypt(
   rotN: number,
 ): string {
   switch (method) {
+    case "letter-swap":
+      return letterSwapEncrypt(word, rotN);
     case "rot":
       return rotWord(word, rotN);
     case "reverse-rot":
@@ -70,6 +83,8 @@ function encrypt(
 /** Build the method label shown to the player. */
 function buildMethodLabel(method: CipherMethod, rotN: number): string {
   switch (method) {
+    case "letter-swap":
+      return `SWAP positions ${rotN + 1} and ${rotN + 2}`;
     case "rot":
       return `SHIFTED +${rotN}`;
     case "reverse-rot":
@@ -84,28 +99,45 @@ function buildMethodLabel(method: CipherMethod, rotN: number): string {
  * Returns an array of example strings for multi-line display.
  */
 function buildExamples(method: CipherMethod, rotN: number): string[] {
-  // Shift examples: A -> shifted, B -> shifted, C -> shifted
-  const a = String.fromCharCode(65 + rotN);
-  const b = String.fromCharCode(66 + rotN);
-  const c = String.fromCharCode(67 + rotN);
-  const shiftExample = `Shift: A\u2192${a}, B\u2192${b}, C\u2192${c}`;
-
   switch (method) {
-    case "rot":
-      // Simple shift — one example line is enough
+    case "letter-swap": {
+      const p1 = rotN + 1;
+      const p2 = rotN + 2;
+      return [
+        `Letters at positions ${p1} and ${p2} have been swapped`,
+        `To decode: swap them back`,
+      ];
+    }
+    case "rot": {
+      // Shift examples: A -> shifted, B -> shifted, C -> shifted
+      const a = String.fromCharCode(65 + rotN);
+      const b = String.fromCharCode(66 + rotN);
+      const c = String.fromCharCode(67 + rotN);
+      const shiftExample = `Shift: A\u2192${a}, B\u2192${b}, C\u2192${c}`;
       return [shiftExample, `To decode: shift each letter back by ${rotN}`];
-    case "reverse-rot":
+    }
+    case "reverse-rot": {
+      const a = String.fromCharCode(65 + rotN);
+      const b = String.fromCharCode(66 + rotN);
+      const c = String.fromCharCode(67 + rotN);
+      const shiftExample = `Shift: A\u2192${a}, B\u2192${b}, C\u2192${c}`;
       return [
         shiftExample,
         "Order: word was reversed, then shifted",
         `To decode: shift back by ${rotN}, then reverse`,
       ];
-    case "substitution":
+    }
+    case "substitution": {
+      const a = String.fromCharCode(65 + rotN);
+      const b = String.fromCharCode(66 + rotN);
+      const c = String.fromCharCode(67 + rotN);
+      const shiftExample = `Shift: A\u2192${a}, B\u2192${b}, C\u2192${c}`;
       return [
         "Vowels: A\u2192E\u2192I\u2192O\u2192U\u2192A",
         shiftExample + " (consonants only)",
         `To decode: shift consonants back by ${rotN}, rotate vowels back`,
       ];
+    }
   }
 }
 
@@ -125,15 +157,36 @@ function getWordPool(difficulty: number): readonly string[] {
 
 /** Choose cipher method based on difficulty. */
 function pickMethod(difficulty: number): CipherMethod {
-  if (difficulty < 0.4) return "rot";
-  if (difficulty <= 0.7) return "reverse-rot";
+  if (difficulty < 0.2) return "letter-swap";
+  if (difficulty < 0.35) return "rot"; // ROT-1 or ROT-2 only
+  if (difficulty < 0.6) return "rot"; // ROT-3 to ROT-7
+  if (difficulty <= 0.8) return "reverse-rot";
   return "substitution";
 }
 
-/** Choose ROT value scaled by difficulty. */
-function pickRotN(difficulty: number): number {
-  const min = Math.round(1 + difficulty * 2); // 1-3
-  const max = Math.round(3 + difficulty * 10); // 3-13
+/**
+ * Choose ROT value (or swap position for letter-swap) scaled by difficulty.
+ * For letter-swap, returns a 0-based swap position.
+ * For ROT at very low difficulty (d < 0.35), returns 1-2.
+ * For ROT at medium difficulty (d 0.35-0.6), returns 3-7.
+ * For higher ciphers, returns 3-13.
+ */
+function pickRotN(difficulty: number, method: CipherMethod, wordLength: number): number {
+  if (method === "letter-swap") {
+    // Random position within the word (0 to wordLength-2)
+    return Math.floor(Math.random() * Math.max(1, wordLength - 1));
+  }
+  if (difficulty < 0.35) {
+    // Very small shifts: 1-2 only
+    return Math.floor(Math.random() * 2) + 1;
+  }
+  if (difficulty < 0.6) {
+    // Medium shifts: 3-7
+    return Math.floor(Math.random() * 5) + 3;
+  }
+  // Hard shifts: 3-13
+  const min = 3;
+  const max = Math.round(3 + difficulty * 10);
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
@@ -167,7 +220,7 @@ export function CipherCrack(props: MinigameProps) {
     const pool = getWordPool(difficulty);
     const word = pickOne(pool);
     const method = pickMethod(difficulty);
-    const rotN = pickRotN(difficulty);
+    const rotN = pickRotN(difficulty, method, word.length);
     const encrypted = encrypt(word, method, rotN);
     const methodLabel = buildMethodLabel(method, rotN);
     const examples = buildExamples(method, rotN);

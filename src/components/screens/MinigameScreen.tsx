@@ -339,7 +339,7 @@ function MinigameRouter({
 }) {
   const inventory = useGameStore((s) => s.inventory);
   const difficulty = getDifficulty(floor);
-  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty) + bonusTimeSecs;
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs;
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics
@@ -405,7 +405,7 @@ function getMinigameHint(type: MinigameType): string {
     case "close-brackets":
       return "Type closing brackets in REVERSE order.";
     case "type-backward":
-      return "Type each word backwards, letter by letter.";
+      return "Read mirrored words, type the originals in order.";
     case "match-arrows":
       return "Press the arrow key that matches the revealed arrow.";
     case "find-symbol":

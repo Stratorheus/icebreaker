@@ -157,8 +157,8 @@ export function CloseBrackets(props: MinigameProps) {
             {/* Separator + cursor area */}
             <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-1" />
 
-            {/* Typed closers (appear in reverse -- last typed is leftmost) */}
-            {[...typedClosers].reverse().map((closer, i) => (
+            {/* Typed closers (left to right in order typed) */}
+            {typedClosers.map((closer, i) => (
               <span
                 key={`c-${i}`}
                 className="text-cyber-green transition-all duration-150"

@@ -60,7 +60,7 @@ interface GeneratedPuzzle {
  * 3. At higher difficulty, fill remaining cells with similar-looking codes.
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
-  const cols = Math.round(4 + difficulty * 2);
+  const cols = Math.round(3 + difficulty * 3);
   const rows = cols; // square grid
   const totalCells = rows * cols;
   const seqLen = Math.round(2 + difficulty * 3);
