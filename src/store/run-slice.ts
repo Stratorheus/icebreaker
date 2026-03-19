@@ -34,7 +34,7 @@ export interface RunSlice {
   trainingMinigame: MinigameType | null;
   /** Extra seconds added to every minigame timer on floor 1 (from Pre-Loaded meta upgrade). */
   bonusTimeSecs: number;
-  /** Set to a milestone floor number (5/10/15/20) to trigger the overlay; 0 = no milestone. */
+  /** Set to a milestone floor number (every 5th floor) to trigger the overlay; 0 = no milestone. */
   milestoneFloor: number;
   /** Tracks the status before entering pause, so we can resume to the correct screen. */
   previousStatus: GameStatus | null;
@@ -146,8 +146,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
     const startHp = actualMaxHp;
 
-    // head-start: +50 starting credits
-    const startCredits = tier("head-start") > 0 ? 50 : 0;
+    // Base starting credits: every player gets 25 CR so floor-1 vendor is usable
+    // head-start: +50 bonus credits on top of base
+    const startCredits = 25 + (tier("head-start") > 0 ? 50 : 0);
 
     // pre-loaded: +1 s on every timer during floor 1
     const preLoadedUpgrade = META_UPGRADE_POOL.find((u) => u.id === "pre-loaded");
@@ -218,6 +219,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const speedBonus = speedTaxTier > 0 ? Math.round(baseCredits * speedTaxTier * 0.05) : 0;
 
     const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
+
+    // Per-minigame data drip: small data reward per win, scales with floor
+    const minigameDataDrip = Math.round(state.floor * 0.5);
+    if (minigameDataDrip > 0) {
+      state.addData(minigameDataDrip);
+    }
+
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
@@ -402,7 +410,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // 1c. Data Siphon meta upgrade: +10/20/30% data
     const dataTier = state.purchasedUpgrades["data-siphon"] ?? 0;
     const dataMultiplier = 1 + dataTier * 0.1;
-    const dataReward = Math.round(getDataReward(state.floor) * dataMultiplier);
+    const baseDataReward = Math.round(getDataReward(state.floor) * dataMultiplier);
+    // Credits → Data conversion at 15% rate (same as death screen)
+    const creditsData = Math.floor(state.credits * 0.15);
+    const dataReward = baseDataReward + creditsData;
     if (dataReward > 0) {
       state.addData(dataReward);
     }

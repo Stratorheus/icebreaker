@@ -19,7 +19,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "timer-extension",
     name: "Timer Extension",
-    description: "Each purchase gives +0.2s to all minigame timers. Infinitely stackable.",
+    description: "Increases all timers by 3% per purchase (multiplicative).",
     category: "stat",
     maxTier: 999,
     prices: [100], // dynamic pricing via getStackablePrice()
@@ -29,7 +29,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "difficulty-reducer",
     name: "Difficulty Reducer",
-    description: "Each purchase reduces effective difficulty by 0.02. Infinitely stackable.",
+    description: "Reduces effective difficulty by 5% per purchase (multiplicative). Diminishing returns.",
     category: "stat",
     maxTier: 999,
     prices: [150], // dynamic pricing via getStackablePrice()

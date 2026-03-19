@@ -34,15 +34,12 @@ export function getDataReward(floor: number): number {
   return floor * 10;
 }
 
-/** Bonus data awarded at milestone floors. */
+/** Bonus data awarded at milestone floors. Every 5th floor gets a milestone, scaling linearly. */
 export function getMilestoneBonus(floor: number): number {
-  switch (floor) {
-    case 5:  return 50;
-    case 10: return 100;
-    case 15: return 200;
-    case 20: return 500;
-    default: return 0;
+  if (floor > 0 && floor % 5 === 0) {
+    return floor * 5; // floor 5=25, 10=50, 15=75, 20=100, 50=250, 100=500
   }
+  return 0;
 }
 
 /** Price of a run-shop item scaled to the current floor depth. Quadratic scaling keeps late-game shops expensive. */
