@@ -73,15 +73,25 @@ type Phase = "display" | "input" | "success" | "fail";
  *   totalRounds = Math.round(3 + difficulty * 2)
  */
 export function SignalEcho(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("signal-echo", props);
 
   const resolvedRef = useRef(false);
 
+  // Slow Replay module: 30% slower display
+  const hasSlowReplay = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "signal-echo",
+    );
+  }, [activePowerUps]);
+
   // ── Difficulty parameters (stable on mount) ────────────────────────
   const params = useMemo(() => {
     const startLength = Math.round(3 + difficulty * 2);
-    const displayMs = Math.round(800 - difficulty * 500);
+    let displayMs = Math.round(800 - difficulty * 500);
+    if (hasSlowReplay) {
+      displayMs = Math.round(displayMs * 1.3); // 30% slower
+    }
     const totalRounds = Math.round(3 + difficulty * 2);
     return { startLength, displayMs, totalRounds };
     // eslint-disable-next-line react-hooks/exhaustive-deps

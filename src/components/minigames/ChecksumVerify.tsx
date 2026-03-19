@@ -78,10 +78,17 @@ function getExpressionCount(difficulty: number): number {
  *   d=1.0: single-digit multiplication or two-digit add, 5 expressions
  */
 export function ChecksumVerify(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("checksum-verify", props);
 
   const resolvedRef = useRef(false);
+
+  // Calculator module: show intermediate result hint
+  const hasCalculator = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "checksum-verify",
+    );
+  }, [activePowerUps]);
 
   // -- Generate all expressions on mount (stable) --
   const expressions = useMemo(() => {
@@ -280,6 +287,11 @@ export function ChecksumVerify(props: MinigameProps) {
               style={{ textShadow: "0 0 12px rgba(0, 255, 255, 0.4)" }}
             >
               {expr.display}
+              {hasCalculator && (
+                <span className="text-cyber-green/40 text-lg ml-3">
+                  = {expr.answer < 0 ? "-" : ""}{Math.abs(expr.answer).toString()[0]}...
+                </span>
+              )}
             </p>
           </div>
 

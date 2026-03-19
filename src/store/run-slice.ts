@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getDataReward, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { RUN_SHOP_POOL } from "@/data/power-ups";

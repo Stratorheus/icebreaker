@@ -3,7 +3,7 @@ import { ACHIEVEMENT_POOL } from "@/data/achievements";
 import { getMinigameDisplayName } from "@/data/minigame-names";
 import type { MinigameType, PlayerStats } from "@/types/game";
 import type { Achievement } from "@/types/shop";
-import { Coins, Hexagon } from "lucide-react";
+import { Hexagon } from "lucide-react";
 
 // ---------------------------------------------------------------------------
 // Helpers

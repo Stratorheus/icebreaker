@@ -273,10 +273,17 @@ function getMaskDetail(prefix: number): string[] {
  *   d>0.6:   6 addresses, 3-4 correct, /20 /22 /24
  */
 export function SubnetScan(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("subnet-scan", props);
 
   const resolvedRef = useRef(false);
+
+  // CIDR Helper module: show expanded IP range
+  const hasCidrHelper = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "subnet-scan",
+    );
+  }, [activePowerUps]);
 
   // -- Difficulty params (stable on mount) --
   const params = useMemo(
@@ -428,6 +435,11 @@ export function SubnetScan(props: MinigameProps) {
           >
             {puzzle.cidrDisplay}
           </span>
+          {hasCidrHelper && (
+            <p className="text-cyber-green/50 text-xs font-mono mt-1">
+              {intToIp((ipToInt(puzzle.network)) >>> 0)} — {intToIp(((ipToInt(puzzle.network)) | (~((puzzle.prefix === 0 ? 0 : (0xffffffff << (32 - puzzle.prefix)) >>> 0)) >>> 0)) >>> 0)}
+            </p>
+          )}
         </div>
 
         {/* Counter */}

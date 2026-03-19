@@ -50,8 +50,8 @@ export function TypeBackward(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
-  // 3d. Reverse Trainer (minigame-specific): show word length
-  const showWordLength = useMemo(() => {
+  // 3d. Reverse Trainer (minigame-specific): show words in normal order (not reversed)
+  const hasReverseTrainer = useMemo(() => {
     return activePowerUps.some(
       (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "type-backward",
     );
@@ -73,9 +73,15 @@ export function TypeBackward(props: MinigameProps) {
     [originalWords],
   );
 
-  // Display order: reversed list of mirrored words
+  // Display order: reversed list of mirrored words (or normal order if Reverse Trainer owned)
   // displayWords[0] = last mirrored word, displayWords[N-1] = first mirrored word
-  const displayWords = useMemo(() => [...mirroredWords].reverse(), [mirroredWords]);
+  const displayWords = useMemo(() => {
+    if (hasReverseTrainer) {
+      // Reverse Trainer: show words in normal (un-mirrored) order, reversed list
+      return [...originalWords].reverse();
+    }
+    return [...mirroredWords].reverse();
+  }, [mirroredWords, originalWords, hasReverseTrainer]);
 
   // The expected answers: un-mirror each displayed word (i.e. the original word
   // corresponding to each displayed mirrored word, in display order)
@@ -212,15 +218,15 @@ export function TypeBackward(props: MinigameProps) {
         </p>
 
         {/* Word hints from meta upgrades */}
-        {(hasFirstLetterHint || showWordLength) && currentAnswer && (
+        {hasFirstLetterHint && currentAnswer && (
           <div className="flex items-center gap-4 text-xs uppercase tracking-widest text-cyber-green/60">
-            {hasFirstLetterHint && (
-              <span>First letter: <strong className="text-cyber-green">{currentAnswer[0]}</strong></span>
-            )}
-            {showWordLength && (
-              <span>Length: <strong className="text-cyber-green">{currentAnswer.length}</strong></span>
-            )}
+            <span>First letter: <strong className="text-cyber-green">{currentAnswer[0]}</strong></span>
           </div>
+        )}
+        {hasReverseTrainer && (
+          <p className="text-cyber-green/50 text-[10px] uppercase tracking-widest">
+            REVERSE TRAINER ACTIVE — WORDS SHOWN NORMALLY
+          </p>
         )}
 
         {/* Typed progress display */}

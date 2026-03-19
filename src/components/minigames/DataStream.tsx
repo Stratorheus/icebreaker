@@ -149,8 +149,15 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
  * Fail: timeout only.
  */
 export function DataStream(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, isActive } = useMinigame("data-stream", props);
+
+  // Node Beacon module: next node pulses more prominently
+  const hasNodeBeacon = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "data-stream",
+    );
+  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -415,7 +422,9 @@ export function DataStream(props: MinigameProps) {
                 const checkpointClass = isVisited
                   ? "bg-cyber-green/15 border-cyber-green/40"
                   : isNextTarget
-                    ? "bg-cyber-magenta/20 border-cyber-magenta/60 animate-pulse"
+                    ? hasNodeBeacon
+                      ? "bg-cyber-magenta/30 border-cyber-magenta/80 animate-pulse shadow-[0_0_16px_rgba(255,0,102,0.5)]"
+                      : "bg-cyber-magenta/20 border-cyber-magenta/60 animate-pulse"
                     : "bg-cyber-magenta/10 border-cyber-magenta/30";
 
                 cellClass = checkpointClass;

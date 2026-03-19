@@ -341,8 +341,8 @@ function buildMetaPowerUps(
       break;
 
     case "mine-sweep":
-      // mine-echo → mines-visible (1 / 2 / 3 mines shown during preview)
-      addIfOwned("mine-echo", "minigame-specific", [1, 2, 3], "mine-sweep");
+      // mine-echo → mines-visible (20% / 35% / 50% of mines shown during preview)
+      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.35, 0.50], "mine-sweep");
       break;
 
     case "find-symbol":
@@ -353,8 +353,8 @@ function buildMetaPowerUps(
       break;
 
     case "match-arrows":
-      // arrow-preview → peek-ahead (1 / 2 / 3 arrows previewed)
-      addIfOwned("arrow-preview", "peek-ahead", [1, 2, 3], "match-arrows");
+      // arrow-preview → peek-ahead (15% / 25% / 40% of sequence previewed)
+      addIfOwned("arrow-preview", "peek-ahead", [0.15, 0.25, 0.40], "match-arrows");
       break;
 
     case "type-backward":
@@ -379,6 +379,41 @@ function buildMetaPowerUps(
     case "slash-timing":
       // slash-window → window-extend (0.25 wider)
       addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
+      break;
+
+    case "defrag":
+      // defrag-safe-start → first click guaranteed safe
+      addIfOwned("defrag-safe-start", "minigame-specific", [1], "defrag");
+      break;
+
+    case "network-trace":
+      // network-trace-highlight → briefly flash correct path (1000ms)
+      addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");
+      break;
+
+    case "data-stream":
+      // data-stream-beacon → next node pulses
+      addIfOwned("data-stream-beacon", "minigame-specific", [1], "data-stream");
+      break;
+
+    case "signal-echo":
+      // signal-echo-slow → 30% slower display
+      addIfOwned("signal-echo-slow", "minigame-specific", [0.3], "signal-echo");
+      break;
+
+    case "checksum-verify":
+      // checksum-calculator → show intermediate hint
+      addIfOwned("checksum-calculator", "minigame-specific", [1], "checksum-verify");
+      break;
+
+    case "port-scan":
+      // port-scan-deep → flash twice
+      addIfOwned("port-scan-deep", "minigame-specific", [2], "port-scan");
+      break;
+
+    case "subnet-scan":
+      // subnet-cidr-helper → show expanded IP range
+      addIfOwned("subnet-cidr-helper", "minigame-specific", [1], "subnet-scan");
       break;
   }
 

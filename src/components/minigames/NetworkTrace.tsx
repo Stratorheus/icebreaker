@@ -18,11 +18,57 @@ import { generateMaze } from "@/lib/maze-generator";
  * - Cell size: 5×5 (d=0) → 11×11 (d=1) via `Math.round(5 + difficulty * 6)`
  * - Grid size: (2*cells+1) × (2*cells+1)
  */
+/** BFS to find shortest path through maze grid. Returns set of "r,c" keys. */
+function solveMaze(grid: boolean[][], start: [number, number], end: [number, number]): Set<string> {
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const key = (r: number, c: number) => `${r},${c}`;
+  const visited = new Set<string>();
+  const parent = new Map<string, string | null>();
+  const queue: [number, number][] = [start];
+  visited.add(key(start[0], start[1]));
+  parent.set(key(start[0], start[1]), null);
+
+  const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+  while (queue.length > 0) {
+    const [r, c] = queue.shift()!;
+    if (r === end[0] && c === end[1]) break;
+    for (const [dr, dc] of dirs) {
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
+      if (grid[nr][nc]) continue; // wall
+      const k = key(nr, nc);
+      if (visited.has(k)) continue;
+      visited.add(k);
+      parent.set(k, key(r, c));
+      queue.push([nr, nc]);
+    }
+  }
+
+  // Trace back from end
+  const path = new Set<string>();
+  let cur: string | null | undefined = key(end[0], end[1]);
+  while (cur != null) {
+    path.add(cur);
+    cur = parent.get(cur);
+  }
+  return path;
+}
+
 export function NetworkTrace(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, isActive } = useMinigame("network-trace", props);
 
   const resolvedRef = useRef(false);
+
+  // Path Highlight module: briefly flash correct path
+  const hasPathHighlight = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "network-trace",
+    );
+  }, [activePowerUps]);
 
   // Generate maze on mount (stable across re-renders)
   const maze = useMemo(() => {
@@ -34,6 +80,20 @@ export function NetworkTrace(props: MinigameProps) {
   const { grid, start, end } = maze;
   const gridRows = grid.length;
   const gridCols = grid[0].length;
+
+  // Solve the maze (for path highlight)
+  const solutionPath = useMemo(() => {
+    if (!hasPathHighlight) return new Set<string>();
+    return solveMaze(grid, start, end);
+  }, [hasPathHighlight, grid, start, end]);
+
+  // Flash the path for 1s on mount
+  const [showPathHighlight, setShowPathHighlight] = useState(hasPathHighlight);
+  useEffect(() => {
+    if (!hasPathHighlight) return;
+    const timeout = setTimeout(() => setShowPathHighlight(false), 1000);
+    return () => clearTimeout(timeout);
+  }, [hasPathHighlight]);
 
   // ── Player position ────────────────────────────────────────────────
   const [playerRow, setPlayerRow] = useState(start[0]);
@@ -160,6 +220,9 @@ export function NetworkTrace(props: MinigameProps) {
               } else if (isStart) {
                 // Entry point (already passed through)
                 cellClass = "bg-cyber-green/10 border-cyber-green/30";
+              } else if (showPathHighlight && solutionPath.has(`${r},${c}`)) {
+                // Path highlight flash
+                cellClass = "bg-cyber-green/20 border-cyber-green/40";
               } else {
                 // Path cell
                 cellClass = "bg-white/[0.04] border-white/[0.04]";

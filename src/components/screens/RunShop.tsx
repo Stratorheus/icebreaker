@@ -25,7 +25,6 @@ import {
   Compass,
   Radio,
   Coins,
-  Hexagon,
   type LucideIcon,
 } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";

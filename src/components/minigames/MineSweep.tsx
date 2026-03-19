@@ -83,15 +83,15 @@ export function MineSweep(props: MinigameProps) {
     return count;
   }, [activePowerUps]);
 
-  // 3c. MineSweep minigame-specific: mines-visible (keep N mines visible after preview)
-  const minesVisibleCount = useMemo(() => {
-    let count = 0;
+  // 3c. MineSweep minigame-specific: mines-visible (percentage of mines visible after preview)
+  const minesVisiblePct = useMemo(() => {
+    let pct = 0;
     for (const pu of activePowerUps) {
       if (pu.effect.type === "minigame-specific" && pu.effect.minigame === "mine-sweep") {
-        count += pu.effect.value;
+        pct = Math.max(pct, pu.effect.value); // use highest tier value
       }
     }
-    return count;
+    return pct;
   }, [activePowerUps]);
 
   // Generate grid on mount (stable across re-renders)
@@ -114,9 +114,9 @@ export function MineSweep(props: MinigameProps) {
     const flagCount = Math.min(flagMineCount, shuffled.length);
     const autoFlagged = new Set(shuffled.slice(0, flagCount));
 
-    // Visible mines (from mines-visible meta upgrade) — pick from remaining
+    // Visible mines (from mines-visible meta upgrade, percentage-based) — pick from remaining
     const remaining = shuffled.filter((i) => !autoFlagged.has(i));
-    const visCount = Math.min(minesVisibleCount, remaining.length);
+    const visCount = Math.min(Math.round(mineCount * minesVisiblePct), remaining.length);
     const visible = new Set(remaining.slice(0, visCount));
 
     return { autoFlaggedMines: autoFlagged, visibleMines: visible };
