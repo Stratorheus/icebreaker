@@ -15,8 +15,8 @@ import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
+import { PortScan } from "@/components/minigames/PortScan";
 import {
-  PortScanPlaceholder,
   SubnetScanPlaceholder,
   CipherCrackV2Placeholder,
 } from "@/components/minigames/PlaceholderGame";
@@ -235,15 +235,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "port-scan": {
     title: "PORT SCAN",
     rules: [
-      "A list of ports with status indicators is shown",
-      "Identify and select all open ports from the scan results",
-      "Selecting a closed or filtered port = immediate failure",
-      "Mark all open ports to complete the scan",
+      "A grid of port numbers is displayed — open ports flash green one by one",
+      "Memorize which ports flash during the display phase (timer paused)",
+      "After display, select all open ports — selecting a wrong port = immediate failure",
+      "All correct selections = success; timer runs during the select phase",
     ],
-    controls: "Click ports or use number keys to select",
+    controls: "Arrow keys to navigate, SPACE to toggle select, or click with mouse",
     tips: [
-      "Open ports show a steady signal; closed ports show static",
-      "Higher difficulty adds more ambiguous port states to confuse you",
+      "Group open ports by position during the display phase",
+      "Higher difficulty increases grid size and the number of open ports",
     ],
   },
   "subnet-scan": {
@@ -297,7 +297,7 @@ const MINIGAME_COMPONENTS: Record<
   "data-stream": DataStream,
   "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerify,
-  "port-scan": PortScanPlaceholder,
+  "port-scan": PortScan,
   "subnet-scan": SubnetScanPlaceholder,
   "cipher-crack-v2": CipherCrackV2Placeholder,
 };

@@ -19,8 +19,8 @@ import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
+import { PortScan } from "@/components/minigames/PortScan";
 import {
-  PortScanPlaceholder,
   SubnetScanPlaceholder,
   CipherCrackV2Placeholder,
 } from "@/components/minigames/PlaceholderGame";
@@ -297,7 +297,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "data-stream": DataStream,
   "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerify,
-  "port-scan": PortScanPlaceholder,
+  "port-scan": PortScan,
   "subnet-scan": SubnetScanPlaceholder,
   "cipher-crack-v2": CipherCrackV2Placeholder,
 };
@@ -501,7 +501,7 @@ function getMinigameHint(type: MinigameType): string {
     case "checksum-verify":
       return "Solve each math expression — type the answer and press Enter.";
     case "port-scan":
-      return "Identify the open ports from the scan results.";
+      return "Memorize which ports flash green, then select them all.";
     case "subnet-scan":
       return "Map the subnet by selecting active nodes.";
     case "cipher-crack-v2":

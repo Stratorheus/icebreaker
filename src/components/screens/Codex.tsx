@@ -200,15 +200,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "port-scan": {
     title: "PORT SCAN",
     rules: [
-      "A list of ports with status indicators is shown",
-      "Identify and select all open ports from the scan results",
-      "Selecting a closed or filtered port = immediate failure",
-      "Mark all open ports to complete the scan",
+      "A grid of port numbers is displayed — open ports flash green one by one",
+      "Memorize which ports flash during the display phase (timer paused)",
+      "After display, select all open ports — selecting a wrong port = immediate failure",
+      "All correct selections = success; timer runs during the select phase",
     ],
-    controls: "Click ports or use number keys to select",
+    controls: "Arrow keys to navigate, SPACE to toggle select, or click with mouse",
     tips: [
-      "Open ports show a steady signal; closed ports show static",
-      "Higher difficulty adds more ambiguous port states to confuse you",
+      "Group open ports by position during the display phase",
+      "Higher difficulty increases grid size and the number of open ports",
     ],
   },
   "subnet-scan": {
