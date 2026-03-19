@@ -22,11 +22,17 @@ type ArrowKey = (typeof ARROWS)[number]["key"];
  * the next arrow. Wrong key = immediate fail. All matched = success.
  */
 export function MatchArrows(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "match-arrows",
     props,
   );
+
+  // Peek-ahead: how many arrows ahead of the current one to reveal
+  const peekAhead = useMemo(() => {
+    const peek = activePowerUps.find((p) => p.effect.type === "peek-ahead");
+    return peek ? peek.effect.value : 0;
+  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -110,7 +116,8 @@ export function MatchArrows(props: MinigameProps) {
           {sequence.map((arrowKey, i) => {
             const isCompleted = i < currentIndex;
             const isCurrent = i === currentIndex;
-            const isHidden = i > currentIndex;
+            const isPeeked = !isCompleted && !isCurrent && i <= currentIndex + peekAhead;
+            const isHidden = i > currentIndex && !isPeeked;
 
             return (
               <div
@@ -126,13 +133,15 @@ export function MatchArrows(props: MinigameProps) {
                       ? "border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan"
                       : isCurrent
                         ? "border-cyber-green bg-cyber-green/10 text-cyber-green animate-pulse shadow-[0_0_20px_rgba(0,255,65,0.3)]"
-                        : isHidden
-                          ? "border-white/10 bg-white/5 text-white/20"
-                          : ""
+                        : isPeeked
+                          ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400/70"
+                          : isHidden
+                            ? "border-white/10 bg-white/5 text-white/20"
+                            : ""
                   }
                 `}
               >
-                {isCompleted || isCurrent ? getArrowChar(arrowKey) : "?"}
+                {isCompleted || isCurrent || isPeeked ? getArrowChar(arrowKey) : "?"}
               </div>
             );
           })}

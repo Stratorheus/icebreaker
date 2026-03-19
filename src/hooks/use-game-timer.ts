@@ -110,10 +110,13 @@ export function useGameTimer(
     [],
   );
 
-  // Cleanup on unmount
+  // Cleanup on unmount — reset all refs so StrictMode double-mount works
   useEffect(() => {
     return () => {
       cancelRaf();
+      isRunningRef.current = false;
+      segmentStartRef.current = null;
+      expiredRef.current = false;
     };
   }, [cancelRaf]);
 

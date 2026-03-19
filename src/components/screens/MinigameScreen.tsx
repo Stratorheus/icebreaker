@@ -40,19 +40,45 @@ export function MinigameScreen() {
   const [phase, setPhase] = useState<Phase>("countdown");
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
+  const [hintText, setHintText] = useState<string | null>(null);
 
-  // Track which minigame index we're rendering to reset phase on transition
+  // Track the floorMinigames array reference to detect re-rolls (fail
+  // replaces the entry at the same index, so the array ref changes).
   const prevIndexRef = useRef(currentMinigameIndex);
+  const prevFloorMinigamesRef = useRef(floorMinigames);
+  const hintConsumedRef = useRef(false);
 
-  // Reset phase when minigame index changes (next minigame in floor)
+  // Reset phase when minigame index changes (next minigame) OR when
+  // floorMinigames array changes (re-roll after fail)
   useEffect(() => {
-    if (prevIndexRef.current !== currentMinigameIndex) {
+    if (
+      prevIndexRef.current !== currentMinigameIndex ||
+      prevFloorMinigamesRef.current !== floorMinigames
+    ) {
       prevIndexRef.current = currentMinigameIndex;
+      prevFloorMinigamesRef.current = floorMinigames;
+      hintConsumedRef.current = false;
+
+      // Check for run-shop hint power-up (not meta upgrade synthetics —
+      // those have minigame-specific hints handled per-component)
+      const hintPowerUp = inventory.find(
+        (p) => p.effect.type === "hint" && !p.effect.minigame,
+      );
+      if (hintPowerUp) {
+        // Consume the power-up and extend countdown by 1 tick
+        hintConsumedRef.current = true;
+        usePowerUp(hintPowerUp.id);
+        setCountdownValue(4); // 4-3-2-1-GO instead of 3-2-1-GO
+        setHintText(getMinigameHint(floorMinigames[currentMinigameIndex]));
+      } else {
+        setCountdownValue(3);
+        setHintText(null);
+      }
+
       setPhase("countdown");
-      setCountdownValue(3);
       setLastResult(null);
     }
-  }, [currentMinigameIndex]);
+  }, [currentMinigameIndex, floorMinigames, inventory, usePowerUp]);
 
   // Countdown timer — with skip check at the moment we would go "active"
   useEffect(() => {
@@ -128,6 +154,7 @@ export function MinigameScreen() {
             floor={floor}
             index={currentMinigameIndex}
             total={floorMinigames.length}
+            hint={hintText}
           />
         )}
 
@@ -157,12 +184,14 @@ function CountdownPhase({
   floor,
   index,
   total,
+  hint,
 }: {
   minigameName: string;
   value: number;
   floor: number;
   index: number;
   total: number;
+  hint: string | null;
 }) {
   return (
     <div className="text-center select-none">
@@ -172,6 +201,11 @@ function CountdownPhase({
       <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
         {minigameName}
       </h2>
+      {hint && (
+        <p className="text-cyber-green text-sm font-mono tracking-wider mb-6 animate-pulse">
+          HINT: {hint}
+        </p>
+      )}
       <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums">
         {value > 0 ? value : "GO"}
       </p>
@@ -184,14 +218,14 @@ function CountdownPhase({
 // ---------------------------------------------------------------------------
 
 const BASE_TIME_LIMITS: Record<MinigameType, number> = {
-  "slash-timing": 12,
-  "close-brackets": 15,
-  "type-backward": 20,
-  "match-arrows": 15,
-  "find-symbol": 20,
-  "mine-sweep": 25,
-  "wire-cutting": 20,
-  "cipher-crack": 20,
+  "slash-timing": 8,
+  "close-brackets": 8,
+  "type-backward": 10,
+  "match-arrows": 8,
+  "find-symbol": 12,
+  "mine-sweep": 15,
+  "wire-cutting": 12,
+  "cipher-crack": 12,
 };
 
 const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/types/minigame").MinigameProps>> = {
@@ -258,8 +292,8 @@ function buildMetaPowerUps(
       break;
 
     case "match-arrows":
-      // arrow-preview → reveal-first (1 / 2 / 3 pre-revealed)
-      addIfOwned("arrow-preview", "reveal-first", [1, 2, 3], "match-arrows");
+      // arrow-preview → peek-ahead (1 / 2 / 3 arrows previewed)
+      addIfOwned("arrow-preview", "peek-ahead", [1, 2, 3], "match-arrows");
       break;
 
     case "type-backward":
@@ -361,4 +395,26 @@ function formatMinigameName(type: string): string {
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+/** Brief contextual hint for each minigame type (shown when Hint Module is active). */
+function getMinigameHint(type: MinigameType): string {
+  switch (type) {
+    case "slash-timing":
+      return "Wait for the GREEN flash, then press Space.";
+    case "close-brackets":
+      return "Type closing brackets in REVERSE order.";
+    case "type-backward":
+      return "Type each word backwards, letter by letter.";
+    case "match-arrows":
+      return "Press the arrow key that matches the revealed arrow.";
+    case "find-symbol":
+      return "Click/select each target symbol in order.";
+    case "mine-sweep":
+      return "Memorize mine positions during the preview phase.";
+    case "wire-cutting":
+      return "Cut wires in the order shown by the sequence.";
+    case "cipher-crack":
+      return "Reverse the letter shift to find the original word.";
+  }
 }
