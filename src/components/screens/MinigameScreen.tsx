@@ -15,8 +15,8 @@ import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
+import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import {
-  NetworkTracePlaceholder,
   DataStreamPlaceholder,
   SignalEchoPlaceholder,
   ChecksumVerifyPlaceholder,
@@ -293,7 +293,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
   "defrag": Defrag,
-  "network-trace": NetworkTracePlaceholder,
+  "network-trace": NetworkTrace,
   "data-stream": DataStreamPlaceholder,
   "signal-echo": SignalEchoPlaceholder,
   "checksum-verify": ChecksumVerifyPlaceholder,
@@ -493,7 +493,7 @@ function getMinigameHint(type: MinigameType): string {
     case "defrag":
       return "Uncover cells, avoid mines. Numbers show adjacent mine count.";
     case "network-trace":
-      return "Follow the packet route through the network graph.";
+      return "Navigate the maze from entry to target using arrow keys.";
     case "data-stream":
       return "Catch valid data packets, avoid corrupted ones.";
     case "signal-echo":

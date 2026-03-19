@@ -11,8 +11,8 @@ import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
+import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import {
-  NetworkTracePlaceholder,
   DataStreamPlaceholder,
   SignalEchoPlaceholder,
   ChecksumVerifyPlaceholder,
@@ -179,15 +179,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "network-trace": {
     title: "NETWORK TRACE",
     rules: [
-      "A network graph with nodes and links is displayed",
-      "Trace the highlighted packet route from source to destination",
-      "Select nodes in the correct order to follow the route",
-      "Wrong node selection = immediate failure",
+      "A maze is generated — navigate from entry point to target server",
+      "Use arrow keys to move through open paths",
+      "Walls block movement — find the correct route through the maze",
+      "Reach the target server (◎) to succeed — fail only by timeout",
     ],
-    controls: "Click nodes or use Tab + ENTER to navigate",
+    controls: "Arrow keys to move through the maze",
     tips: [
-      "Look for the pulsing source node to start your trace",
-      "Higher difficulty adds more branching paths and decoy routes",
+      "Stick to one wall (left or right) and follow it — it always leads to the exit",
+      "Larger mazes at higher difficulty — move quickly and stay oriented",
     ],
   },
   "data-stream": {
@@ -293,7 +293,7 @@ const MINIGAME_COMPONENTS: Record<
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
   "defrag": Defrag,
-  "network-trace": NetworkTracePlaceholder,
+  "network-trace": NetworkTrace,
   "data-stream": DataStreamPlaceholder,
   "signal-echo": SignalEchoPlaceholder,
   "checksum-verify": ChecksumVerifyPlaceholder,
