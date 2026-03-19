@@ -1,6 +1,7 @@
 import { useGameStore } from "@/store/game-store";
 import { ACHIEVEMENT_POOL } from "@/data/achievements";
-import type { PlayerStats } from "@/types/game";
+import { getMinigameDisplayName } from "@/data/minigame-names";
+import type { MinigameType, PlayerStats } from "@/types/game";
 import type { Achievement } from "@/types/shop";
 
 // ---------------------------------------------------------------------------
@@ -187,11 +188,11 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
             {">"}_&nbsp;MINIGAME RECORD
           </h2>
           <div className="space-y-0">
-            {(Object.entries(stats.minigameWinsTotal) as [string, number][]).map(
+            {(Object.entries(stats.minigameWinsTotal) as [MinigameType, number][]).map(
               ([type, wins]) => (
                 <StatRow
                   key={type}
-                  label={type.replace(/-/g, " ").toUpperCase()}
+                  label={getMinigameDisplayName(type).toUpperCase()}
                   value={`${wins} win${wins !== 1 ? "s" : ""}`}
                 />
               ),

@@ -10,6 +10,14 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import { Defrag } from "@/components/minigames/Defrag";
+import { NetworkTrace } from "@/components/minigames/NetworkTrace";
+import { DataStream } from "@/components/minigames/DataStream";
+import { SignalEcho } from "@/components/minigames/SignalEcho";
+import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
+import { PortScan } from "@/components/minigames/PortScan";
+import { SubnetScan } from "@/components/minigames/SubnetScan";
+import { CipherCrackV2 } from "@/components/minigames/CipherCrackV2";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -152,6 +160,118 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
       "Substitution: map each letter using the shown key table",
     ],
   },
+  "defrag": {
+    title: "DEFRAG",
+    rules: [
+      "Grid of hidden cells — some contain mines",
+      "Uncover cells to reveal numbers (count of adjacent mines)",
+      "Cells with 0 adjacent mines auto-expand in a flood fill",
+      "Uncover all safe cells to win — hitting a mine = fail",
+    ],
+    controls: "Arrow keys to move, SPACE to uncover, ENTER to flag. Mouse: L-click uncover, R-click flag",
+    tips: [
+      "Use numbers to deduce mine positions — flag suspected mines",
+      "Start near the center for better odds of hitting a 0-cell cascade",
+    ],
+  },
+  "network-trace": {
+    title: "NETWORK TRACE",
+    rules: [
+      "A maze is generated — navigate from entry point to target server",
+      "Use arrow keys to move through open paths",
+      "Walls block movement — find the correct route through the maze",
+      "Reach the target server (◎) to succeed — fail only by timeout",
+    ],
+    controls: "Arrow keys to move through the maze",
+    tips: [
+      "Stick to one wall (left or right) and follow it — it always leads to the exit",
+      "Larger mazes at higher difficulty — move quickly and stay oriented",
+    ],
+  },
+  "data-stream": {
+    title: "DATA STREAM",
+    rules: [
+      "Guide a snake (data stream) through the grid",
+      "Visit all numbered nodes IN ORDER (1, 2, 3...)",
+      "Fill EVERY cell in the grid — the snake grows with each step",
+      "Cannot move into cells already occupied by the snake body",
+    ],
+    controls: "Arrow keys = move, Reverse direction = undo, SPACE = reset puzzle",
+    tips: [
+      "Moving opposite to your last direction retracts the head (free undo)",
+      "Larger grids and more nodes at higher difficulty — plan your route carefully",
+    ],
+  },
+  "signal-echo": {
+    title: "SIGNAL ECHO",
+    rules: [
+      "4 colored panels (Up=Cyan, Right=Magenta, Down=Green, Left=Orange)",
+      "Watch the sequence light up, then repeat it with arrow keys or clicks",
+      "Each successful round adds one more step to the sequence",
+      "Any wrong input = immediate failure",
+    ],
+    controls: "Arrow keys or click the panels to repeat the sequence",
+    tips: [
+      "Verbalize the directions as the sequence plays (e.g. 'up, left, down...')",
+      "Higher difficulty starts with longer sequences and faster display speed",
+    ],
+  },
+  "checksum-verify": {
+    title: "CHECKSUM VERIFY",
+    rules: [
+      "A series of math expressions is displayed one at a time",
+      "Type the correct answer using number keys (0-9) and minus (-)",
+      "Press ENTER or SPACE to confirm — wrong answer = immediate failure",
+      "Solve all expressions to verify the data integrity",
+    ],
+    controls: "Number keys (0-9), minus (-), Backspace, ENTER/SPACE to confirm",
+    tips: [
+      "At low difficulty it's simple addition/subtraction — stay calm",
+      "Higher difficulty adds two-digit math and multiplication up to 9x9",
+    ],
+  },
+  "port-scan": {
+    title: "PORT SCAN",
+    rules: [
+      "A grid of port numbers is displayed — open ports flash green one by one",
+      "Memorize which ports flash during the display phase (timer paused)",
+      "After display, select all open ports — selecting a wrong port = immediate failure",
+      "All correct selections = success; timer runs during the select phase",
+    ],
+    controls: "Arrow keys to navigate, SPACE to toggle select, or click with mouse",
+    tips: [
+      "Group open ports by position during the display phase",
+      "Higher difficulty increases grid size and the number of open ports",
+    ],
+  },
+  "subnet-scan": {
+    title: "SUBNET SCAN",
+    rules: [
+      "An IP range (CIDR notation) is displayed at the top",
+      "A list of IP addresses is shown below the range",
+      "Select all addresses that belong to the displayed subnet",
+      "Wrong selection = immediate failure; all correct = success",
+    ],
+    controls: "Arrow keys to navigate, SPACE to toggle, or click",
+    tips: [
+      "/24 = first 3 numbers must match, /16 = first 2, /8 = first 1",
+      "A help box at the bottom explains the current subnet mask",
+    ],
+  },
+  "cipher-crack-v2": {
+    title: "CIPHER CRACK V2",
+    rules: [
+      "An encrypted word is shown — it uses only ROT ciphers",
+      "An alphabet reference chart is always displayed for decoding",
+      "Find the encrypted letter on the bottom row, read the original above",
+      "Type the decrypted word letter by letter; any mistake = failure",
+    ],
+    controls: "Keyboard — type the decoded letters",
+    tips: [
+      "At low difficulty it's a simple ROT shift — each letter moves the same amount",
+      "At higher difficulty the word is reversed before shifting — decode then un-reverse",
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -170,6 +290,14 @@ const MINIGAME_COMPONENTS: Record<
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
+  "defrag": Defrag,
+  "network-trace": NetworkTrace,
+  "data-stream": DataStream,
+  "signal-echo": SignalEcho,
+  "checksum-verify": ChecksumVerify,
+  "port-scan": PortScan,
+  "subnet-scan": SubnetScan,
+  "cipher-crack-v2": CipherCrackV2,
 };
 
 // ---------------------------------------------------------------------------

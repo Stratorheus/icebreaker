@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useGameStore } from "@/store/game-store";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
+import { STARTING_MINIGAMES } from "@/types/game";
 import { cn } from "@/lib/utils";
 import type { MetaUpgrade } from "@/types/shop";
 
@@ -129,6 +130,7 @@ export function MetaShop() {
   const unlockMinigame = useGameStore((s) => s.unlockMinigame);
   const setStatus = useGameStore((s) => s.setStatus);
   const setTrainingMinigame = useGameStore((s) => s.setTrainingMinigame);
+  const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
 
   const grouped = useMemo(() => groupByCategory(META_UPGRADE_POOL), []);
 
@@ -136,6 +138,9 @@ export function MetaShop() {
   const totalPurchasesMade = useMemo(() => {
     return Object.values(purchasedUpgrades).reduce((sum, tier) => sum + tier, 0);
   }, [purchasedUpgrades]);
+
+  // How many minigame unlocks the player currently owns (beyond the 5 starting games)
+  const unlocksOwned = unlockedMinigames.length - STARTING_MINIGAMES.length;
 
   /** Compute scaled price: basePrice * (1 + totalPurchasesMade * 0.15) */
   const getScaledPrice = (basePrice: number) => {
@@ -149,6 +154,15 @@ export function MetaShop() {
     return Math.round(basePrice * (1 + timesPurchased * 0.5));
   };
 
+  /**
+   * Dynamic unlock pricing: 200 + (unlocksOwned) * 100, with global price multiplier on top.
+   * Used for new minigame unlocks that have prices: [0] (sentinel for dynamic pricing).
+   */
+  const getUnlockPrice = () => {
+    const base = 200 + unlocksOwned * 100;
+    return getScaledPrice(base);
+  };
+
   const handlePurchase = (upgrade: MetaUpgrade) => {
     const currentTier = purchasedUpgrades[upgrade.id] ?? 0;
     if (currentTier >= upgrade.maxTier) return;
@@ -156,6 +170,9 @@ export function MetaShop() {
     let price: number;
     if (upgrade.stackable) {
       price = getStackablePrice(upgrade);
+    } else if (upgrade.category === "minigame-unlock" && upgrade.prices[currentTier] === 0) {
+      // Dynamic unlock pricing for new minigames
+      price = getUnlockPrice();
     } else {
       const basePrice = upgrade.prices[currentTier];
       if (basePrice === undefined) return;
@@ -263,6 +280,7 @@ export function MetaShop() {
                     config={config}
                     getScaledPrice={getScaledPrice}
                     getStackablePrice={getStackablePrice}
+                    getUnlockPrice={getUnlockPrice}
                     onPurchase={() => handlePurchase(upgrade)}
                   />
                 ))}
@@ -288,6 +306,7 @@ function UpgradeCard({
   config,
   getScaledPrice,
   getStackablePrice,
+  getUnlockPrice,
   onPurchase,
 }: {
   upgrade: MetaUpgrade;
@@ -297,6 +316,7 @@ function UpgradeCard({
   config: CategoryConfig;
   getScaledPrice: (basePrice: number) => number;
   getStackablePrice: (upgrade: MetaUpgrade) => number;
+  getUnlockPrice: () => number;
   onPurchase: () => void;
 }) {
   const isStackable = upgrade.stackable === true;
@@ -308,6 +328,9 @@ function UpgradeCard({
     nextPrice = getStackablePrice(upgrade);
   } else if (isMaxed) {
     nextPrice = null;
+  } else if (upgrade.category === "minigame-unlock" && upgrade.prices[currentTier] === 0) {
+    // Dynamic unlock pricing for new minigames
+    nextPrice = getUnlockPrice();
   } else {
     const basePrice = upgrade.prices[currentTier];
     nextPrice = basePrice !== null && basePrice !== undefined ? getScaledPrice(basePrice) : null;

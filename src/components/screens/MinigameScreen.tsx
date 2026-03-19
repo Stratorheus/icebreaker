@@ -3,6 +3,7 @@ import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getCredits, getDifficulty, getTimeLimit } from "@/data/balancing";
+import { getMinigameDisplayName } from "@/data/minigame-names";
 import { checkSkip } from "@/lib/power-up-effects";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
@@ -13,6 +14,14 @@ import { FindSymbol } from "@/components/minigames/FindSymbol";
 import { MineSweep } from "@/components/minigames/MineSweep";
 import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
+import { Defrag } from "@/components/minigames/Defrag";
+import { NetworkTrace } from "@/components/minigames/NetworkTrace";
+import { DataStream } from "@/components/minigames/DataStream";
+import { SignalEcho } from "@/components/minigames/SignalEcho";
+import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
+import { PortScan } from "@/components/minigames/PortScan";
+import { SubnetScan } from "@/components/minigames/SubnetScan";
+import { CipherCrackV2 } from "@/components/minigames/CipherCrackV2";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -180,7 +189,7 @@ export function MinigameScreen() {
       <div className="flex-1 flex items-center justify-center px-4">
         {phase === "countdown" && (
           <CountdownPhase
-            minigameName={formatMinigameName(currentMinigame)}
+            minigameName={getMinigameDisplayName(currentMinigame)}
             value={countdownValue}
             floor={floor}
             index={currentMinigameIndex}
@@ -262,6 +271,14 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "mine-sweep": 15,
   "wire-cutting": 12,
   "cipher-crack": 12,
+  "defrag": 30,
+  "network-trace": 20,
+  "data-stream": 25,
+  "signal-echo": 20,
+  "checksum-verify": 15,
+  "port-scan": 15,
+  "subnet-scan": 20,
+  "cipher-crack-v2": 15,
 };
 
 const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/types/minigame").MinigameProps>> = {
@@ -273,6 +290,14 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "mine-sweep": MineSweep,
   "wire-cutting": WireCutting,
   "cipher-crack": CipherCrack,
+  "defrag": Defrag,
+  "network-trace": NetworkTrace,
+  "data-stream": DataStream,
+  "signal-echo": SignalEcho,
+  "checksum-verify": ChecksumVerify,
+  "port-scan": PortScan,
+  "subnet-scan": SubnetScan,
+  "cipher-crack-v2": CipherCrackV2,
 };
 
 /**
@@ -444,13 +469,6 @@ function ResultFlash({
 // Helpers
 // ---------------------------------------------------------------------------
 
-function formatMinigameName(type: string): string {
-  return type
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
 /** Brief contextual hint for each minigame type (shown when Hint Module is active). */
 function getMinigameHint(type: MinigameType): string {
   switch (type) {
@@ -470,5 +488,21 @@ function getMinigameHint(type: MinigameType): string {
       return "Cut wires in the order shown by the sequence.";
     case "cipher-crack":
       return "Reverse the letter shift to find the original word.";
+    case "defrag":
+      return "Uncover cells, avoid mines. Numbers show adjacent mine count.";
+    case "network-trace":
+      return "Navigate the maze from entry to target using arrow keys.";
+    case "data-stream":
+      return "Visit numbered nodes IN ORDER while filling every cell.";
+    case "signal-echo":
+      return "Repeat the signal pattern in the correct sequence.";
+    case "checksum-verify":
+      return "Solve each math expression — type the answer and press Enter.";
+    case "port-scan":
+      return "Memorize which ports flash green, then select them all.";
+    case "subnet-scan":
+      return "Select IPs that belong to the displayed CIDR range.";
+    case "cipher-crack-v2":
+      return "Use the alphabet chart to decode the ROT cipher.";
   }
 }
