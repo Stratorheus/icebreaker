@@ -292,8 +292,8 @@ function buildMetaPowerUps(
       break;
 
     case "match-arrows":
-      // arrow-preview → reveal-first (1 / 2 / 3 pre-revealed)
-      addIfOwned("arrow-preview", "reveal-first", [1, 2, 3], "match-arrows");
+      // arrow-preview → peek-ahead (1 / 2 / 3 arrows previewed)
+      addIfOwned("arrow-preview", "peek-ahead", [1, 2, 3], "match-arrows");
       break;
 
     case "type-backward":

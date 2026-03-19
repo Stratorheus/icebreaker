@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
@@ -187,8 +187,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   completeMinigame: (result: MinigameResult) => {
     const state = get();
-    const difficulty = state.floor / 20; // simplified, matches getDifficulty
-    const earned = getCredits(result.timeMs, Math.min(difficulty, 1));
+    const difficulty = getDifficulty(state.floor);
+    const earned = getCredits(result.timeMs, difficulty);
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
