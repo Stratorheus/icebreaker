@@ -158,15 +158,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "data-stream": {
     title: "DATA STREAM",
     rules: [
-      "Data packets scroll across the screen in real time",
-      "Catch valid packets by pressing the correct key when aligned",
-      "Avoid corrupted packets — catching one causes failure",
-      "Catch all required valid packets to succeed",
+      "Guide a snake (data stream) through the grid",
+      "Visit all numbered nodes IN ORDER (1, 2, 3...)",
+      "Fill EVERY cell in the grid — the snake grows with each step",
+      "Cannot move into cells already occupied by the snake body",
     ],
-    controls: "SPACE to catch, or click packets directly",
+    controls: "Arrow keys = move, Reverse direction = undo, SPACE = reset puzzle",
     tips: [
-      "Valid packets have a subtle glow; corrupted ones flicker erratically",
-      "At higher difficulty the stream speeds up and more corrupted packets appear",
+      "Moving opposite to your last direction retracts the head (free undo)",
+      "Larger grids and more nodes at higher difficulty — plan your route carefully",
     ],
   },
   "signal-echo": {

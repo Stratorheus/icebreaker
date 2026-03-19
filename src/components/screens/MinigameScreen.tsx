@@ -16,8 +16,8 @@ import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
+import { DataStream } from "@/components/minigames/DataStream";
 import {
-  DataStreamPlaceholder,
   SignalEchoPlaceholder,
   ChecksumVerifyPlaceholder,
   PortScanPlaceholder,
@@ -294,7 +294,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "cipher-crack": CipherCrack,
   "defrag": Defrag,
   "network-trace": NetworkTrace,
-  "data-stream": DataStreamPlaceholder,
+  "data-stream": DataStream,
   "signal-echo": SignalEchoPlaceholder,
   "checksum-verify": ChecksumVerifyPlaceholder,
   "port-scan": PortScanPlaceholder,
@@ -495,7 +495,7 @@ function getMinigameHint(type: MinigameType): string {
     case "network-trace":
       return "Navigate the maze from entry to target using arrow keys.";
     case "data-stream":
-      return "Catch valid data packets, avoid corrupted ones.";
+      return "Visit numbered nodes IN ORDER while filling every cell.";
     case "signal-echo":
       return "Repeat the signal pattern in the correct sequence.";
     case "checksum-verify":
