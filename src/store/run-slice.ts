@@ -126,12 +126,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Helper: get tier for an upgrade (0 = not purchased)
     const tier = (id: string) => purchasedUpgrades[id] ?? 0;
 
-    // max-hp-boost: +10 / +20 / +30 maxHp
-    const maxHpBonusByTier = [10, 20, 30];
-    const maxHpBoostTier = tier("max-hp-boost");
-    const maxHpBonus = maxHpBoostTier > 0
-      ? (maxHpBonusByTier[maxHpBoostTier - 1] ?? 30)
-      : 0;
+    // hp-boost (stackable): +5 max HP per purchase
+    const hpBoostTier = tier("hp-boost");
+    const hpBoostBonus = hpBoostTier * 5;
 
     // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
     const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
@@ -143,7 +140,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       ? (overclockedBonusByTier[overclockedTier - 1] ?? 20)
       : 0;
 
-    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus + overclockedBonus;
+    const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
     const startHp = actualMaxHp;
 
     // head-start: +50 starting credits
@@ -201,7 +198,17 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   completeMinigame: (result: MinigameResult) => {
     const state = get();
     const difficulty = getDifficulty(state.floor);
-    const earned = getCredits(result.timeMs, difficulty);
+
+    // 1b. Credit Multiplier meta upgrade: +10/20/30% credits
+    const creditTier = state.purchasedUpgrades["credit-multiplier"] ?? 0;
+    const creditMultiplier = 1 + creditTier * 0.1;
+    const baseCredits = getCredits(result.timeMs, difficulty);
+
+    // 1e. Speed Tax meta upgrade: flat bonus per tier on top of credits
+    const speedTaxTier = state.purchasedUpgrades["speed-tax"] ?? 0;
+    const speedBonus = speedTaxTier > 0 ? Math.round(baseCredits * speedTaxTier * 0.05) : 0;
+
+    const earned = Math.round(baseCredits * creditMultiplier) + speedBonus;
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
@@ -247,7 +254,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   failMinigame: () => {
     const state = get();
-    const baseDamage = getDamage(state.floor);
+    const rawDamage = getDamage(state.floor);
+
+    // 1a. Thicker Armor meta upgrade: reduce base damage by 10/20/30%
+    const armorTier = state.purchasedUpgrades["thicker-armor"] ?? 0;
+    const armorReduction = armorTier > 0 ? [0.1, 0.2, 0.3][armorTier - 1] : 0;
+    const baseDamage = Math.round(rawDamage * (1 - armorReduction));
 
     // Apply any shield / damage-reduction power-up from inventory
     const { damage, consumed } = applyShield(state.inventory, baseDamage);
@@ -378,7 +390,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   quitRun: () => {
     const state = get();
     // Full data reward (no penalty) — getDataReward(floor) + any milestone bonuses already awarded
-    const dataReward = getDataReward(state.floor);
+    // 1c. Data Siphon meta upgrade: +10/20/30% data
+    const dataTier = state.purchasedUpgrades["data-siphon"] ?? 0;
+    const dataMultiplier = 1 + dataTier * 0.1;
+    const dataReward = Math.round(getDataReward(state.floor) * dataMultiplier);
     if (dataReward > 0) {
       state.addData(dataReward);
     }

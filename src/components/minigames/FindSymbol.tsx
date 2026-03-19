@@ -107,13 +107,28 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
  * Supports mouse click and arrow-key + Enter navigation.
  */
 export function FindSymbol(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "find-symbol",
     props,
   );
 
   const resolvedRef = useRef(false);
+
+  // 3b. Symbol Scanner (hint): highlight cells adjacent to target
+  const hasProximityHint = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "find-symbol",
+    );
+  }, [activePowerUps]);
+
+  // 3b. Symbol Magnifier (minigame-specific): scale up target symbol
+  const targetScale = useMemo(() => {
+    const magnifier = activePowerUps.find(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "find-symbol",
+    );
+    return magnifier ? 1.3 : 1;
+  }, [activePowerUps]);
 
   // Generate puzzle on mount (stable across re-renders)
   const puzzle = useMemo(
@@ -271,6 +286,30 @@ export function FindSymbol(props: MinigameProps) {
             const isCursor = cellRow === cursorRow && cellCol === cursorCol;
             const isSelected = selectedCells.has(cell.id);
 
+            // 3b. Proximity hint: check if cell is adjacent to a cell containing the current target
+            const isAdjacentToTarget = hasProximityHint && targetIndex < targets.length && (() => {
+              const currentTarget = targets[targetIndex];
+              if (cell.code === currentTarget) return false; // target itself, not adjacent
+              for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                  if (dr === 0 && dc === 0) continue;
+                  const nr = cellRow + dr;
+                  const nc = cellCol + dc;
+                  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                    const ni = nr * cols + nc;
+                    if (grid[ni].code === currentTarget && !selectedCells.has(grid[ni].id)) {
+                      return true;
+                    }
+                  }
+                }
+              }
+              return false;
+            })();
+
+            // 3b. Target scale: if this cell is the current target, make it larger
+            const isCurrentTarget = !isSelected && targetIndex < targets.length && cell.code === targets[targetIndex];
+            const scaleFactor = isCurrentTarget && targetScale > 1 ? targetScale : 1;
+
             return (
               <button
                 key={cell.id}
@@ -288,11 +327,14 @@ export function FindSymbol(props: MinigameProps) {
                   ${
                     isSelected
                       ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
-                      : isCursor
-                        ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                        : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
+                      : isAdjacentToTarget
+                        ? "border-cyber-cyan/30 bg-cyber-cyan/5 text-white/70 hover:border-white/30 hover:bg-white/10 animate-pulse"
+                        : isCursor
+                          ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
+                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
                   }
                 `}
+                style={scaleFactor > 1 ? { fontSize: `${scaleFactor}em` } : undefined}
               >
                 {isSelected ? (
                   <span className="text-cyber-green text-sm">&#10003;</span>
