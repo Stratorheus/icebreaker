@@ -217,8 +217,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       : state.inventory;
 
     const newHp = Math.max(0, state.hp - damage);
-    const isLastMinigame =
-      state.currentMinigameIndex >= state.floorMinigames.length - 1;
 
     // Track whether any real damage was taken this floor/run
     const tookDamage = damage > 0;
@@ -235,16 +233,20 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       return;
     }
 
+    // On fail: DON'T advance the index — re-roll the current slot with a new
+    // random minigame so the player must still complete N total minigames.
+    const newFloorMinigames = [...state.floorMinigames];
+    const pool = state.unlockedMinigames;
+    newFloorMinigames[state.currentMinigameIndex] =
+      pool[Math.floor(Math.random() * pool.length)];
+
     set({
       hp: newHp,
       inventory,
       floorDamageTaken: tookDamage ? true : state.floorDamageTaken,
       runDamageTaken: tookDamage ? true : state.runDamageTaken,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
-      currentMinigameIndex: isLastMinigame
-        ? state.currentMinigameIndex
-        : state.currentMinigameIndex + 1,
-      status: isLastMinigame ? "shop" : state.status,
+      floorMinigames: newFloorMinigames,
     });
   },
 

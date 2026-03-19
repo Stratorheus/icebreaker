@@ -100,7 +100,19 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       i === index ? { ...o, purchased: true } : o,
     );
 
-    // Add power-up to inventory
+    // Immediate-effect items are consumed on purchase (not added to inventory)
+    const effectType = powerUp.effect.type;
+    if (effectType === "heal") {
+      // Apply healing immediately — don't add to inventory
+      set({
+        credits: newCredits,
+        runShopOffers: newOffers,
+      });
+      state.heal(powerUp.effect.value);
+      return true;
+    }
+
+    // Add power-up to inventory for non-immediate effects
     set({
       credits: newCredits,
       runShopOffers: newOffers,

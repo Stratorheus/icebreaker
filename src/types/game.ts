@@ -52,6 +52,7 @@ export interface PowerUpEffect {
     | "window-extend"
     | "auto-close"
     | "reveal-first"
+    | "peek-ahead"
     | "flag-mine"
     | "minigame-specific";
   value: number;

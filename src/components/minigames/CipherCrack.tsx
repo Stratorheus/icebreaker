@@ -71,12 +71,20 @@ function encrypt(
 function buildHint(method: CipherMethod, rotN: number): string {
   switch (method) {
     case "rot":
-      return `ROT-${rotN}`;
+      return `SHIFTED +${rotN}`;
     case "reverse-rot":
-      return `REVERSE + ROT-${rotN}`;
+      return `REVERSE + SHIFTED +${rotN}`;
     case "substitution":
-      return `VOWEL SHIFT + ROT-${rotN}`;
+      return `VOWEL SHIFT + SHIFTED +${rotN}`;
   }
+}
+
+/** Build a small example showing the shift direction. */
+function buildExample(rotN: number): string {
+  // Show two example mappings: A -> A+rotN, B -> B+rotN
+  const a = String.fromCharCode(65 + rotN); // e.g. rotN=3 -> D
+  const b = String.fromCharCode(66 + rotN); // e.g. rotN=3 -> E
+  return `A\u2192${a}, B\u2192${b}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,7 +148,8 @@ export function CipherCrack(props: MinigameProps) {
     const rotN = pickRotN(difficulty);
     const encrypted = encrypt(word, method, rotN);
     const hint = buildHint(method, rotN);
-    return { word, encrypted, hint };
+    const example = buildExample(rotN);
+    return { word, encrypted, hint, example };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -212,14 +221,15 @@ export function CipherCrack(props: MinigameProps) {
 
         {/* Cipher hint */}
         <div
-          className="px-4 py-2 border rounded text-sm font-mono tracking-wider"
+          className="px-4 py-2 border rounded text-sm font-mono tracking-wider text-center"
           style={{
             borderColor: "var(--color-cyber-magenta)",
             color: "var(--color-cyber-magenta)",
             backgroundColor: "rgba(255, 0, 102, 0.08)",
           }}
         >
-          METHOD: {puzzle.hint}
+          <div>METHOD: {puzzle.hint}</div>
+          <div className="text-xs mt-1 opacity-70">{puzzle.example}</div>
         </div>
 
         {/* Divider */}
