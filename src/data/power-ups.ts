@@ -189,8 +189,8 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   },
   {
     id: "mine-detector",
-    name: "Mine Detector",
-    description: "One random mine is flagged at the start of Mine Sweep.",
+    name: "Sector Scanner",
+    description: "One random corrupted sector is flagged at the start of Memory Scan.",
     category: "assist",
     basePrice: 45,
     effect: { type: "flag-mine", value: 1, minigame: "mine-sweep" },

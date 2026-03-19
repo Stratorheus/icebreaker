@@ -119,17 +119,17 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "mine-sweep": {
-    title: "MINE SWEEP",
+    title: "MEMORY SCAN",
     rules: [
-      "Mines are revealed briefly in a PREVIEW phase — memorise their locations",
-      "Mines hide during the MARK phase — mark the cells you memorised",
+      "Corrupted sectors are revealed briefly in a PREVIEW phase — memorise their locations",
+      "Sectors hide during the MARK phase — mark the cells you memorised",
       "Marking exactly the correct cells wins; any wrong mark = failure",
-      "The grid auto-checks when you've marked the same count as mines",
+      "The grid auto-checks when you've marked the same count as corrupted sectors",
     ],
     controls: "Arrow keys + SPACE to mark, or click cells",
     tips: [
-      "Group mines by row or region in your mind during preview",
-      "Higher difficulty = more mines, smaller preview window — act fast",
+      "Group corrupted sectors by row or region in your mind during preview",
+      "Higher difficulty = more corrupted sectors, smaller preview window — act fast",
     ],
   },
   "wire-cutting": {

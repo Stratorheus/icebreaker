@@ -124,8 +124,8 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   },
   {
     id: "mine-walker",
-    name: "Mine Walker",
-    description: "Clear Mine Sweep in under 4 seconds.",
+    name: "Memory Walker",
+    description: "Clear Memory Scan in under 4 seconds.",
     condition: { type: "minigame-speed", minigame: "mine-sweep", maxTimeMs: 4_000 },
     reward: 50,
     icon: "crosshair",
@@ -257,7 +257,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "demolitions-expert",
     name: "Demolitions Expert",
-    description: "Win Mine Sweep 40 times total.",
+    description: "Win Memory Scan 40 times total.",
     condition: { type: "minigame-streak", minigame: "mine-sweep", count: 40 },
     reward: 50,
     icon: "bomb",

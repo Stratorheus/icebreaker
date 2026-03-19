@@ -34,12 +34,12 @@ export function MainMenu() {
       </p>
 
       {/* Stats display */}
-      <div className="flex gap-6 mb-10 text-xs uppercase tracking-widest">
-        <span className="text-cyber-cyan/60 glitch-subtle">
+      <div className="flex gap-6 mb-10 text-sm uppercase tracking-widest">
+        <span className="text-cyber-cyan glitch-subtle">
           BEST: FLOOR {stats.bestFloor}
         </span>
-        <span className="glitch-subtle flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.6 }}>
-          <Hexagon size={12} /> {data}
+        <span className="glitch-subtle flex items-center gap-1.5 font-bold" style={{ color: "var(--color-currency-data)" }}>
+          <Hexagon size={16} /> {data}
         </span>
       </div>
 
