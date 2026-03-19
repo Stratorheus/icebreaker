@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyPress } from "@/hooks/use-keyboard";
@@ -16,14 +16,27 @@ type Phase = "guard" | "prepare" | "attack";
  * - Overall timer expiring = fail.
  */
 export function SlashTiming(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "slash-timing",
     props,
   );
 
+  // 2f/3a. Window-extend: widen attack window from both run shop and meta upgrades
+  const windowExtendBonus = useMemo(() => {
+    let bonus = 0;
+    for (const pu of activePowerUps) {
+      if (pu.effect.type === "window-extend" && (!pu.effect.minigame || pu.effect.minigame === "slash-timing")) {
+        bonus += pu.effect.value;
+      }
+    }
+    return bonus;
+  }, [activePowerUps]);
+
   // --- Difficulty-scaled durations (ms) ---
-  const attackWindow = 800 - difficulty * 500; // 800ms (d=0) → 300ms (d=1)
+  const baseAttackWindow = 800 - difficulty * 500; // 800ms (d=0) → 300ms (d=1)
+  // Apply window-extend bonus (value is a fraction, e.g. 0.2 = 20% wider)
+  const attackWindow = baseAttackWindow * (1 + windowExtendBonus);
   const prepareDuration = 500 - difficulty * 300; // 500ms (d=0) → 200ms (d=1)
   const guardMinDuration = 1000 - difficulty * 400; // 1000ms (d=0) → 600ms (d=1)
   const guardMaxDuration = 2000 - difficulty * 800; // 2000ms (d=0) → 1200ms (d=1)

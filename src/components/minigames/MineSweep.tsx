@@ -64,13 +64,35 @@ function generateGrid(difficulty: number): GeneratedGrid {
  * Supports both mouse click and arrow-key + Enter/Space navigation.
  */
 export function MineSweep(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "mine-sweep",
     props,
   );
 
   const resolvedRef = useRef(false);
+
+  // 2h. Mine Detector (flag-mine): pre-reveal mines after preview ends
+  const flagMineCount = useMemo(() => {
+    let count = 0;
+    for (const pu of activePowerUps) {
+      if (pu.effect.type === "flag-mine" && (!pu.effect.minigame || pu.effect.minigame === "mine-sweep")) {
+        count += pu.effect.value;
+      }
+    }
+    return count;
+  }, [activePowerUps]);
+
+  // 3c. MineSweep minigame-specific: mines-visible (keep N mines visible after preview)
+  const minesVisibleCount = useMemo(() => {
+    let count = 0;
+    for (const pu of activePowerUps) {
+      if (pu.effect.type === "minigame-specific" && pu.effect.minigame === "mine-sweep") {
+        count += pu.effect.value;
+      }
+    }
+    return count;
+  }, [activePowerUps]);
 
   // Generate grid on mount (stable across re-renders)
   const grid = useMemo(
@@ -80,6 +102,26 @@ export function MineSweep(props: MinigameProps) {
   );
 
   const { cells, cols, rows, mineCount, previewMs } = grid;
+
+  // Pre-compute which mines to auto-flag and which to keep visible
+  const { autoFlaggedMines, visibleMines } = useMemo(() => {
+    const mineIndices = cells
+      .map((c, i) => (c.isMine ? i : -1))
+      .filter((i) => i >= 0);
+    const shuffled = [...mineIndices].sort(() => Math.random() - 0.5);
+
+    // Auto-flagged mines (from flag-mine power-up)
+    const flagCount = Math.min(flagMineCount, shuffled.length);
+    const autoFlagged = new Set(shuffled.slice(0, flagCount));
+
+    // Visible mines (from mines-visible meta upgrade) — pick from remaining
+    const remaining = shuffled.filter((i) => !autoFlagged.has(i));
+    const visCount = Math.min(minesVisibleCount, remaining.length);
+    const visible = new Set(remaining.slice(0, visCount));
+
+    return { autoFlaggedMines: autoFlagged, visibleMines: visible };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Phase management ──────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("preview");
@@ -133,8 +175,8 @@ export function MineSweep(props: MinigameProps) {
     cursorColRef.current = cursorCol;
   }, [cursorCol]);
 
-  // ── Marked cells ──────────────────────────────────────────────────
-  const [markedCells, setMarkedCells] = useState<Set<number>>(new Set());
+  // ── Marked cells (initialized with auto-flagged mines from flag-mine power-up)
+  const [markedCells, setMarkedCells] = useState<Set<number>>(() => new Set(autoFlaggedMines));
   const markedCellsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -149,8 +191,8 @@ export function MineSweep(props: MinigameProps) {
 
       const cell = cells[cellIndex];
 
-      // Un-marking is always allowed
-      if (markedCellsRef.current.has(cellIndex)) {
+      // Un-marking is allowed unless it was auto-flagged by Mine Detector
+      if (markedCellsRef.current.has(cellIndex) && !autoFlaggedMines.has(cellIndex)) {
         setMarkedCells((prev) => {
           const next = new Set(prev);
           next.delete(cellIndex);
@@ -176,7 +218,7 @@ export function MineSweep(props: MinigameProps) {
         return next;
       });
     },
-    [isActive, mineCount, cells, fail],
+    [isActive, mineCount, cells, fail, autoFlaggedMines],
   );
 
   // Auto-complete when all mines are correctly marked
@@ -279,6 +321,8 @@ export function MineSweep(props: MinigameProps) {
               phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
             const isMarked = markedCells.has(cell.id);
             const showMine = phase === "preview" && cell.isMine;
+            // 3c. mines-visible: keep certain mines visible even in mark phase
+            const isVisibleMine = phase === "mark" && visibleMines.has(cell.id) && !isMarked;
 
             return (
               <button
@@ -298,18 +342,22 @@ export function MineSweep(props: MinigameProps) {
                   ${
                     showMine
                       ? "border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)]"
-                      : isMarked
-                        ? "border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                        : isCursor
-                          ? "border-cyber-cyan/60 bg-cyber-cyan/10 text-white shadow-[0_0_10px_rgba(0,255,255,0.15)]"
-                          : phase === "mark"
-                            ? "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10 cursor-pointer"
-                            : "border-white/10 bg-white/5 text-white/30"
+                      : isVisibleMine
+                        ? "border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60"
+                        : isMarked
+                          ? "border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_12px_rgba(0,255,255,0.25)]"
+                          : isCursor
+                            ? "border-cyber-cyan/60 bg-cyber-cyan/10 text-white shadow-[0_0_10px_rgba(0,255,255,0.15)]"
+                            : phase === "mark"
+                              ? "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10 cursor-pointer"
+                              : "border-white/10 bg-white/5 text-white/30"
                   }
                 `}
               >
                 {showMine ? (
                   <span className="text-base">⬟</span>
+                ) : isVisibleMine ? (
+                  <span className="text-base opacity-60">⬟</span>
                 ) : isMarked ? (
                   <span className="text-base">⚑</span>
                 ) : (
