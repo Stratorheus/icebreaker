@@ -88,8 +88,10 @@ export function TypeBackward(props: MinigameProps) {
   // displayWords[i] is mirroredWords[N-1-i], which is originalWords[N-1-i] reversed.
   // So the answer for displayWords[i] is originalWords[N-1-i].
   const expectedAnswers = useMemo(
-    () => displayWords.map((dw) => dw.split("").reverse().join("")),
-    [displayWords],
+    () => hasReverseTrainer
+      ? displayWords.map((dw) => dw) // words already normal, type as-is
+      : displayWords.map((dw) => dw.split("").reverse().join("")),
+    [displayWords, hasReverseTrainer],
   );
 
   // Current word index (in display order)

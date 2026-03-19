@@ -116,7 +116,9 @@ export function MineSweep(props: MinigameProps) {
 
     // Visible mines (from mines-visible meta upgrade, percentage-based) — pick from remaining
     const remaining = shuffled.filter((i) => !autoFlagged.has(i));
-    const visCount = Math.min(Math.round(mineCount * minesVisiblePct), remaining.length);
+    const visCount = minesVisiblePct > 0
+      ? Math.min(Math.max(1, Math.round(mineCount * minesVisiblePct)), remaining.length)
+      : 0;
     const visible = new Set(remaining.slice(0, visCount));
 
     return { autoFlaggedMines: autoFlagged, visibleMines: visible };
