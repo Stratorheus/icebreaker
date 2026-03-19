@@ -14,8 +14,8 @@ import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
+import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import {
-  ChecksumVerifyPlaceholder,
   PortScanPlaceholder,
   SubnetScanPlaceholder,
   CipherCrackV2Placeholder,
@@ -221,15 +221,15 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "checksum-verify": {
     title: "CHECKSUM VERIFY",
     rules: [
-      "A data block with a target checksum is displayed",
-      "Calculate the correct checksum from the shown values",
-      "Type the computed checksum to verify the data integrity",
-      "Wrong answer = failure; partial attempts are allowed",
+      "A series of math expressions is displayed one at a time",
+      "Type the correct answer using number keys (0-9) and minus (-)",
+      "Press ENTER or SPACE to confirm — wrong answer = immediate failure",
+      "Solve all expressions to verify the data integrity",
     ],
-    controls: "Keyboard — type the checksum digits",
+    controls: "Number keys (0-9), minus (-), Backspace, ENTER/SPACE to confirm",
     tips: [
-      "Addition-based checksums: sum all digits, take modulus",
-      "At higher difficulty the data blocks are longer and operations more complex",
+      "At low difficulty it's simple addition/subtraction — stay calm",
+      "Higher difficulty adds two-digit math and multiplication up to 9x9",
     ],
   },
   "port-scan": {
@@ -296,7 +296,7 @@ const MINIGAME_COMPONENTS: Record<
   "network-trace": NetworkTrace,
   "data-stream": DataStream,
   "signal-echo": SignalEcho,
-  "checksum-verify": ChecksumVerifyPlaceholder,
+  "checksum-verify": ChecksumVerify,
   "port-scan": PortScanPlaceholder,
   "subnet-scan": SubnetScanPlaceholder,
   "cipher-crack-v2": CipherCrackV2Placeholder,

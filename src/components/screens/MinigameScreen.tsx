@@ -18,8 +18,8 @@ import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
 import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
+import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import {
-  ChecksumVerifyPlaceholder,
   PortScanPlaceholder,
   SubnetScanPlaceholder,
   CipherCrackV2Placeholder,
@@ -296,7 +296,7 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "network-trace": NetworkTrace,
   "data-stream": DataStream,
   "signal-echo": SignalEcho,
-  "checksum-verify": ChecksumVerifyPlaceholder,
+  "checksum-verify": ChecksumVerify,
   "port-scan": PortScanPlaceholder,
   "subnet-scan": SubnetScanPlaceholder,
   "cipher-crack-v2": CipherCrackV2Placeholder,
@@ -499,7 +499,7 @@ function getMinigameHint(type: MinigameType): string {
     case "signal-echo":
       return "Repeat the signal pattern in the correct sequence.";
     case "checksum-verify":
-      return "Calculate and verify the checksum value.";
+      return "Solve each math expression — type the answer and press Enter.";
     case "port-scan":
       return "Identify the open ports from the scan results.";
     case "subnet-scan":
