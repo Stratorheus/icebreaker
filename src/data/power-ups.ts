@@ -181,10 +181,10 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "arrow-compass",
     name: "Arrow Compass",
-    description: "First arrow in Match Arrows is always revealed.",
+    description: "See 2 arrows ahead in Match Arrows instead of just 1.",
     category: "assist",
     basePrice: 40,
-    effect: { type: "reveal-first", value: 1, minigame: "match-arrows" },
+    effect: { type: "peek-ahead", value: 2, minigame: "match-arrows" },
     icon: "compass",
   },
   {

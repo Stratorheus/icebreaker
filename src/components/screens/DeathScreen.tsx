@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import { getDataReward, getMilestoneBonus } from "@/data/balancing";
+import { getDataReward } from "@/data/balancing";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 
 /**
@@ -23,8 +23,13 @@ export function DeathScreen() {
   const runScore = useGameStore((s) => s.runScore);
   const runStartTime = useGameStore((s) => s.runStartTime);
 
-  // Calculate data earned this run
-  const dataEarned = getDataReward(floor) + getMilestoneBonus(floor);
+  // Base run data reward (no milestone bonus — milestones are already
+  // awarded during advanceFloor() so including them here double-counts)
+  const baseDataEarned = getDataReward(floor);
+
+  // Total data earned this run (base + achievement bonuses), updated after
+  // awards are processed so the display reflects the real total.
+  const [totalDataEarned, setTotalDataEarned] = useState(baseDataEarned);
 
   // Prevent double-award in React Strict Mode
   const awardedRef = useRef(false);
@@ -33,9 +38,12 @@ export function DeathScreen() {
     if (awardedRef.current) return;
     awardedRef.current = true;
 
-    // Award data to persistent store
-    if (dataEarned > 0) {
-      addData(dataEarned);
+    // Snapshot data balance before awards
+    const dataBefore = useGameStore.getState().data;
+
+    // Award base run data to persistent store
+    if (baseDataEarned > 0) {
+      addData(baseDataEarned);
     }
 
     // Update stats
@@ -47,13 +55,17 @@ export function DeathScreen() {
         stats.totalMinigamesPlayed + minigamesPlayedThisRun,
       totalMinigamesWon: stats.totalMinigamesWon + minigamesWonThisRun,
       totalCreditsEarned: stats.totalCreditsEarned + runScore,
-      totalDataEarned: stats.totalDataEarned + dataEarned,
+      totalDataEarned: stats.totalDataEarned + baseDataEarned,
       totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
     });
 
     // Check run-end achievements (total-runs, total-minigames) after stats
     // are updated. Zustand set() is synchronous so getState() is fresh.
     awardNewAchievements();
+
+    // Calculate total data actually added (base + any achievement bonuses)
+    const dataAfter = useGameStore.getState().data;
+    setTotalDataEarned(dataAfter - dataBefore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -77,7 +89,7 @@ export function DeathScreen() {
         <SummaryRow label="CREDITS EARNED" value={`${runScore} CR`} />
         <SummaryRow
           label="DATA EARNED"
-          value={`${"\u25C6"} ${dataEarned}`}
+          value={`${"\u25C6"} ${totalDataEarned}`}
           highlight
         />
       </div>
