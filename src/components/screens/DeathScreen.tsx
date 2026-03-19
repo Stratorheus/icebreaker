@@ -6,9 +6,11 @@ import { awardNewAchievements } from "@/hooks/use-achievement-check";
 /**
  * Death screen — shown when HP reaches 0.
  *
- * Displays run summary, awards persistent data (with 25% death penalty,
- * reducible via Data Recovery meta upgrade), updates stats, and provides
- * a return-to-menu button.
+ * Displays a detailed data breakdown:
+ *   BASE DATA  /  CREDITS SAVED  /  ACHIEVEMENT BONUS  /  DEATH PENALTY  /  TOTAL
+ *
+ * Leftover credits convert to bonus data at 50% rate.
+ * Awards persistent data (with death penalty), updates stats, return-to-menu.
  */
 export function DeathScreen() {
   const setStatus = useGameStore((s) => s.setStatus);
@@ -23,6 +25,7 @@ export function DeathScreen() {
   );
   const minigamesWonThisRun = useGameStore((s) => s.minigamesWonThisRun);
   const runScore = useGameStore((s) => s.runScore);
+  const credits = useGameStore((s) => s.credits);
   const runStartTime = useGameStore((s) => s.runStartTime);
 
   // Base run data reward (no milestone bonus — milestones are already
@@ -32,15 +35,21 @@ export function DeathScreen() {
   const dataMultiplier = 1 + dataTier * 0.1;
   const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
 
+  // Credits → Data conversion: leftover credits convert at 50% rate
+  const creditsSaved = Math.floor(credits * 0.5);
+
+  // Pre-penalty subtotal (base + credits saved)
+  const prePenaltyData = baseDataEarned + creditsSaved;
+
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
   const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
   const penaltyPct = Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
-  const penaltyAmount = Math.floor(baseDataEarned * penaltyPct);
-  const dataAfterPenalty = baseDataEarned - penaltyAmount;
+  const penaltyAmount = Math.floor(prePenaltyData * penaltyPct);
+  const dataAfterPenalty = prePenaltyData - penaltyAmount;
 
-  // Total data earned this run (base minus penalty + achievement bonuses),
-  // updated after awards are processed so the display reflects the real total.
+  // Achievement bonus is computed after awards run — initially 0, updated in useEffect.
+  const [achievementBonus, setAchievementBonus] = useState(0);
   const [totalDataEarned, setTotalDataEarned] = useState(dataAfterPenalty);
 
   // Prevent double-award in React Strict Mode
@@ -53,7 +62,7 @@ export function DeathScreen() {
     // Snapshot data balance before awards
     const dataBefore = useGameStore.getState().data;
 
-    // Award data with death penalty applied
+    // Award data with death penalty applied (includes creditsSaved)
     if (dataAfterPenalty > 0) {
       addData(dataAfterPenalty);
     }
@@ -77,7 +86,10 @@ export function DeathScreen() {
 
     // Calculate total data actually added (base - penalty + achievement bonuses)
     const dataAfterAll = useGameStore.getState().data;
-    setTotalDataEarned(dataAfterAll - dataBefore);
+    const actualTotal = dataAfterAll - dataBefore;
+    const achBonus = actualTotal - dataAfterPenalty;
+    setAchievementBonus(Math.max(0, achBonus));
+    setTotalDataEarned(actualTotal);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -87,38 +99,57 @@ export function DeathScreen() {
       <h1 className="text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 text-cyber-magenta">
         CONNECTION LOST
       </h1>
-      <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-10">
+      <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8">
         {">"}_&nbsp;SYSTEM BREACH FAILED
       </p>
 
-      {/* Run summary grid */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-6 text-sm uppercase tracking-widest">
+      {/* Run summary */}
+      <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm uppercase tracking-widest">
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
           label="MINIGAMES"
           value={`${minigamesWonThisRun}W / ${minigamesPlayedThisRun}P`}
         />
         <SummaryRow label="CREDITS EARNED" value={`${runScore} CR`} />
-        <SummaryRow
-          label="DATA EARNED"
-          value={`${"\u25C6"} ${totalDataEarned}`}
-          highlight
-        />
       </div>
 
-      {/* Death penalty notice */}
-      <div className="mb-10 text-center">
-        <p className="text-cyber-magenta/60 text-[10px] uppercase tracking-widest">
-          DEATH PENALTY: -{Math.round(penaltyPct * 100)}% DATA
-          {penaltyAmount > 0 && (
-            <span className="text-white/30 ml-2">(-{penaltyAmount})</span>
-          )}
-        </p>
+      {/* Data breakdown */}
+      <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
+        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={"\u25C6"} />
+        {creditsSaved > 0 && (
+          <BreakdownRow
+            label="CREDITS SAVED"
+            value={`+${creditsSaved}`}
+            suffix={"\u25C6"}
+            className="text-cyber-green/70"
+          />
+        )}
+        {achievementBonus > 0 && (
+          <BreakdownRow
+            label="ACHIEVEMENT BONUS"
+            value={`+${achievementBonus}`}
+            suffix={"\u25C6"}
+            className="text-cyber-cyan/70"
+          />
+        )}
+        <BreakdownRow
+          label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
+          value={`-${penaltyAmount}`}
+          suffix={"\u25C6"}
+          className="text-cyber-magenta/70"
+        />
         {dataRecoveryTier > 0 && (
-          <p className="text-cyber-green/40 text-[10px] uppercase tracking-widest mt-1">
+          <p className="text-cyber-green/40 text-[10px] tracking-widest mt-0.5 mb-1 text-right">
             DATA RECOVERY LVL {dataRecoveryTier} ACTIVE
           </p>
         )}
+        <div className="border-t border-white/10 my-2" />
+        <BreakdownRow
+          label="TOTAL"
+          value={`${totalDataEarned}`}
+          suffix={"\u25C6"}
+          className="text-cyber-magenta font-bold text-sm"
+        />
       </div>
 
       {/* Return button */}
@@ -141,7 +172,7 @@ export function DeathScreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Internal helper
+// Internal helpers
 // ---------------------------------------------------------------------------
 
 function SummaryRow({
@@ -166,5 +197,26 @@ function SummaryRow({
         {value}
       </span>
     </>
+  );
+}
+
+function BreakdownRow({
+  label,
+  value,
+  suffix,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  suffix: string;
+  className?: string;
+}) {
+  return (
+    <div className={`flex justify-between items-baseline py-0.5 ${className || "text-white/60"}`}>
+      <span>{label}</span>
+      <span className="tabular-nums">
+        {value} {suffix}
+      </span>
+    </div>
   );
 }

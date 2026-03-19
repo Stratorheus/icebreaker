@@ -38,6 +38,8 @@ export interface RunSlice {
   milestoneFloor: number;
   /** Tracks the status before entering pause, so we can resume to the correct screen. */
   previousStatus: GameStatus | null;
+  /** Number of run-shop items bought this run (for price scaling). */
+  itemsBoughtThisRun: number;
 
   // Actions
   startRun: () => void;
@@ -97,6 +99,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   bonusTimeSecs: 0,
   milestoneFloor: 0,
   previousStatus: null,
+  itemsBoughtThisRun: 0,
 };
 
 // Helper type: extract only action keys
@@ -192,6 +195,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       powerUpsUsedThisFloor: false,
       bonusTimeSecs,
       milestoneFloor: 0,
+      itemsBoughtThisRun: 0,
     });
   },
 
@@ -202,13 +206,18 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // 1b. Credit Multiplier meta upgrade: +10/20/30% credits
     const creditTier = state.purchasedUpgrades["credit-multiplier"] ?? 0;
     const creditMultiplier = 1 + creditTier * 0.1;
+
+    // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
+    const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
+    const totalCreditMultiplier = creditMultiplier * (1 + unlockBonus);
+
     const baseCredits = getCredits(result.timeMs, difficulty);
 
     // 1e. Speed Tax meta upgrade: flat bonus per tier on top of credits
     const speedTaxTier = state.purchasedUpgrades["speed-tax"] ?? 0;
     const speedBonus = speedTaxTier > 0 ? Math.round(baseCredits * speedTaxTier * 0.05) : 0;
 
-    const earned = Math.round(baseCredits * creditMultiplier) + speedBonus;
+    const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
 

@@ -77,9 +77,10 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       }
     }
 
+    const itemsBought = state.itemsBoughtThisRun ?? 0;
     const offers: RunShopOffer[] = picked.map((item) => ({
       ...item,
-      price: getRunShopPrice(item.basePrice, floor),
+      price: Math.round(getRunShopPrice(item.basePrice, floor) * (1 + itemsBought * 0.05)),
       purchased: false,
     }));
 
@@ -116,6 +117,8 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       i === index ? { ...o, purchased: true } : o,
     );
 
+    const newItemsBought = (state.itemsBoughtThisRun ?? 0) + 1;
+
     // Immediate-effect items are consumed on purchase (not added to inventory)
     const effectType = powerUp.effect.type;
     if (effectType === "heal") {
@@ -123,6 +126,7 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       set({
         credits: newCredits,
         runShopOffers: newOffers,
+        itemsBoughtThisRun: newItemsBought,
       });
       state.heal(powerUp.effect.value);
       return true;
@@ -133,6 +137,7 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       credits: newCredits,
       runShopOffers: newOffers,
       inventory: [...state.inventory, powerUp],
+      itemsBoughtThisRun: newItemsBought,
     });
 
     return true;
