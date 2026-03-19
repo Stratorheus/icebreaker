@@ -67,14 +67,14 @@ export function HUD() {
       {/* Right: Stats */}
       <div className="flex items-center gap-4">
         {/* Floor */}
-        <div className="flex items-center gap-1 text-cyber-cyan/80">
+        <div className="flex items-center gap-1 text-cyber-cyan/80 glitch-subtle">
           <span aria-hidden="true">{"\u25C6"}</span>
           <span>FLOOR {floor}</span>
         </div>
 
         {/* HP bar */}
         <div className="flex items-center gap-1">
-          <span className="text-white/50">HP</span>
+          <span className="text-white/50 glitch-subtle">HP</span>
           <span className="text-cyber-green">
             {"\u2588".repeat(hpBarFilled)}
           </span>
@@ -96,7 +96,7 @@ export function HUD() {
         </div>
 
         {/* Credits */}
-        <div className="flex items-center gap-1 text-cyber-magenta">
+        <div className="flex items-center gap-1 text-cyber-magenta glitch-subtle">
           <span aria-hidden="true">{"\u2B26"}</span>
           <span className="tabular-nums">
             {credits.toLocaleString()} CR

@@ -194,14 +194,14 @@ export function RunShop() {
       <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1 glitch-text">
         VENDOR NODE
       </h1>
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
         {">"}_&nbsp;FLOOR {floor} CLEARED
       </p>
 
       {/* Status bar: HP + Credits */}
       <div className="flex items-center gap-6 mb-8">
         <div className="flex items-center gap-2">
-          <span className="text-white/40 text-xs uppercase tracking-widest">
+          <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             HP
           </span>
           <span
@@ -219,7 +219,7 @@ export function RunShop() {
         </div>
         <div className="w-px h-5 bg-white/10" />
         <div className="flex items-center gap-2">
-          <span className="text-white/40 text-xs uppercase tracking-widest">
+          <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             CR
           </span>
           <span className="text-cyber-magenta font-bold text-lg tabular-nums">

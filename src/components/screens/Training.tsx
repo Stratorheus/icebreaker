@@ -365,13 +365,13 @@ function PickerPhase({
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1">
+        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;TRAINING MODE
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan">
+        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
           SELECT PROTOCOL
         </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
+        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
           PRACTICE ANY UNLOCKED MINIGAME — RESULTS NOT RECORDED
         </p>
       </div>
@@ -482,10 +482,10 @@ function BriefingPhase({
     <div className="flex-1 flex flex-col items-center px-4 pb-12 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mt-6 mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1">
+        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;TRAINING PROTOCOL
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan">
+        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
           {briefing.title}
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
@@ -595,13 +595,13 @@ function CountdownPhase({
 }) {
   return (
     <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
         TRAINING — ROUND {round}/{total}
       </p>
-      <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
+      <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {BRIEFINGS[type].title}
       </h2>
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums">
+      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
         {value > 0 ? value : "GO"}
       </p>
     </div>
@@ -680,10 +680,10 @@ function CompletePhase({
   return (
     <div className="text-center select-none flex flex-col items-center">
       {/* Header */}
-      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2">
+      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2 glitch-flicker">
         {">"}_&nbsp;TRAINING PROTOCOL COMPLETE
       </p>
-      <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
+      <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {BRIEFINGS[type].title}
       </h2>
 

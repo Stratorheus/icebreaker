@@ -28,16 +28,16 @@ export function MainMenu() {
       </div>
 
       {/* Subtitle */}
-      <p className="text-white/40 text-sm tracking-[0.3em] uppercase mb-12">
+      <p className="text-white/40 text-sm tracking-[0.3em] uppercase mb-12 glitch-subtle">
         {">"}_&nbsp;NEURAL INTRUSION SYSTEM
       </p>
 
       {/* Stats display */}
       <div className="flex gap-6 mb-10 text-xs uppercase tracking-widest">
-        <span className="text-cyber-cyan/60">
+        <span className="text-cyber-cyan/60 glitch-subtle">
           BEST: FLOOR {stats.bestFloor}
         </span>
-        <span className="text-cyber-magenta/60">
+        <span className="text-cyber-magenta/60 glitch-subtle">
           {"\u25C6"} {data}
         </span>
       </div>
@@ -63,7 +63,7 @@ export function MainMenu() {
 
       {/* Reset + Version */}
       <div className="mt-12 flex flex-col items-center gap-2">
-        <p className="text-white/20 text-[10px] uppercase tracking-widest">
+        <p className="text-white/20 text-[10px] uppercase tracking-widest glitch-flicker">
           v1.0.0 // PROTOTYPE
         </p>
         <button

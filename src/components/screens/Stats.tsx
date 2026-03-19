@@ -148,20 +148,20 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1">
+        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;OPERATOR DOSSIER
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan">
+        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
           SYSTEM LOGS
         </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
+        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
           PERSISTENT RECORD — ALL SESSIONS
         </p>
       </div>
 
       {/* Stats table */}
       <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
-        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
           {">"}_&nbsp;STATISTICS
         </h2>
 
@@ -183,7 +183,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
       {/* Per-minigame win totals, if any recorded */}
       {Object.keys(stats.minigameWinsTotal).length > 0 && (
         <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
             {">"}_&nbsp;MINIGAME RECORD
           </h2>
           <div className="space-y-0">
@@ -203,7 +203,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
       {/* Achievements */}
       <section className="w-full max-w-2xl">
         <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 glitch-subtle">
             {">"}_&nbsp;ACHIEVEMENTS
           </h2>
           <span className="text-xs font-mono tabular-nums text-cyber-cyan/60">

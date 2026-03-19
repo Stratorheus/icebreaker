@@ -99,12 +99,12 @@ export function DeathScreen() {
       <h1 className="text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 text-cyber-magenta glitch-text-strong">
         CONNECTION LOST
       </h1>
-      <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8">
+      <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8 glitch-subtle">
         {">"}_&nbsp;SYSTEM BREACH FAILED
       </p>
 
       {/* Run summary */}
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm uppercase tracking-widest">
+      <div className="grid grid-cols-2 gap-x-8 gap-y-3 mb-8 text-sm uppercase tracking-widest glitch-subtle">
         <SummaryRow label="FLOOR REACHED" value={String(floor)} />
         <SummaryRow
           label="MINIGAMES"

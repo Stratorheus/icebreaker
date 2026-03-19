@@ -231,10 +231,10 @@ function CountdownPhase({
 }) {
   return (
     <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
         FLOOR {floor} // MINIGAME {index + 1} OF {total}
       </p>
-      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
+      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}
       </h2>
       {hint && (
@@ -423,18 +423,18 @@ function ResultFlash({
   return (
     <div className="text-center select-none">
       <h2
-        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider ${
+        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider glitch-text ${
           success ? "text-cyber-cyan" : "text-cyber-magenta"
         }`}
       >
         {success ? "SUCCESS" : "FAILED"}
       </h2>
       {success && earnedCredits > 0 && (
-        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest">
+        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
           +{earnedCredits} CR
         </p>
       )}
-      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest">
+      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">
         {success ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
       </p>
     </div>
