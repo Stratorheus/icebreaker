@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
-import { getDifficulty, getTimeLimit } from "@/data/balancing";
+import { getCredits, getDifficulty, getTimeLimit } from "@/data/balancing";
 import { checkSkip } from "@/lib/power-up-effects";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
@@ -40,6 +40,7 @@ export function MinigameScreen() {
   const [phase, setPhase] = useState<Phase>("countdown");
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
+  const [lastEarnedCredits, setLastEarnedCredits] = useState(0);
   const [hintText, setHintText] = useState<string | null>(null);
 
   // Track the floorMinigames array reference to detect re-rolls (fail
@@ -120,6 +121,23 @@ export function MinigameScreen() {
       setLastResult(result.success);
       setPhase("result");
 
+      // Calculate credits earned for success flash display
+      let earnedCredits = 0;
+      if (result.success) {
+        const diffReducerT = purchasedUpgrades["difficulty-reducer"] ?? 0;
+        const diff = Math.max(0, getDifficulty(floor) - diffReducerT * 0.02);
+        const creditTier = purchasedUpgrades["credit-multiplier"] ?? 0;
+        const creditMul = 1 + creditTier * 0.1;
+        const unlockedCount = useGameStore.getState().unlockedMinigames.length;
+        const unlockBonus = Math.max(0, unlockedCount - 5) * 0.05; // STARTING_MINIGAMES = 5
+        const totalMul = creditMul * (1 + unlockBonus);
+        const base = getCredits(result.timeMs, diff);
+        const speedTaxT = purchasedUpgrades["speed-tax"] ?? 0;
+        const speedBonus = speedTaxT > 0 ? Math.round(base * speedTaxT * 0.05) : 0;
+        earnedCredits = Math.round(base * totalMul) + speedBonus;
+      }
+      setLastEarnedCredits(earnedCredits);
+
       // After 1-second result flash, dispatch to store
       setTimeout(() => {
         // Record minigame result for streak/total tracking first
@@ -131,6 +149,19 @@ export function MinigameScreen() {
           failMinigame();
         }
 
+        // Consume minigame-specific power-ups (e.g. arrow-compass, mine-detector,
+        // slash-calibration, bracket-auto-close) — these should be one-use, not permanent.
+        // Also consume time-bonus power-ups that were active during this minigame.
+        const currentInventory = useGameStore.getState().inventory;
+        const toConsume = currentInventory.filter(
+          (p) =>
+            (p.effect.minigame && p.effect.minigame === result.minigame) ||
+            p.effect.type === "time-bonus",
+        );
+        for (const pu of toConsume) {
+          usePowerUp(pu.id);
+        }
+
         // Check achievements after store state is updated
         // (Zustand set() is synchronous so state is fresh here)
         awardNewAchievements({
@@ -140,7 +171,7 @@ export function MinigameScreen() {
         });
       }, 1000);
     },
-    [completeMinigame, failMinigame, recordMinigameResult],
+    [completeMinigame, failMinigame, recordMinigameResult, purchasedUpgrades, floor, usePowerUp],
   );
 
   return (
@@ -168,7 +199,12 @@ export function MinigameScreen() {
           />
         )}
 
-        {phase === "result" && <ResultFlash success={lastResult ?? false} />}
+        {phase === "result" && (
+          <ResultFlash
+            success={lastResult ?? false}
+            earnedCredits={lastEarnedCredits}
+          />
+        )}
       </div>
     </div>
   );
@@ -220,7 +256,7 @@ function CountdownPhase({
 const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "slash-timing": 8,
   "close-brackets": 8,
-  "type-backward": 10,
+  "type-backward": 13,
   "match-arrows": 8,
   "find-symbol": 12,
   "mine-sweep": 15,
@@ -377,7 +413,13 @@ function MinigameRouter({
 // Result flash
 // ---------------------------------------------------------------------------
 
-function ResultFlash({ success }: { success: boolean }) {
+function ResultFlash({
+  success,
+  earnedCredits,
+}: {
+  success: boolean;
+  earnedCredits: number;
+}) {
   return (
     <div className="text-center select-none">
       <h2
@@ -387,7 +429,12 @@ function ResultFlash({ success }: { success: boolean }) {
       >
         {success ? "SUCCESS" : "FAILED"}
       </h2>
-      <p className="mt-4 text-white/30 text-sm uppercase tracking-widest">
+      {success && earnedCredits > 0 && (
+        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest">
+          +{earnedCredits} CR
+        </p>
+      )}
+      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest">
         {success ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
       </p>
     </div>
