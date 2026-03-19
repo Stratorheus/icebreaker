@@ -277,7 +277,7 @@ export function MineSweep(props: MinigameProps) {
         {phase === "preview" ? (
           <div className="text-center">
             <p className="text-cyber-magenta text-sm uppercase tracking-widest font-bold mb-2 animate-pulse">
-              Memorize mines
+              Memorize targets
             </p>
             {/* Preview sub-timer bar */}
             <div className="w-40 h-1 rounded-full bg-white/10 mx-auto">
@@ -298,7 +298,7 @@ export function MineSweep(props: MinigameProps) {
         ) : (
           <div className="text-center">
             <p className="text-cyber-cyan text-sm uppercase tracking-widest font-bold mb-1">
-              Mark {mineCount} mines
+              Mark {mineCount} corrupted sectors
             </p>
             <p className="text-white/50 text-xs uppercase tracking-widest">
               {markedCells.size}/{mineCount} marked
@@ -375,7 +375,7 @@ export function MineSweep(props: MinigameProps) {
       <div className="mt-6 text-center">
         {phase === "preview" ? (
           <p className="text-white/40 text-xs uppercase tracking-widest">
-            Remember the mine positions
+            Remember the corrupted sector positions
           </p>
         ) : (
           <>

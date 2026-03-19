@@ -280,8 +280,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   },
   {
     id: "mine-echo",
-    name: "Mine Echo",
-    description: "20 / 35 / 50 % of mines remain visible at the start of Memory Scan.",
+    name: "Memory Echo",
+    description: "20 / 35 / 50 % of corrupted sectors remain visible at the start of Memory Scan.",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 500],

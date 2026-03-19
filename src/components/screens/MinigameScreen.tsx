@@ -518,7 +518,7 @@ function getMinigameHint(type: MinigameType): string {
     case "find-symbol":
       return "Click/select each target symbol in order.";
     case "mine-sweep":
-      return "Memorize mine positions during the preview phase.";
+      return "Memorize corrupted sector positions during the preview phase.";
     case "wire-cutting":
       return "Cut wires in the order shown by the sequence.";
     case "cipher-crack":
