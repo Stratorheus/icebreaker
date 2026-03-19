@@ -142,13 +142,25 @@ export function MetaShop() {
     return Math.round(basePrice * (1 + totalPurchasesMade * 0.15));
   };
 
+  /** Get the price for a stackable upgrade: base * (1 + timesPurchased * 0.5) */
+  const getStackablePrice = (upgrade: MetaUpgrade) => {
+    const timesPurchased = purchasedUpgrades[upgrade.id] ?? 0;
+    const basePrice = upgrade.prices[0] ?? 100;
+    return Math.round(basePrice * (1 + timesPurchased * 0.5));
+  };
+
   const handlePurchase = (upgrade: MetaUpgrade) => {
     const currentTier = purchasedUpgrades[upgrade.id] ?? 0;
     if (currentTier >= upgrade.maxTier) return;
 
-    const basePrice = upgrade.prices[currentTier];
-    if (basePrice === undefined) return;
-    const price = getScaledPrice(basePrice);
+    let price: number;
+    if (upgrade.stackable) {
+      price = getStackablePrice(upgrade);
+    } else {
+      const basePrice = upgrade.prices[currentTier];
+      if (basePrice === undefined) return;
+      price = getScaledPrice(basePrice);
+    }
 
     const success = spendData(price);
     if (!success) return;
@@ -234,6 +246,7 @@ export function MetaShop() {
                     }
                     config={config}
                     getScaledPrice={getScaledPrice}
+                    getStackablePrice={getStackablePrice}
                     onPurchase={() => handlePurchase(upgrade)}
                   />
                 ))}
@@ -273,6 +286,7 @@ function UpgradeCard({
   prereqMet,
   config,
   getScaledPrice,
+  getStackablePrice,
   onPurchase,
 }: {
   upgrade: MetaUpgrade;
@@ -281,24 +295,41 @@ function UpgradeCard({
   prereqMet: boolean;
   config: CategoryConfig;
   getScaledPrice: (basePrice: number) => number;
+  getStackablePrice: (upgrade: MetaUpgrade) => number;
   onPurchase: () => void;
 }) {
-  const isMaxed = currentTier >= upgrade.maxTier;
-  const basePrice = isMaxed ? null : upgrade.prices[currentTier];
-  const nextPrice = basePrice !== null && basePrice !== undefined ? getScaledPrice(basePrice) : null;
+  const isStackable = upgrade.stackable === true;
+  const isMaxed = !isStackable && currentTier >= upgrade.maxTier;
+
+  // Calculate price
+  let nextPrice: number | null;
+  if (isStackable) {
+    nextPrice = getStackablePrice(upgrade);
+  } else if (isMaxed) {
+    nextPrice = null;
+  } else {
+    const basePrice = upgrade.prices[currentTier];
+    nextPrice = basePrice !== null && basePrice !== undefined ? getScaledPrice(basePrice) : null;
+  }
+
   const canAfford = nextPrice !== null && dataBalance >= nextPrice;
   const canPurchase = !isMaxed && canAfford && prereqMet;
   const isMinigameUnlock = upgrade.category === "minigame-unlock";
 
   // Effect preview: show current or next tier effect description
   const effectPreview = useMemo(() => {
+    if (isStackable) {
+      // For stackable, always show the per-purchase effect
+      const eff = upgrade.effects[0];
+      return eff ? formatEffect(eff) : null;
+    }
     if (isMaxed) {
       const eff = upgrade.effects[currentTier - 1];
       return eff ? formatEffect(eff) : null;
     }
     const eff = upgrade.effects[currentTier];
     return eff ? formatEffect(eff) : null;
-  }, [upgrade.effects, currentTier, isMaxed]);
+  }, [upgrade.effects, currentTier, isMaxed, isStackable]);
 
   return (
     <div
@@ -359,15 +390,22 @@ function UpgradeCard({
             isMaxed ? "text-white/20" : "text-white/35",
           )}
         >
-          {isMaxed ? "Active" : "Next"}: {effectPreview}
+          {isStackable ? `Per purchase` : isMaxed ? "Active" : "Next"}: {effectPreview}
         </p>
       )}
 
-      {/* Bottom row: tier + price + button */}
+      {/* Bottom row: tier/count + price + button */}
       <div className="flex items-center justify-between mt-auto pt-2">
-        {/* Tier indicator (only if maxTier > 1) */}
         <div className="flex items-center gap-3">
-          {upgrade.maxTier > 1 && (
+          {/* Stackable: show purchase count */}
+          {isStackable && (
+            <span className={cn("text-xs font-bold tabular-nums", config.colors.text)}>
+              x{currentTier}
+            </span>
+          )}
+
+          {/* Tier indicator (only for non-stackable with maxTier > 1) */}
+          {!isStackable && upgrade.maxTier > 1 && (
             <TierIndicator
               current={currentTier}
               max={upgrade.maxTier}
@@ -442,6 +480,8 @@ function formatEffect(effect: { type: string; value: number }): string {
       return `+${Math.round(effect.value * 100)}% speed bonus`;
     case "global-time-bonus":
       return `+${effect.value}s time limit`;
+    case "difficulty-reduction":
+      return `-${effect.value} difficulty`;
     case "start-random-powerup":
       return `${effect.value} random power-up(s)`;
     case "start-hp":

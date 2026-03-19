@@ -3,9 +3,9 @@
  * All math comes directly from the design spec.
  */
 
-/** Returns difficulty scalar 0–1 based on current floor. Starts at 0.15 so floor 1 isn't trivial. */
+/** Returns difficulty scalar 0–1 based on current floor. Starts at 0.1, reaches max ~floor 13. */
 export function getDifficulty(floor: number): number {
-  return Math.min(0.15 + floor / 12, 1.0);
+  return Math.min(0.1 + floor / 15, 1.0);
 }
 
 /** Returns damage dealt to player on a failed minigame. */
@@ -56,14 +56,14 @@ export function getRunShopPrice(basePrice: number, floor: number): number {
  * At difficulty 0 the full baseTime is available;
  * at difficulty 1 the player gets 60 % of baseTime.
  *
- * After floor 10, time keeps shrinking by 3% per floor down to 50%
+ * After floor 15, time keeps shrinking by 2% per floor down to 40%
  * of the already-reduced time, so late-game stays challenging even
  * after minigame difficulty maxes out.
  */
 export function getTimeLimit(baseTime: number, difficulty: number, floor?: number): number {
   const difficultyScale = 1 - difficulty * 0.4;
-  const floorScale = floor && floor > 10
-    ? Math.max(0.5, 1 - (floor - 10) * 0.03)
+  const floorScale = floor && floor > 15
+    ? Math.max(0.4, 1 - (floor - 15) * 0.02)
     : 1;
   return Math.round(baseTime * difficultyScale * floorScale);
 }

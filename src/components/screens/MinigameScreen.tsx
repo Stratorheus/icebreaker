@@ -338,8 +338,16 @@ function MinigameRouter({
   onComplete: (result: MinigameResult) => void;
 }) {
   const inventory = useGameStore((s) => s.inventory);
-  const difficulty = getDifficulty(floor);
-  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs;
+
+  // Difficulty reducer (stackable): subtract 0.02 per purchase (min 0)
+  const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
+  const difficulty = Math.max(0, getDifficulty(floor) - diffReducerTier * 0.02);
+
+  // Timer extension (stackable): +0.3s per purchase
+  const timerExtTier = purchasedUpgrades["timer-extension"] ?? 0;
+  const timerExtBonus = timerExtTier * 0.3;
+
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs + timerExtBonus;
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics

@@ -49,6 +49,20 @@ export function CloseBrackets(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
+  // 3f. Bracket Reducer (minigame-specific): remove a bracket type from the pool
+  const availableOpeners = useMemo(() => {
+    const hasBracketReducer = activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "close-brackets",
+    );
+    if (hasBracketReducer && OPENERS.length > 2) {
+      // Remove the hardest bracket type (pipe or backslash) from the pool
+      return OPENERS.filter((o) => o !== "\\" && o !== "|").length >= 2
+        ? OPENERS.filter((o) => o !== "\\" && o !== "|")
+        : OPENERS.slice(0, -1);
+    }
+    return OPENERS;
+  }, [activePowerUps]);
+
   // Bracket count: 3 (d=0) -> 8 (d=1)
   const bracketCount = Math.round(3 + difficulty * 5);
 
@@ -56,7 +70,7 @@ export function CloseBrackets(props: MinigameProps) {
   const sequence = useMemo(() => {
     const seq: string[] = [];
     for (let i = 0; i < bracketCount; i++) {
-      seq.push(OPENERS[Math.floor(Math.random() * OPENERS.length)]);
+      seq.push(availableOpeners[Math.floor(Math.random() * availableOpeners.length)]);
     }
     return seq;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,9 +82,20 @@ export function CloseBrackets(props: MinigameProps) {
     [sequence],
   );
 
-  // Current position in the expected closers array
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const currentIndexRef = useRef(0);
+  // 2g. Bracket Auto-Close: pre-fill one closer if player has auto-close power-up
+  const autoCloseCount = useMemo(() => {
+    let count = 0;
+    for (const pu of activePowerUps) {
+      if (pu.effect.type === "auto-close" && (!pu.effect.minigame || pu.effect.minigame === "close-brackets")) {
+        count += pu.effect.value;
+      }
+    }
+    return Math.min(count, expectedClosers.length);
+  }, [activePowerUps, expectedClosers.length]);
+
+  // Current position in the expected closers array (start past auto-closed ones)
+  const [currentIndex, setCurrentIndex] = useState(autoCloseCount);
+  const currentIndexRef = useRef(autoCloseCount);
 
   // Sync ref with state for use in keyboard handler
   useEffect(() => {

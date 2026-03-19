@@ -56,10 +56,26 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
   metaShopItems: [],
 
   generateRunShop: (floor: number) => {
+    const state = get();
+
     // Pick 3-4 random items from the pool
     const count = 3 + (Math.random() < 0.5 ? 1 : 0);
     const shuffled = shuffle(RUN_SHOP_POOL);
-    const picked = shuffled.slice(0, count);
+    let picked = shuffled.slice(0, count);
+
+    // 3g. Cache Primed: guarantee at least one heal item in shop
+    const cachePrimedTier = state.purchasedUpgrades["cache-primed"] ?? 0;
+    if (cachePrimedTier > 0) {
+      const hasHeal = picked.some((item) => item.effect.type === "heal");
+      if (!hasHeal) {
+        const healItems = RUN_SHOP_POOL.filter((item) => item.effect.type === "heal");
+        if (healItems.length > 0) {
+          const randomHeal = healItems[Math.floor(Math.random() * healItems.length)];
+          // Replace the last item with a heal item
+          picked = [...picked.slice(0, -1), randomHeal];
+        }
+      }
+    }
 
     const offers: RunShopOffer[] = picked.map((item) => ({
       ...item,

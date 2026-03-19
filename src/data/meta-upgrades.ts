@@ -5,6 +5,38 @@ import type { MetaUpgrade } from "@/types/shop";
  * 28 upgrades across all four categories.
  */
 export const META_UPGRADE_POOL: MetaUpgrade[] = [
+  // ── STAT — stackable (infinite) ────────────────────────────────────────────
+  {
+    id: "hp-boost",
+    name: "HP Boost",
+    description: "Each purchase gives +5 max HP. Infinitely stackable.",
+    category: "stat",
+    maxTier: 999,
+    prices: [100], // dynamic pricing via getStackablePrice()
+    effects: [{ type: "max-hp", value: 5 }],
+    stackable: true,
+  },
+  {
+    id: "timer-extension",
+    name: "Timer Extension",
+    description: "Each purchase gives +0.3s to all minigame timers. Infinitely stackable.",
+    category: "stat",
+    maxTier: 999,
+    prices: [100], // dynamic pricing via getStackablePrice()
+    effects: [{ type: "global-time-bonus", value: 0.3 }],
+    stackable: true,
+  },
+  {
+    id: "difficulty-reducer",
+    name: "Difficulty Reducer",
+    description: "Each purchase reduces effective difficulty by 0.02. Infinitely stackable.",
+    category: "stat",
+    maxTier: 999,
+    prices: [150], // dynamic pricing via getStackablePrice()
+    effects: [{ type: "difficulty-reduction", value: 0.02 }],
+    stackable: true,
+  },
+
   // ── STAT — tiered ─────────────────────────────────────────────────────────
   {
     id: "thicker-armor",
@@ -46,19 +78,6 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     ],
   },
   {
-    id: "max-hp-boost",
-    name: "Max HP Boost",
-    description: "Increases maximum HP by 10 / 20 / 30.",
-    category: "stat",
-    maxTier: 3,
-    prices: [100, 250, 500],
-    effects: [
-      { type: "max-hp", value: 10 },
-      { type: "max-hp", value: 20 },
-      { type: "max-hp", value: 30 },
-    ],
-  },
-  {
     id: "speed-tax",
     name: "Speed Tax",
     description: "Speed bonuses on credits are 15 / 25 / 40 % more effective.",
@@ -69,19 +88,6 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
       { type: "speed-bonus-multiplier", value: 0.15 },
       { type: "speed-bonus-multiplier", value: 0.25 },
       { type: "speed-bonus-multiplier", value: 0.4 },
-    ],
-  },
-  {
-    id: "overclock-chip",
-    name: "Overclock Chip",
-    description: "Base time limits increase by 1 / 2 / 3 seconds across all minigames.",
-    category: "stat",
-    maxTier: 3,
-    prices: [100, 250, 500],
-    effects: [
-      { type: "global-time-bonus", value: 1 },
-      { type: "global-time-bonus", value: 2 },
-      { type: "global-time-bonus", value: 3 },
     ],
   },
 

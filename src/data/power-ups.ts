@@ -16,12 +16,12 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     icon: "clock",
   },
   {
-    id: "overclock",
-    name: "Overclock",
-    description: "Next minigame runs at 0.75× speed — more breathing room.",
+    id: "quick-hack",
+    name: "Quick Hack",
+    description: "Adds +4 s to the next minigame's timer.",
     category: "time",
     basePrice: 45,
-    effect: { type: "time-multiplier", value: 0.75 },
+    effect: { type: "time-bonus", value: 4 },
     icon: "zap",
   },
   {
@@ -36,10 +36,10 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "lag-spike",
     name: "Lag Spike",
-    description: "Pauses the timer for 1 s at the start of the next minigame.",
+    description: "Adds +1.5 s to the next minigame's timer.",
     category: "time",
     basePrice: 40,
-    effect: { type: "time-pause", value: 1 },
+    effect: { type: "time-bonus", value: 1.5 },
     icon: "pause-circle",
   },
 
@@ -85,10 +85,10 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "emergency-exit",
     name: "Emergency Exit",
-    description: "Skip the entire current floor. Only usable below 30 HP.",
+    description: "Skip 1 minigame on this floor without penalty.",
     category: "skip",
     basePrice: 80,
-    effect: { type: "skip-floor", value: 1 },
+    effect: { type: "skip", value: 1 },
     icon: "door-open",
   },
   {
@@ -132,12 +132,12 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
 
   // ── VISION ────────────────────────────────────────────────────────────────
   {
-    id: "preview-module",
-    name: "Preview Module",
-    description: "See the minigame type before it starts — once.",
-    category: "vision",
+    id: "scan-module",
+    name: "Scan Module",
+    description: "Adds +3 s to the next minigame's timer.",
+    category: "time",
     basePrice: 35,
-    effect: { type: "preview", value: 1 },
+    effect: { type: "time-bonus", value: 3 },
     icon: "eye",
   },
   {
@@ -150,13 +150,13 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     icon: "lightbulb",
   },
   {
-    id: "threat-map",
-    name: "Threat Map",
-    description: "Highlights the most dangerous element in the next minigame.",
-    category: "vision",
+    id: "repair-drone",
+    name: "Repair Drone",
+    description: "Restore +15 HP immediately.",
+    category: "healing",
     basePrice: 50,
-    effect: { type: "highlight-danger", value: 1 },
-    icon: "map",
+    effect: { type: "heal", value: 15 },
+    icon: "heart-pulse",
   },
 
   // ── ASSIST ────────────────────────────────────────────────────────────────

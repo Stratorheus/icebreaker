@@ -35,13 +35,27 @@ function getWordPool(difficulty: number): readonly string[] {
  * Wrong character = immediate fail. Complete all words to succeed.
  */
 export function TypeBackward(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "type-backward",
     props,
   );
 
   const resolvedRef = useRef(false);
+
+  // 3d. Type Assist (hint): show first letter of expected answer
+  const hasFirstLetterHint = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "type-backward",
+    );
+  }, [activePowerUps]);
+
+  // 3d. Reverse Trainer (minigame-specific): show word length
+  const showWordLength = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "type-backward",
+    );
+  }, [activePowerUps]);
 
   // Number of words: 2 (d=0) -> 5 (d=1)
   const wordCount = Math.round(2 + difficulty * 3);
@@ -196,6 +210,18 @@ export function TypeBackward(props: MinigameProps) {
         <p className="text-white/40 text-xs uppercase tracking-widest">
           Word {wordIndex + 1}/{displayWords.length}
         </p>
+
+        {/* Word hints from meta upgrades */}
+        {(hasFirstLetterHint || showWordLength) && currentAnswer && (
+          <div className="flex items-center gap-4 text-xs uppercase tracking-widest text-cyber-green/60">
+            {hasFirstLetterHint && (
+              <span>First letter: <strong className="text-cyber-green">{currentAnswer[0]}</strong></span>
+            )}
+            {showWordLength && (
+              <span>Length: <strong className="text-cyber-green">{currentAnswer.length}</strong></span>
+            )}
+          </div>
+        )}
 
         {/* Typed progress display */}
         <div className="text-center">

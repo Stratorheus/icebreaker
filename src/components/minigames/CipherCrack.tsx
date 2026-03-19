@@ -207,13 +207,21 @@ function pickOne<T>(arr: readonly T[]): T {
  * All characters correct = success.
  */
 export function CipherCrack(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
     "cipher-crack",
     props,
   );
 
   const resolvedRef = useRef(false);
+
+  // 3e. Cipher Hint (hint): show one extra letter of the answer
+  const extraHintLetter = useMemo(() => {
+    const hint = activePowerUps.find(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "cipher-crack",
+    );
+    return hint ? hint.effect.value : 0;
+  }, [activePowerUps]);
 
   // Generate puzzle on mount (stable across re-renders)
   const puzzle = useMemo(() => {
@@ -321,6 +329,16 @@ export function CipherCrack(props: MinigameProps) {
             ))}
           </div>
         </div>
+
+        {/* 3e. Extra hint letter from Cipher Hint meta upgrade */}
+        {extraHintLetter > 0 && puzzle.word.length > 0 && (
+          <div className="text-xs uppercase tracking-widest text-cyber-green/70">
+            Hint: starts with "<strong className="text-cyber-green">{puzzle.word[0]}</strong>"
+            {puzzle.word.length > 1 && extraHintLetter > 1 && (
+              <span>, ends with "<strong className="text-cyber-green">{puzzle.word[puzzle.word.length - 1]}</strong>"</span>
+            )}
+          </div>
+        )}
 
         {/* Divider */}
         <div className="w-24 h-px bg-white/10 my-2" />
