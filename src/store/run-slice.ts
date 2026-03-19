@@ -126,12 +126,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Helper: get tier for an upgrade (0 = not purchased)
     const tier = (id: string) => purchasedUpgrades[id] ?? 0;
 
-    // max-hp-boost: +10 / +20 / +30 maxHp
-    const maxHpBonusByTier = [10, 20, 30];
-    const maxHpBoostTier = tier("max-hp-boost");
-    const maxHpBonus = maxHpBoostTier > 0
-      ? (maxHpBonusByTier[maxHpBoostTier - 1] ?? 30)
-      : 0;
+    // hp-boost (stackable): +5 max HP per purchase
+    const hpBoostTier = tier("hp-boost");
+    const hpBoostBonus = hpBoostTier * 5;
 
     // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
     const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
@@ -143,7 +140,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       ? (overclockedBonusByTier[overclockedTier - 1] ?? 20)
       : 0;
 
-    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus + overclockedBonus;
+    const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
     const startHp = actualMaxHp;
 
     // head-start: +50 starting credits

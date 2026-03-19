@@ -16,9 +16,10 @@ export interface MetaUpgrade {
   description: string;
   category: "stat" | "starting-bonus" | "minigame-unlock" | "game-specific";
   maxTier: number;
-  prices: number[]; // price per tier
+  prices: number[]; // price per tier (for stackable: base price at index 0)
   effects: { type: string; value: number; minigame?: MinigameType }[];
   requires?: string; // prerequisite upgrade id
+  stackable?: boolean; // if true, can be purchased infinitely with scaling price
 }
 
 export interface Achievement {
