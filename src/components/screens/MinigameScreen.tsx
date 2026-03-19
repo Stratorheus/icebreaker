@@ -125,7 +125,7 @@ export function MinigameScreen() {
       let earnedCredits = 0;
       if (result.success) {
         const diffReducerT = purchasedUpgrades["difficulty-reducer"] ?? 0;
-        const diff = Math.max(0, getDifficulty(floor) - diffReducerT * 0.02);
+        const diff = getDifficulty(floor) * Math.pow(0.95, diffReducerT);
         const creditTier = purchasedUpgrades["credit-multiplier"] ?? 0;
         const creditMul = 1 + creditTier * 0.1;
         const unlockedCount = useGameStore.getState().unlockedMinigames.length;
@@ -375,15 +375,14 @@ function MinigameRouter({
 }) {
   const inventory = useGameStore((s) => s.inventory);
 
-  // Difficulty reducer (stackable): subtract 0.02 per purchase (min 0)
+  // Difficulty reducer (stackable): multiply by 0.95 per purchase (diminishing returns, never 0)
   const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
-  const difficulty = Math.max(0, getDifficulty(floor) - diffReducerTier * 0.02);
+  const difficulty = getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
 
-  // Timer extension (stackable): +0.2s per purchase
+  // Timer extension (stackable): multiply by 1.03 per purchase (diminishing returns)
   const timerExtTier = purchasedUpgrades["timer-extension"] ?? 0;
-  const timerExtBonus = timerExtTier * 0.2;
-
-  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs + timerExtBonus;
+  const baseTimeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs;
+  const timeLimit = Math.round(baseTimeLimit * Math.pow(1.03, timerExtTier));
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics

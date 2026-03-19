@@ -218,7 +218,7 @@ export function MetaShop() {
           <p className="text-white/25 text-[10px] uppercase tracking-widest">
             PRICE MULTIPLIER: {(1 + totalPurchasesMade * 0.15).toFixed(1)}x
             <span className="text-white/15 ml-2">
-              ({totalPurchasesMade} UPGRADE{totalPurchasesMade !== 1 ? "S" : ""} PURCHASED)
+              (NON-STACKABLE ONLY // {totalPurchasesMade} UPGRADE{totalPurchasesMade !== 1 ? "S" : ""} PURCHASED)
             </span>
           </p>
         )}
@@ -480,9 +480,9 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "speed-bonus-multiplier":
       return `+${Math.round(effect.value * 100)}% speed bonus`;
     case "global-time-bonus":
-      return `+${effect.value}s time limit`;
+      return `+3% time limit (multiplicative)`;
     case "difficulty-reduction":
-      return `-${effect.value} difficulty`;
+      return `-5% difficulty (multiplicative)`;
     case "start-random-powerup":
       return `${effect.value} random power-up(s)`;
     case "start-hp":

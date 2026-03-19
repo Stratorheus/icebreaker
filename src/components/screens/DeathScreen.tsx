@@ -9,7 +9,7 @@ import { awardNewAchievements } from "@/hooks/use-achievement-check";
  * Displays a detailed data breakdown:
  *   BASE DATA  /  CREDITS SAVED  /  ACHIEVEMENT BONUS  /  DEATH PENALTY  /  TOTAL
  *
- * Leftover credits convert to bonus data at 50% rate.
+ * Leftover credits convert to bonus data at 15% rate.
  * Awards persistent data (with death penalty), updates stats, return-to-menu.
  */
 export function DeathScreen() {
@@ -35,8 +35,8 @@ export function DeathScreen() {
   const dataMultiplier = 1 + dataTier * 0.1;
   const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
 
-  // Credits → Data conversion: leftover credits convert at 50% rate
-  const creditsSaved = Math.floor(credits * 0.5);
+  // Credits → Data conversion: leftover credits convert at 15% rate
+  const creditsSaved = Math.floor(credits * 0.15);
 
   // Pre-penalty subtotal (base + credits saved)
   const prePenaltyData = baseDataEarned + creditsSaved;
