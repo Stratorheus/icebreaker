@@ -242,7 +242,7 @@ function CountdownPhase({
           HINT: {hint}
         </p>
       )}
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums">
+      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
         {value > 0 ? value : "GO"}
       </p>
     </div>

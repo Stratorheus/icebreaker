@@ -58,7 +58,7 @@ export function HUD() {
       )}
     >
       {/* Left: Logo */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 glitch-flicker">
         <span className="text-cyber-cyan font-bold">ICE</span>
         <span className="text-cyber-magenta font-bold">BREAKER</span>
         <span className="text-white/30 text-[10px]">v1.0</span>

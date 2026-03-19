@@ -71,3 +71,77 @@
     z-index: 1;
   }
 }
+
+/* Glitch text effect — subtle chromatic aberration on titles */
+.glitch-text {
+  animation: glitch-text 4s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes glitch-text {
+  0%, 92%, 100% {
+    transform: translateX(0);
+    text-shadow: none;
+  }
+  93% {
+    transform: translateX(-2px);
+    text-shadow: 2px 0 var(--color-cyber-cyan), -2px 0 var(--color-cyber-magenta);
+  }
+  94% {
+    transform: translateX(2px);
+    text-shadow: -2px 0 var(--color-cyber-cyan), 2px 0 var(--color-cyber-magenta);
+  }
+  95% {
+    transform: translateX(-1px);
+    text-shadow: 1px 0 var(--color-cyber-cyan), -1px 0 var(--color-cyber-magenta);
+  }
+  96% {
+    transform: translateX(1px);
+    text-shadow: none;
+  }
+}
+
+/* Stronger glitch — for milestone/death screens */
+.glitch-text-strong {
+  animation: glitch-text-strong 3s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes glitch-text-strong {
+  0%, 85%, 100% {
+    transform: translateX(0);
+    text-shadow: none;
+  }
+  86% {
+    transform: translateX(-4px) skewX(-2deg);
+    text-shadow: 4px 0 var(--color-cyber-cyan), -4px 0 var(--color-cyber-magenta);
+  }
+  88% {
+    transform: translateX(3px) skewX(1deg);
+    text-shadow: -3px 0 var(--color-cyber-cyan), 3px 0 var(--color-cyber-magenta);
+  }
+  90% {
+    transform: translateX(-2px);
+    text-shadow: 2px 0 var(--color-cyber-cyan), -2px 0 var(--color-cyber-magenta);
+  }
+  92% {
+    transform: translateX(1px);
+    text-shadow: none;
+  }
+}
+
+/* Flicker effect for labels */
+.glitch-flicker {
+  animation: glitch-flicker 5s steps(1) infinite;
+}
+
+@keyframes glitch-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  92.5% { opacity: 0.4; }
+  93% { opacity: 1; }
+  95% { opacity: 0.7; }
+  95.5% { opacity: 1; }
+  97% { opacity: 0.5; }
+  97.5% { opacity: 1; }
+}

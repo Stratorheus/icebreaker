@@ -191,7 +191,7 @@ export function RunShop() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-14 pb-8 px-4">
       {/* Title */}
-      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1">
+      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1 glitch-text">
         VENDOR NODE
       </h1>
       <p className="text-white/30 text-xs uppercase tracking-widest mb-4">

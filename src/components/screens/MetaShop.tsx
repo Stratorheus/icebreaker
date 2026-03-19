@@ -181,7 +181,7 @@ export function MetaShop() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-10 pb-12 px-4">
       {/* Header */}
-      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1">
+      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1 glitch-text">
         UPGRADE TERMINAL
       </h1>
       <p className="text-white/30 text-xs uppercase tracking-widest mb-6">

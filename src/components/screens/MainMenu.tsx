@@ -21,7 +21,7 @@ export function MainMenu() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <div className="mb-2 select-none">
-        <h1 className="text-6xl sm:text-8xl font-bold tracking-tighter leading-none">
+        <h1 className="text-6xl sm:text-8xl font-bold tracking-tighter leading-none glitch-text">
           <span className="text-cyber-cyan">ICE</span>
           <span className="text-cyber-magenta">BREAKER</span>
         </h1>
