@@ -50,6 +50,9 @@ export function MainMenu() {
         <MenuButton onClick={() => setStatus("meta-shop")}>
           {">"}_&nbsp;META SHOP
         </MenuButton>
+        <MenuButton onClick={() => setStatus("training")}>
+          {">"}_&nbsp;TRAINING
+        </MenuButton>
         <MenuButton onClick={() => setStatus("codex")}>
           {">"}_&nbsp;CODEX
         </MenuButton>

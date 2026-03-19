@@ -45,7 +45,7 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
   },
   "minigame-unlock": {
     label: "MINIGAME LICENSES",
-    description: "Unlock new minigames for future runs",
+    description: "Unlock new minigames — expands the pool, reduces repetition, and grants +5 max HP per unlock",
     colors: {
       border: "border-cyber-magenta/40",
       text: "text-cyber-magenta",
@@ -68,9 +68,9 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
 };
 
 const CATEGORY_ORDER: MetaUpgrade["category"][] = [
+  "minigame-unlock",
   "stat",
   "starting-bonus",
-  "minigame-unlock",
   "game-specific",
 ];
 
@@ -132,12 +132,23 @@ export function MetaShop() {
 
   const grouped = useMemo(() => groupByCategory(META_UPGRADE_POOL), []);
 
+  // Total purchases across all upgrades (sum of all tiers bought)
+  const totalPurchasesMade = useMemo(() => {
+    return Object.values(purchasedUpgrades).reduce((sum, tier) => sum + tier, 0);
+  }, [purchasedUpgrades]);
+
+  /** Compute scaled price: basePrice * (1 + totalPurchasesMade * 0.1) */
+  const getScaledPrice = (basePrice: number) => {
+    return Math.round(basePrice * (1 + totalPurchasesMade * 0.1));
+  };
+
   const handlePurchase = (upgrade: MetaUpgrade) => {
     const currentTier = purchasedUpgrades[upgrade.id] ?? 0;
     if (currentTier >= upgrade.maxTier) return;
 
-    const price = upgrade.prices[currentTier];
-    if (price === undefined) return;
+    const basePrice = upgrade.prices[currentTier];
+    if (basePrice === undefined) return;
+    const price = getScaledPrice(basePrice);
 
     const success = spendData(price);
     if (!success) return;
@@ -165,14 +176,24 @@ export function MetaShop() {
         {">"}_&nbsp;DATA MARKET // PERSISTENT UPGRADES
       </p>
 
-      {/* Data balance */}
-      <div className="flex items-center gap-2 mb-10 px-6 py-3 border border-cyber-magenta/30 bg-cyber-magenta/5">
-        <span className="text-white/50 text-xs uppercase tracking-widest">
-          DATA BALANCE
-        </span>
-        <span className="text-cyber-magenta font-bold text-xl tabular-nums">
-          {"\u25C6"} {data.toLocaleString()}
-        </span>
+      {/* Data balance + price multiplier */}
+      <div className="flex flex-col items-center gap-2 mb-10">
+        <div className="flex items-center gap-2 px-6 py-3 border border-cyber-magenta/30 bg-cyber-magenta/5">
+          <span className="text-white/50 text-xs uppercase tracking-widest">
+            DATA BALANCE
+          </span>
+          <span className="text-cyber-magenta font-bold text-xl tabular-nums">
+            {"\u25C6"} {data.toLocaleString()}
+          </span>
+        </div>
+        {totalPurchasesMade > 0 && (
+          <p className="text-white/25 text-[10px] uppercase tracking-widest">
+            PRICE MULTIPLIER: {(1 + totalPurchasesMade * 0.1).toFixed(1)}x
+            <span className="text-white/15 ml-2">
+              ({totalPurchasesMade} UPGRADE{totalPurchasesMade !== 1 ? "S" : ""} PURCHASED)
+            </span>
+          </p>
+        )}
       </div>
 
       {/* Category sections */}
@@ -212,6 +233,7 @@ export function MetaShop() {
                       (purchasedUpgrades[upgrade.requires] ?? 0) > 0
                     }
                     config={config}
+                    getScaledPrice={getScaledPrice}
                     onPurchase={() => handlePurchase(upgrade)}
                   />
                 ))}
@@ -250,6 +272,7 @@ function UpgradeCard({
   dataBalance,
   prereqMet,
   config,
+  getScaledPrice,
   onPurchase,
 }: {
   upgrade: MetaUpgrade;
@@ -257,10 +280,12 @@ function UpgradeCard({
   dataBalance: number;
   prereqMet: boolean;
   config: CategoryConfig;
+  getScaledPrice: (basePrice: number) => number;
   onPurchase: () => void;
 }) {
   const isMaxed = currentTier >= upgrade.maxTier;
-  const nextPrice = isMaxed ? null : upgrade.prices[currentTier];
+  const basePrice = isMaxed ? null : upgrade.prices[currentTier];
+  const nextPrice = basePrice !== null && basePrice !== undefined ? getScaledPrice(basePrice) : null;
   const canAfford = nextPrice !== null && dataBalance >= nextPrice;
   const canPurchase = !isMaxed && canAfford && prereqMet;
   const isMinigameUnlock = upgrade.category === "minigame-unlock";

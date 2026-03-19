@@ -191,7 +191,7 @@ export function Stats() {
                 <StatRow
                   key={type}
                   label={type.replace(/-/g, " ").toUpperCase()}
-                  value={`${wins}W / ${stats.minigameWinStreaks[type as keyof typeof stats.minigameWinStreaks] ?? 0} streak`}
+                  value={`${wins} win${wins !== 1 ? "s" : ""}`}
                 />
               ),
             )}

@@ -1,7 +1,8 @@
 import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
+import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getCredits, getDamage, getDataReward, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
@@ -126,7 +127,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const maxHpBonus = maxHpBoostTier > 0
       ? (maxHpBonusByTier[maxHpBoostTier - 1] ?? 30)
       : 0;
-    const actualMaxHp = 100 + maxHpBonus;
+
+    // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
+    const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
+
+    const actualMaxHp = 100 + maxHpBonus + unlockHpBonus;
 
     // overclocked: start with 110 HP (the +10 bonus stacks with max-hp-boost;
     // result is capped at actualMaxHp so you never start over the ceiling)
