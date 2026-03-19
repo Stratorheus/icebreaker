@@ -18,6 +18,7 @@ export function DeathScreen() {
   const updateStats = useGameStore((s) => s.updateStats);
   const stats = useGameStore((s) => s.stats);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const quitVoluntarily = useGameStore((s) => s.quitVoluntarily);
 
   const floor = useGameStore((s) => s.floor);
   const minigamesPlayedThisRun = useGameStore(
@@ -43,8 +44,9 @@ export function DeathScreen() {
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
+  // Voluntary quit = NO penalty
   const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
-  const penaltyPct = Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
+  const penaltyPct = quitVoluntarily ? 0 : Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
   const penaltyAmount = Math.floor(prePenaltyData * penaltyPct);
   const dataAfterPenalty = prePenaltyData - penaltyAmount;
 
@@ -62,7 +64,7 @@ export function DeathScreen() {
     // Snapshot data balance before awards
     const dataBefore = useGameStore.getState().data;
 
-    // Award data with death penalty applied (includes creditsSaved)
+    // Award data (no penalty if quit voluntarily)
     if (dataAfterPenalty > 0) {
       addData(dataAfterPenalty);
     }
@@ -96,11 +98,11 @@ export function DeathScreen() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Title */}
-      <h1 className="text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 text-cyber-magenta glitch-text-strong">
-        CONNECTION LOST
+      <h1 className={`text-4xl sm:text-5xl font-bold uppercase tracking-wider mb-2 glitch-text-strong ${quitVoluntarily ? "text-cyber-cyan" : "text-cyber-magenta"}`}>
+        {quitVoluntarily ? "RUN TERMINATED" : "CONNECTION LOST"}
       </h1>
       <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8 glitch-subtle">
-        {">"}_&nbsp;SYSTEM BREACH FAILED
+        {">"}_&nbsp;{quitVoluntarily ? "VOLUNTARY DISCONNECT" : "SYSTEM BREACH FAILED"}
       </p>
 
       {/* Run summary */}
@@ -132,13 +134,15 @@ export function DeathScreen() {
             className="text-cyber-cyan/70"
           />
         )}
-        <BreakdownRow
-          label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
-          value={`-${penaltyAmount}`}
-          suffix={"\u25C6"}
-          className="text-cyber-magenta/70"
-        />
-        {dataRecoveryTier > 0 && (
+        {!quitVoluntarily && (
+          <BreakdownRow
+            label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
+            value={`-${penaltyAmount}`}
+            suffix={"\u25C6"}
+            className="text-cyber-magenta/70"
+          />
+        )}
+        {!quitVoluntarily && dataRecoveryTier > 0 && (
           <p className="text-cyber-green/40 text-[10px] tracking-widest mt-0.5 mb-1 text-right">
             DATA RECOVERY LVL {dataRecoveryTier} ACTIVE
           </p>

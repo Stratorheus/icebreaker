@@ -40,6 +40,8 @@ export interface RunSlice {
   previousStatus: GameStatus | null;
   /** Number of run-shop items bought this run (for price scaling). */
   itemsBoughtThisRun: number;
+  /** True when the player voluntarily quit the run (shows different death screen). */
+  quitVoluntarily: boolean;
 
   // Actions
   startRun: () => void;
@@ -100,6 +102,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   milestoneFloor: 0,
   previousStatus: null,
   itemsBoughtThisRun: 0,
+  quitVoluntarily: false,
 };
 
 // Helper type: extract only action keys
@@ -197,6 +200,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       bonusTimeSecs,
       milestoneFloor: 0,
       itemsBoughtThisRun: 0,
+      quitVoluntarily: false,
     });
   },
 
@@ -405,33 +409,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   },
 
   quitRun: () => {
-    const state = get();
-    // Full data reward (no penalty) — getDataReward(floor) + any milestone bonuses already awarded
-    // 1c. Data Siphon meta upgrade: +10/20/30% data
-    const dataTier = state.purchasedUpgrades["data-siphon"] ?? 0;
-    const dataMultiplier = 1 + dataTier * 0.1;
-    const baseDataReward = Math.round(getDataReward(state.floor) * dataMultiplier);
-    // Credits → Data conversion at 15% rate (same as death screen)
-    const creditsData = Math.floor(state.credits * 0.15);
-    const dataReward = baseDataReward + creditsData;
-    if (dataReward > 0) {
-      state.addData(dataReward);
-    }
-
-    // Update stats
-    const playTimeMs = Date.now() - state.runStartTime;
-    const stats = state.stats;
-    state.updateStats({
-      totalRuns: stats.totalRuns + 1,
-      bestFloor: Math.max(stats.bestFloor, state.floor),
-      totalMinigamesPlayed: stats.totalMinigamesPlayed + state.minigamesPlayedThisRun,
-      totalMinigamesWon: stats.totalMinigamesWon + state.minigamesWonThisRun,
-      totalCreditsEarned: stats.totalCreditsEarned + state.runScore,
-      totalDataEarned: stats.totalDataEarned + dataReward,
-      totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
-    });
-
-    set({ status: "menu" });
+    // Set quitVoluntarily and go to "dead" — DeathScreen reads the flag
+    // to skip death penalty and show "RUN TERMINATED" instead.
+    set({ quitVoluntarily: true, status: "dead" });
   },
 
   endRun: () => {
