@@ -245,7 +245,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
             cursor-pointer select-none
           "
         >
-          {">"}_&nbsp;{onBack ? "BACK TO PAUSE" : "BACK TO MENU"}
+          {">"}_&nbsp;{onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
         </button>
       </div>
     </div>

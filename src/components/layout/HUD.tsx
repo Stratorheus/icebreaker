@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 
@@ -6,7 +6,9 @@ import { useGameStore } from "@/store/game-store";
  * Top bar HUD — visible during "playing", "shop", and "milestone" statuses.
  *
  * Layout:
- *  [ICEBREAKER v1.0] [PAUSE]              [FLOOR n] [HP bar %] [credits CR]
+ *  [ICEBREAKER v1.0]              [FLOOR n] [HP bar] [credits CR] [power-ups]
+ *
+ * No pause button — quit/codex/stats are accessible from the vendor node only.
  */
 export function HUD() {
   const status = useGameStore((s) => s.status);
@@ -15,18 +17,26 @@ export function HUD() {
   const maxHp = useGameStore((s) => s.maxHp);
   const credits = useGameStore((s) => s.credits);
   const inventory = useGameStore((s) => s.inventory);
-  const pauseRun = useGameStore((s) => s.pauseRun);
 
-  // Escape key opens pause menu during gameplay or shop
+  const [showPowerUps, setShowPowerUps] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
+  // Close popover when clicking outside
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && (status === "playing" || status === "shop")) {
-        pauseRun();
+    if (!showPowerUps) return;
+    const handler = (e: MouseEvent) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target as Node)) {
+        setShowPowerUps(false);
       }
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [status, pauseRun]);
+    window.addEventListener("mousedown", handler);
+    return () => window.removeEventListener("mousedown", handler);
+  }, [showPowerUps]);
+
+  // Close popover on status change (e.g. entering a minigame)
+  useEffect(() => {
+    setShowPowerUps(false);
+  }, [status]);
 
   // Only show during active gameplay / shop / milestone
   if (status !== "playing" && status !== "shop" && status !== "milestone") return null;
@@ -47,30 +57,11 @@ export function HUD() {
         "select-none",
       )}
     >
-      {/* Left: Logo + Pause */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-cyber-cyan font-bold">ICE</span>
-          <span className="text-cyber-magenta font-bold">BREAKER</span>
-          <span className="text-white/30 text-[10px]">v1.0</span>
-        </div>
-
-        {/* Pause button */}
-        <button
-          type="button"
-          onClick={pauseRun}
-          className="
-            text-[10px] uppercase tracking-widest
-            border border-white/15 text-white/40
-            px-2 py-0.5
-            hover:bg-white/5 hover:text-white/70 hover:border-white/30
-            transition-colors duration-150
-            cursor-pointer
-          "
-          title="Pause (Esc)"
-        >
-          {"\u2759\u2759"}
-        </button>
+      {/* Left: Logo */}
+      <div className="flex items-center gap-2">
+        <span className="text-cyber-cyan font-bold">ICE</span>
+        <span className="text-cyber-magenta font-bold">BREAKER</span>
+        <span className="text-white/30 text-[10px]">v1.0</span>
       </div>
 
       {/* Right: Stats */}
@@ -112,11 +103,53 @@ export function HUD() {
           </span>
         </div>
 
-        {/* Power-up count (only if any) */}
+        {/* Power-up count with popover (only if any) */}
         {inventory.length > 0 && (
-          <div className="flex items-center gap-1 text-cyber-cyan/60">
-            <span aria-hidden="true">{"\u26A1"}</span>
-            <span>{inventory.length}</span>
+          <div className="relative" ref={popoverRef}>
+            <button
+              type="button"
+              onClick={() => setShowPowerUps((v) => !v)}
+              className={cn(
+                "flex items-center gap-1 px-1.5 py-0.5 -my-0.5 rounded-sm transition-colors duration-150 cursor-pointer",
+                showPowerUps
+                  ? "bg-cyber-cyan/15 text-cyber-cyan"
+                  : "text-cyber-cyan/60 hover:text-cyber-cyan hover:bg-cyber-cyan/10",
+              )}
+            >
+              <span aria-hidden="true">{"\u26A1"}</span>
+              <span>{inventory.length}</span>
+            </button>
+
+            {/* Power-up popover */}
+            {showPowerUps && (
+              <div
+                className={cn(
+                  "absolute right-0 top-full mt-2",
+                  "w-64 max-h-80 overflow-y-auto",
+                  "bg-cyber-bg/95 backdrop-blur-md",
+                  "border border-cyber-cyan/20",
+                  "shadow-lg shadow-cyber-cyan/5",
+                  "z-50 p-2",
+                )}
+              >
+                <p className="text-[9px] text-white/30 uppercase tracking-[0.2em] px-2 py-1 mb-1">
+                  Active Power-ups
+                </p>
+                {inventory.map((pu) => (
+                  <div
+                    key={pu.id}
+                    className="px-2 py-1.5 border-b border-white/5 last:border-b-0"
+                  >
+                    <p className="text-[11px] font-bold text-cyber-cyan uppercase tracking-wider">
+                      {pu.name}
+                    </p>
+                    <p className="text-[10px] text-white/40 leading-relaxed">
+                      {pu.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

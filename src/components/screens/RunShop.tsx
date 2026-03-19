@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { getDataReward } from "@/data/balancing";
 import {
   Clock,
   Zap,
@@ -25,6 +26,8 @@ import {
   Radio,
   type LucideIcon,
 } from "lucide-react";
+import { Codex } from "@/components/screens/Codex";
+import { Stats } from "@/components/screens/Stats";
 
 // ---------------------------------------------------------------------------
 // Icon map: kebab-case string -> Lucide component
@@ -107,6 +110,12 @@ const FALLBACK_COLORS = {
 };
 
 // ---------------------------------------------------------------------------
+// Sub-view type for vendor node navigation
+// ---------------------------------------------------------------------------
+
+type VendorView = "shop" | "codex" | "stats";
+
+// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -114,7 +123,8 @@ const FALLBACK_COLORS = {
  * Run shop screen — appears between floors.
  *
  * Players spend run-local credits on power-ups before continuing
- * to the next floor.
+ * to the next floor. Also provides access to CODEX, STATS, and QUIT RUN
+ * (pause menu is no longer available during gameplay).
  */
 export function RunShop() {
   const floor = useGameStore((s) => s.floor);
@@ -126,6 +136,12 @@ export function RunShop() {
   const generateRunShop = useGameStore((s) => s.generateRunShop);
   const buyRunShopItem = useGameStore((s) => s.buyRunShopItem);
   const advanceFloor = useGameStore((s) => s.advanceFloor);
+  const addCredits = useGameStore((s) => s.addCredits);
+  const quitRun = useGameStore((s) => s.quitRun);
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+
+  const [view, setView] = useState<VendorView>("shop");
+  const [confirmQuit, setConfirmQuit] = useState(false);
 
   // Generate shop if it hasn't been generated yet
   const generatedRef = useRef(false);
@@ -148,6 +164,29 @@ export function RunShop() {
     awardNewAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Reroll price: 20 + floor * 10
+  const rerollPrice = Math.round(20 + floor * 10);
+  const canReroll = credits >= rerollPrice;
+
+  const handleReroll = () => {
+    if (!canReroll) return;
+    addCredits(-rerollPrice);
+    generateRunShop(floor);
+  };
+
+  // Compute data reward preview for quit button
+  const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
+  const dataMultiplier = 1 + dataTier * 0.1;
+  const dataReward = Math.round(getDataReward(floor) * dataMultiplier);
+
+  // Sub-views: Codex and Stats with back button returning to shop
+  if (view === "codex") {
+    return <Codex onBack={() => setView("shop")} />;
+  }
+  if (view === "stats") {
+    return <Stats onBack={() => setView("shop")} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center pt-14 pb-8 px-4">
@@ -190,7 +229,7 @@ export function RunShop() {
       </div>
 
       {/* Shop items */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl mb-6">
         {runShopOffers.map((offer, index) => {
           const canAfford = credits >= offer.price;
           const alreadyOwned = inventory.some((p) => p.type === offer.id);
@@ -308,6 +347,21 @@ export function RunShop() {
         })}
       </div>
 
+      {/* Reroll button */}
+      <button
+        type="button"
+        onClick={handleReroll}
+        disabled={!canReroll}
+        className={cn(
+          "mb-8 py-2 px-6 text-xs uppercase tracking-widest font-mono border transition-colors duration-150 cursor-pointer select-none",
+          canReroll
+            ? "border-cyber-orange/40 text-cyber-orange hover:bg-cyber-orange/10 hover:border-cyber-orange/70"
+            : "border-white/10 text-white/20 cursor-not-allowed",
+        )}
+      >
+        {">"}_&nbsp;REROLL STOCK ({"\u2B26"} {rerollPrice} CR)
+      </button>
+
       {/* Continue button */}
       <button
         type="button"
@@ -319,10 +373,95 @@ export function RunShop() {
           hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70
           transition-colors duration-150
           cursor-pointer select-none
+          mb-6
         "
       >
         {">"}_&nbsp;CONTINUE TO FLOOR {floor + 1}
       </button>
+
+      {/* Utility buttons: Codex, Stats, Quit */}
+      <div className="flex items-center gap-3 mt-2">
+        <button
+          type="button"
+          onClick={() => setView("codex")}
+          className="
+            py-2 px-4
+            text-[10px] uppercase tracking-widest font-mono
+            border border-white/15 text-white/40
+            hover:bg-white/5 hover:text-white/70 hover:border-white/30
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          CODEX
+        </button>
+        <button
+          type="button"
+          onClick={() => setView("stats")}
+          className="
+            py-2 px-4
+            text-[10px] uppercase tracking-widest font-mono
+            border border-white/15 text-white/40
+            hover:bg-white/5 hover:text-white/70 hover:border-white/30
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          STATS
+        </button>
+
+        {/* Quit run with confirmation */}
+        {!confirmQuit ? (
+          <button
+            type="button"
+            onClick={() => setConfirmQuit(true)}
+            className="
+              py-2 px-4
+              text-[10px] uppercase tracking-widest font-mono
+              border border-cyber-magenta/30 text-cyber-magenta/70
+              hover:bg-cyber-magenta/10 hover:border-cyber-magenta/50
+              transition-colors duration-150
+              cursor-pointer select-none
+            "
+          >
+            QUIT RUN (+{dataReward} {"\u25C6"})
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-cyber-orange text-[10px] uppercase tracking-widest">
+              QUIT?
+            </span>
+            <button
+              type="button"
+              onClick={quitRun}
+              className="
+                py-2 px-3
+                text-[10px] uppercase tracking-widest font-mono
+                border border-cyber-magenta/50 text-cyber-magenta
+                hover:bg-cyber-magenta/10
+                transition-colors duration-150
+                cursor-pointer select-none
+              "
+            >
+              CONFIRM
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmQuit(false)}
+              className="
+                py-2 px-3
+                text-[10px] uppercase tracking-widest font-mono
+                border border-white/20 text-white/50
+                hover:bg-white/5
+                transition-colors duration-150
+                cursor-pointer select-none
+              "
+            >
+              CANCEL
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
