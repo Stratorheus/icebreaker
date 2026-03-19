@@ -14,11 +14,11 @@ type PauseView = "menu" | "codex" | "stats";
 // ---------------------------------------------------------------------------
 
 /**
- * Pause menu — accessible during a run via the HUD pause button or Escape.
+ * Pause menu -- accessible during a run via the HUD pause button or Escape.
  *
  * Shows: CODEX, STATS, RESUME, QUIT RUN.
  * Does NOT show META SHOP or START RUN (that would be cheating).
- * Codex and Stats render in-place and their back buttons return here.
+ * Codex and Stats render in-place with their back buttons returning here.
  */
 export function PauseMenu() {
   const setStatus = useGameStore((s) => s.setStatus);
@@ -45,12 +45,12 @@ export function PauseMenu() {
     return () => window.removeEventListener("keydown", handler);
   }, [view, setStatus]);
 
-  // Sub-views: Codex and Stats with overridden back behavior
+  // Sub-views: Codex and Stats with back button returning to pause menu
   if (view === "codex") {
-    return <PauseSubView onBack={() => setView("menu")}><CodexInPause onBack={() => setView("menu")} /></PauseSubView>;
+    return <Codex onBack={() => setView("menu")} />;
   }
   if (view === "stats") {
-    return <PauseSubView onBack={() => setView("menu")}><StatsInPause onBack={() => setView("menu")} /></PauseSubView>;
+    return <Stats onBack={() => setView("menu")} />;
   }
 
   return (
@@ -93,7 +93,7 @@ export function PauseMenu() {
         ) : (
           <div className="flex flex-col gap-2">
             <p className="text-cyber-orange text-xs uppercase tracking-widest text-center mb-1">
-              QUIT? Full data reward — no penalty.
+              QUIT? Full data reward -- no penalty.
             </p>
             <div className="flex gap-2">
               <button
@@ -171,92 +171,5 @@ function PauseButton({
     >
       {children}
     </button>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Wrapper for sub-views (Codex/Stats rendered inside pause context)
-// ---------------------------------------------------------------------------
-
-function PauseSubView({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
-
-// ---------------------------------------------------------------------------
-// Codex/Stats wrappers that override the "back" button behavior
-// ---------------------------------------------------------------------------
-
-function CodexInPause({ onBack }: { onBack: () => void }) {
-  // Render the full Codex but override the setStatus call
-  // We re-implement a simplified version that calls onBack
-  const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
-
-  // We can't easily override Codex's internal setStatus, so we render
-  // the Codex component but intercept navigation. Instead, we'll use the
-  // Codex directly and add a back-to-pause overlay approach.
-  // Simpler: just render Codex and override via a wrapper.
-  return <CodexWithBack onBack={onBack} />;
-}
-
-function StatsInPause({ onBack }: { onBack: () => void }) {
-  return <StatsWithBack onBack={onBack} />;
-}
-
-/**
- * Codex screen with custom back button behavior (returns to pause menu
- * instead of main menu).
- */
-function CodexWithBack({ onBack }: { onBack: () => void }) {
-  // We need to replicate Codex but with a different back handler.
-  // Import and render Codex, then provide an overlay back button.
-  // Actually the simplest approach: render the Codex component but add
-  // a fixed back button that overrides.
-  return (
-    <div className="relative">
-      <Codex />
-      {/* Override the Codex's back button with our own fixed one */}
-      <div className="fixed bottom-4 left-4 z-50">
-        <button
-          type="button"
-          onClick={onBack}
-          className="
-            py-2 px-6
-            text-sm uppercase tracking-widest font-mono
-            border border-cyber-cyan/40 text-cyber-cyan
-            bg-cyber-bg/90 backdrop-blur-sm
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
-        >
-          {">"}_&nbsp;BACK TO PAUSE
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function StatsWithBack({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="relative">
-      <Stats />
-      <div className="fixed bottom-4 left-4 z-50">
-        <button
-          type="button"
-          onClick={onBack}
-          className="
-            py-2 px-6
-            text-sm uppercase tracking-widest font-mono
-            border border-cyber-cyan/40 text-cyber-cyan
-            bg-cyber-bg/90 backdrop-blur-sm
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
-        >
-          {">"}_&nbsp;BACK TO PAUSE
-        </button>
-      </div>
-    </div>
   );
 }

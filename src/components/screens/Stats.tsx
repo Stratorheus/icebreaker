@@ -127,10 +127,11 @@ function AchievementCard({
 // Stats screen
 // ---------------------------------------------------------------------------
 
-export function Stats() {
+export function Stats({ onBack }: { onBack?: () => void } = {}) {
   const setStatus = useGameStore((s) => s.setStatus);
   const stats = useGameStore((s) => s.stats);
   const earnedIds = useGameStore((s) => s.achievements);
+  const handleBack = onBack ?? (() => setStatus("menu"));
 
   const earnedSet = new Set(earnedIds);
   const earnedCount = earnedIds.length;
@@ -234,7 +235,7 @@ export function Stats() {
       <div className="w-full max-w-2xl mt-8">
         <button
           type="button"
-          onClick={() => setStatus("menu")}
+          onClick={handleBack}
           className="
             py-2 px-6
             text-sm uppercase tracking-widest font-mono
@@ -244,7 +245,7 @@ export function Stats() {
             cursor-pointer select-none
           "
         >
-          {">"}_&nbsp;BACK TO MENU
+          {">"}_&nbsp;{onBack ? "BACK TO PAUSE" : "BACK TO MENU"}
         </button>
       </div>
     </div>
