@@ -19,11 +19,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "timer-extension",
     name: "Timer Extension",
-    description: "Each purchase gives +0.3s to all minigame timers. Infinitely stackable.",
+    description: "Each purchase gives +0.2s to all minigame timers. Infinitely stackable.",
     category: "stat",
     maxTier: 999,
     prices: [100], // dynamic pricing via getStackablePrice()
-    effects: [{ type: "global-time-bonus", value: 0.3 }],
+    effects: [{ type: "global-time-bonus", value: 0.2 }],
     stackable: true,
   },
   {

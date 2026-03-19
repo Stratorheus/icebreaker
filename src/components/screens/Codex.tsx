@@ -170,7 +170,7 @@ function UnlockedEntry({
       >
         <div className="flex items-center gap-3">
           <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-          <span className="text-cyber-cyan text-sm font-bold uppercase tracking-wider">
+          <span className="text-cyber-cyan text-sm font-bold uppercase tracking-wider glitch-text">
             {briefing.title}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest hidden sm:inline">
@@ -281,13 +281,13 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1">
+        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;REFERENCE ARCHIVE
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan">
+        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
           OPERATION MANUAL
         </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
+        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
           CODEX — MINIGAME PROTOCOLS
         </p>
       </div>
@@ -295,7 +295,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
       {/* Progress indicator */}
       <div className="w-full max-w-2xl mb-6">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-white/30 text-[10px] uppercase tracking-widest">
+          <span className="text-white/30 text-[10px] uppercase tracking-widest glitch-subtle">
             PROTOCOLS LICENSED
           </span>
           <span className="text-cyber-cyan/60 text-xs font-mono tabular-nums">
@@ -357,7 +357,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
             cursor-pointer select-none
           "
         >
-          {">"}_&nbsp;{onBack ? "BACK TO PAUSE" : "BACK TO MENU"}
+          {">"}_&nbsp;{onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
         </button>
       </div>
     </div>

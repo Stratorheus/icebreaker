@@ -231,10 +231,10 @@ function CountdownPhase({
 }) {
   return (
     <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
         FLOOR {floor} // MINIGAME {index + 1} OF {total}
       </p>
-      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8">
+      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}
       </h2>
       {hint && (
@@ -242,7 +242,7 @@ function CountdownPhase({
           HINT: {hint}
         </p>
       )}
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums">
+      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
         {value > 0 ? value : "GO"}
       </p>
     </div>
@@ -379,9 +379,9 @@ function MinigameRouter({
   const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
   const difficulty = Math.max(0, getDifficulty(floor) - diffReducerTier * 0.02);
 
-  // Timer extension (stackable): +0.3s per purchase
+  // Timer extension (stackable): +0.2s per purchase
   const timerExtTier = purchasedUpgrades["timer-extension"] ?? 0;
-  const timerExtBonus = timerExtTier * 0.3;
+  const timerExtBonus = timerExtTier * 0.2;
 
   const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs + timerExtBonus;
   const Component = MINIGAME_COMPONENTS[type];
@@ -423,18 +423,18 @@ function ResultFlash({
   return (
     <div className="text-center select-none">
       <h2
-        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider ${
+        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider glitch-text ${
           success ? "text-cyber-cyan" : "text-cyber-magenta"
         }`}
       >
         {success ? "SUCCESS" : "FAILED"}
       </h2>
       {success && earnedCredits > 0 && (
-        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest">
+        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
           +{earnedCredits} CR
         </p>
       )}
-      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest">
+      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">
         {success ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
       </p>
     </div>

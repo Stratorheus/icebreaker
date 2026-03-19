@@ -45,9 +45,9 @@ export function getMilestoneBonus(floor: number): number {
   }
 }
 
-/** Price of a run-shop item scaled to the current floor depth. */
+/** Price of a run-shop item scaled to the current floor depth. Quadratic scaling keeps late-game shops expensive. */
 export function getRunShopPrice(basePrice: number, floor: number): number {
-  return Math.round(basePrice * (1 + floor * 0.15));
+  return Math.round(basePrice * (1 + floor * 0.25) * (1 + floor * floor * 0.01));
 }
 
 /**

@@ -81,7 +81,7 @@ export function MilestoneOverlay() {
 
       {/* Main title with glitch-like gradient */}
       <h1
-        className="text-4xl sm:text-6xl md:text-7xl font-black uppercase text-center px-4 leading-none"
+        className="text-4xl sm:text-6xl md:text-7xl font-black uppercase text-center px-4 leading-none glitch-text-strong"
         style={{
           letterSpacing: "0.12em",
           background:
@@ -89,8 +89,6 @@ export function MilestoneOverlay() {
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
           backgroundClip: "text",
-          animation: "milestone-flicker 0.15s steps(1) infinite",
-          textShadow: "none",
         }}
       >
         {data.title}
@@ -119,18 +117,6 @@ export function MilestoneOverlay() {
         PRESS ANY KEY OR CLICK TO CONTINUE
       </p>
 
-      {/* CSS keyframes injected inline */}
-      <style>{`
-        @keyframes milestone-flicker {
-          0%   { opacity: 1; }
-          92%  { opacity: 1; }
-          93%  { opacity: 0.6; }
-          94%  { opacity: 1; }
-          96%  { opacity: 0.8; }
-          97%  { opacity: 1; }
-          100% { opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

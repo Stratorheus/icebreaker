@@ -24,12 +24,12 @@ interface GeneratedGrid {
  * Generate a grid with randomly placed mines.
  *
  * Difficulty scaling (0–1):
- * - Grid size: 3×3 (d=0) → 5×5 (d=1)
+ * - Grid size: 3×3 (d=0) → 6×6 (d=1)
  * - Mine count: 2 (d=0) → 8 (d=1), capped at ~40% of cells
  * - Preview duration: 3s (d=0) → 1s (d=1)
  */
 function generateGrid(difficulty: number): GeneratedGrid {
-  const size = Math.round(3 + difficulty * 2);
+  const size = Math.round(3 + difficulty * 3);
   const cols = size;
   const rows = size;
   const totalCells = rows * cols;

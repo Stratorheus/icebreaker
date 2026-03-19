@@ -45,7 +45,7 @@ const CATEGORIES: Record<MetaUpgrade["category"], CategoryConfig> = {
   },
   "minigame-unlock": {
     label: "MINIGAME LICENSES",
-    description: "Unlock new minigames — expands the pool, reduces repetition, and grants +5 max HP per unlock",
+    description: "Unlock new minigames — expands the pool, reduces repetition, grants +5 max HP per unlock, and increases credit earnings by +5% per unlock",
     colors: {
       border: "border-cyber-magenta/40",
       text: "text-cyber-magenta",
@@ -181,17 +181,17 @@ export function MetaShop() {
   return (
     <div className="min-h-screen flex flex-col items-center pt-10 pb-12 px-4">
       {/* Header */}
-      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1">
+      <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1 glitch-text">
         UPGRADE TERMINAL
       </h1>
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-6">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-6 glitch-subtle">
         {">"}_&nbsp;DATA MARKET // PERSISTENT UPGRADES
       </p>
 
       {/* Data balance + price multiplier */}
       <div className="flex flex-col items-center gap-2 mb-10">
         <div className="flex items-center gap-2 px-6 py-3 border border-cyber-magenta/30 bg-cyber-magenta/5">
-          <span className="text-white/50 text-xs uppercase tracking-widest">
+          <span className="text-white/50 text-xs uppercase tracking-widest glitch-subtle">
             DATA BALANCE
           </span>
           <span className="text-cyber-magenta font-bold text-xl tabular-nums">
@@ -221,7 +221,7 @@ export function MetaShop() {
               <div className="mb-4 border-b border-white/10 pb-2">
                 <h2
                   className={cn(
-                    "text-sm font-bold uppercase tracking-[0.2em]",
+                    "text-sm font-bold uppercase tracking-[0.2em] glitch-text",
                     config.colors.text,
                   )}
                 >
@@ -493,7 +493,7 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "guaranteed-heal-shop":
       return "Guaranteed heal in floor 1 shop";
     case "unlock-minigame":
-      return "Unlocks minigame";
+      return "Unlocks minigame (+5 max HP, +5% credits)";
     case "death-penalty-reduction":
       return `-${Math.round(effect.value * 100)}% death penalty`;
     default:

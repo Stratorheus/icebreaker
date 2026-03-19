@@ -11,7 +11,6 @@ import { Training } from "@/components/screens/Training";
 import { Stats } from "@/components/screens/Stats";
 import { Codex } from "@/components/screens/Codex";
 import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
-import { PauseMenu } from "@/components/screens/PauseMenu";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -41,7 +40,8 @@ export default function App() {
       case "milestone":
         return <MilestoneOverlay />;
       case "paused":
-        return <PauseMenu />;
+        // Pause menu removed — quit/codex/stats accessible from vendor node only
+        return <MainMenu />;
       default:
         return <MainMenu />;
     }
