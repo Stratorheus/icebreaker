@@ -61,10 +61,24 @@ export function MainMenu() {
         </MenuButton>
       </div>
 
-      {/* Version */}
-      <p className="mt-12 text-white/20 text-[10px] uppercase tracking-widest">
-        v1.0.0 // PROTOTYPE
-      </p>
+      {/* Reset + Version */}
+      <div className="mt-12 flex flex-col items-center gap-2">
+        <p className="text-white/20 text-[10px] uppercase tracking-widest">
+          v1.0.0 // PROTOTYPE
+        </p>
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm("Reset ALL progress? This cannot be undone.")) {
+              localStorage.removeItem("icebreaker-meta");
+              window.location.reload();
+            }
+          }}
+          className="text-white/15 text-[10px] uppercase tracking-widest hover:text-cyber-magenta/60 transition-colors cursor-pointer"
+        >
+          [RESET PROGRESS]
+        </button>
+      </div>
     </div>
   );
 }
