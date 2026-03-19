@@ -11,6 +11,7 @@ import { Training } from "@/components/screens/Training";
 import { Stats } from "@/components/screens/Stats";
 import { Codex } from "@/components/screens/Codex";
 import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
+import { PauseMenu } from "@/components/screens/PauseMenu";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -37,6 +38,10 @@ export default function App() {
         return <MetaShop />;
       case "stats":
         return <Stats />;
+      case "milestone":
+        return <MilestoneOverlay />;
+      case "paused":
+        return <PauseMenu />;
       default:
         return <MainMenu />;
     }
@@ -47,7 +52,6 @@ export default function App() {
       <ScanlineOverlay />
       <HUD />
       {renderScreen()}
-      <MilestoneOverlay />
       <Toaster
         position="bottom-right"
         theme="dark"
