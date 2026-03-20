@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // -- Port pool ----------------------------------------------------------------
 
@@ -84,6 +85,7 @@ export function PortScan(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("port-scan", props);
 
   const resolvedRef = useRef(false);
+  const isTouch = useTouchDevice();
 
   // Deep Scan module: flash ports multiple times
   const flashRepeat = useMemo(() => {
@@ -376,7 +378,7 @@ export function PortScan(props: MinigameProps) {
           {puzzle.ports.map((port, idx) => {
             const isFlashing = flashingIndex === idx;
             const isSelected = selectedIndices.has(idx);
-            const isCursor = phase === "select" && cursorIndex === idx;
+            const isCursor = !isTouch && phase === "select" && cursorIndex === idx;
             const isOpen = puzzle.openIndices.has(idx);
             // After resolve, show correct answers
             const showCorrect = resolvedRef.current && isOpen && !isSelected;

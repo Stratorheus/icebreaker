@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 type Phase = "preview" | "mark";
 
@@ -71,6 +72,7 @@ export function MineSweep(props: MinigameProps) {
   );
 
   const resolvedRef = useRef(false);
+  const isTouch = useTouchDevice();
 
   // 2h. Sector Scanner (flag-mine): pre-reveal mines after preview ends
   const flagMineCount = useMemo(() => {
@@ -320,7 +322,7 @@ export function MineSweep(props: MinigameProps) {
             const cellRow = Math.floor(i / cols);
             const cellCol = i % cols;
             const isCursor =
-              phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
+              !isTouch && phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
             const isMarked = markedCells.has(cell.id);
             const showMine = phase === "preview" && cell.isMine;
             // 3c. mines-visible: keep certain mines visible even in mark phase

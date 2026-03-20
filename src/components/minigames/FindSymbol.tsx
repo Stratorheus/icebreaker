@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 /** Hex alphabet characters */
 const HEX_CHARS = "0123456789ABCDEF";
@@ -114,6 +115,7 @@ export function FindSymbol(props: MinigameProps) {
   );
 
   const resolvedRef = useRef(false);
+  const isTouch = useTouchDevice();
 
   // 3b. Symbol Scanner (hint): highlight cells adjacent to target
   const hasProximityHint = useMemo(() => {
@@ -283,7 +285,7 @@ export function FindSymbol(props: MinigameProps) {
           {grid.map((cell, i) => {
             const cellRow = Math.floor(i / cols);
             const cellCol = i % cols;
-            const isCursor = cellRow === cursorRow && cellCol === cursorCol;
+            const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
             const isSelected = selectedCells.has(cell.id);
 
             // 3b. Proximity hint: check if cell is adjacent to a cell containing the current target
