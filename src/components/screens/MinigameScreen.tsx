@@ -16,7 +16,6 @@ import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
-import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import { PortScan } from "@/components/minigames/PortScan";
@@ -278,7 +277,6 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "cipher-crack": 12,
   "defrag": 30,
   "network-trace": 20,
-  "data-stream": 25,
   "signal-echo": 20,
   "checksum-verify": 15,
   "port-scan": 15,
@@ -297,7 +295,6 @@ const MINIGAME_COMPONENTS: Record<MinigameType, React.ComponentType<import("@/ty
   "cipher-crack": CipherCrack,
   "defrag": Defrag,
   "network-trace": NetworkTrace,
-  "data-stream": DataStream,
   "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerify,
   "port-scan": PortScan,
@@ -394,11 +391,6 @@ function buildMetaPowerUps(
     case "network-trace":
       // network-trace-highlight → briefly flash correct path (1000ms)
       addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");
-      break;
-
-    case "data-stream":
-      // data-stream-beacon → next node pulses
-      addIfOwned("data-stream-beacon", "minigame-specific", [1], "data-stream");
       break;
 
     case "signal-echo":
@@ -539,8 +531,6 @@ function getMinigameHint(type: MinigameType): string {
       return "Uncover cells, avoid mines. Numbers show adjacent mine count.";
     case "network-trace":
       return "Navigate the maze from entry to target using arrow keys.";
-    case "data-stream":
-      return "Visit numbered nodes IN ORDER while filling every cell.";
     case "signal-echo":
       return "Repeat the signal pattern in the correct sequence.";
     case "checksum-verify":

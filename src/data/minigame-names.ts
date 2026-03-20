@@ -11,7 +11,6 @@ export const MINIGAME_DISPLAY_NAMES: Record<MinigameType, string> = {
   "cipher-crack": "Cipher Crack V1",
   "defrag": "Defrag",
   "network-trace": "Network Trace",
-  "data-stream": "Data Stream",
   "signal-echo": "Signal Echo",
   "checksum-verify": "Checksum Verify",
   "port-scan": "Port Scan",
