@@ -81,30 +81,115 @@ interface GeneratedPuzzle {
   walls: WallSet;
 }
 
-/**
- * Generate a solvable snake/ZIP puzzle using a zigzag Hamiltonian path
- * with edge-based walls (LinkedIn ZIP style).
- *
- * 1. Create a zigzag path that visits every cell exactly once.
- * 2. Place numbered checkpoints along the path. Last cell = highest number.
- * 3. Place walls on edges between adjacent cells that are NOT consecutive
- *    on the path (10-30% chance based on difficulty). This adds complexity
- *    without breaking solvability — the original path always works because
- *    walls only block non-path edges.
- *
- * Difficulty scaling (0-1):
- * - Grid: 5x5 (d=0) → 7x7 (d=1). Bigger = more ambiguity.
- * - Checkpoints: 5 (d=0) → 9 (d=1). More = more interesting, not harder.
- * - Walls: 5% (d=0) → 35% (d=1) of non-path edges. More walls = more route constraints.
- */
-function generatePuzzle(difficulty: number): GeneratedPuzzle {
-  const size = Math.round(5 + difficulty * 2);
-  const rows = size;
-  const cols = size;
-  const totalCells = rows * cols;
+// ── Hamiltonian path helpers ─────────────────────────────────────────
 
-  // Build a zigzag Hamiltonian path:
-  // Even rows go left-to-right, odd rows go right-to-left (snake pattern)
+/** Get orthogonal neighbors within bounds */
+function getNeighbors(
+  r: number,
+  c: number,
+  rows: number,
+  cols: number,
+): [number, number][] {
+  const result: [number, number][] = [];
+  if (r > 0) result.push([r - 1, c]);
+  if (r < rows - 1) result.push([r + 1, c]);
+  if (c > 0) result.push([r, c - 1]);
+  if (c < cols - 1) result.push([r, c + 1]);
+  return result;
+}
+
+/**
+ * Generate a random Hamiltonian path using Warnsdorff's heuristic with
+ * randomized tiebreaking, plus DFS backtracking as fallback.
+ *
+ * Warnsdorff: always pick the unvisited neighbor with the fewest
+ * unvisited neighbors of its own (most constrained first). This
+ * almost always finds a solution on the first try for grids ≤ 10×10.
+ * Random tiebreaking ensures diverse puzzles.
+ *
+ * Returns null if no path found (caller should fall back to zigzag).
+ */
+function generateRandomHamiltonianPath(
+  rows: number,
+  cols: number,
+): [number, number][] | null {
+  const totalCells = rows * cols;
+  const visited: boolean[][] = Array.from({ length: rows }, () =>
+    Array(cols).fill(false),
+  );
+  const path: [number, number][] = [];
+
+  // Start from (0, 0) — top-left corner for natural starting position
+  const startR = 0;
+  const startC = 0;
+
+  /** Count unvisited neighbors of (r, c), excluding `excludeR, excludeC` */
+  function degree(r: number, c: number): number {
+    let count = 0;
+    for (const [nr, nc] of getNeighbors(r, c, rows, cols)) {
+      if (!visited[nr][nc]) count++;
+    }
+    return count;
+  }
+
+  /** Get unvisited neighbors sorted by Warnsdorff degree, with random tiebreaking */
+  function getSortedNeighbors(
+    r: number,
+    c: number,
+  ): [number, number][] {
+    const neighbors = getNeighbors(r, c, rows, cols).filter(
+      ([nr, nc]) => !visited[nr][nc],
+    );
+
+    // Compute degree for each neighbor
+    const withDegree: { pos: [number, number]; deg: number; rnd: number }[] =
+      neighbors.map((pos) => ({
+        pos,
+        deg: degree(pos[0], pos[1]) - 1, // -1 because current cell will be visited
+        rnd: Math.random(),
+      }));
+
+    // Sort by degree ascending, random tiebreak
+    withDegree.sort((a, b) => a.deg - b.deg || a.rnd - b.rnd);
+
+    return withDegree.map((w) => w.pos);
+  }
+
+  // Track backtrack count to enforce a budget
+  let backtracks = 0;
+  const MAX_BACKTRACKS = 50_000;
+
+  function dfs(r: number, c: number): boolean {
+    visited[r][c] = true;
+    path.push([r, c]);
+
+    if (path.length === totalCells) return true;
+
+    const neighbors = getSortedNeighbors(r, c);
+    for (const [nr, nc] of neighbors) {
+      if (dfs(nr, nc)) return true;
+      backtracks++;
+      if (backtracks > MAX_BACKTRACKS) return false;
+    }
+
+    // Backtrack
+    visited[r][c] = false;
+    path.pop();
+    return false;
+  }
+
+  if (dfs(startR, startC) && path.length === totalCells) {
+    return path;
+  }
+
+  return null;
+}
+
+/** Fallback zigzag Hamiltonian path (guaranteed to work) */
+function generateZigzagPath(
+  rows: number,
+  cols: number,
+): [number, number][] {
   const path: [number, number][] = [];
   for (let r = 0; r < rows; r++) {
     if (r % 2 === 0) {
@@ -113,36 +198,100 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
       for (let c = cols - 1; c >= 0; c--) path.push([r, c]);
     }
   }
+  return path;
+}
 
-  // Determine number of checkpoints (5 at d=0, 9 at d=1)
+/** Fisher-Yates shuffle (in-place) */
+function shuffleArray<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
+ * Generate a solvable snake/ZIP puzzle using a random Hamiltonian path
+ * (Warnsdorff's algorithm) with derived edge-based walls.
+ *
+ * Algorithm:
+ * 1. Generate a random Hamiltonian path (non-zigzag, weaving route).
+ * 2. Place checkpoints along the path with decent spacing.
+ * 3. Wall EVERY non-path edge, then REMOVE a fraction to add ambiguity.
+ *    The fewer walls removed, the harder the puzzle (more constrained).
+ * 4. Solvability is guaranteed — the original path always works since
+ *    we only remove walls, never add new ones on path edges.
+ *
+ * Difficulty scaling (0→1):
+ * - Grid: 5×5 (d=0) → 7×7 (d=1)
+ * - Checkpoints: 5 (d=0) → 9 (d=1)
+ * - Wall removal: 70% removed at d=0 (forgiving) → 20% at d=1 (constrained)
+ */
+function generatePuzzle(difficulty: number): GeneratedPuzzle {
+  const size = Math.round(5 + difficulty * 2);
+  const rows = size;
+  const cols = size;
+  const totalCells = rows * cols;
+
+  // Step 1: Generate a random Hamiltonian path (fall back to zigzag if needed)
+  const path: [number, number][] =
+    generateRandomHamiltonianPath(rows, cols) ?? generateZigzagPath(rows, cols);
+
+  // Step 2: Place checkpoints along the path with spacing
   const nodeCount = Math.round(5 + difficulty * 4);
 
-  // Place checkpoints at random (non-start) positions along the path,
-  // maintaining their order along the path.
-  // Reserve index 0 for the snake start (not a checkpoint).
-  // Reserve the LAST path index for the highest checkpoint.
-  const availableIndices: number[] = [];
-  for (let i = 1; i < totalCells - 1; i++) {
-    availableIndices.push(i);
-  }
+  // Minimum spacing between checkpoints (in path steps)
+  const minSpacing = Math.max(2, Math.floor(totalCells / (nodeCount + 1)));
 
-  // We need nodeCount - 1 random positions (the last checkpoint is at the end)
-  const innerCount = nodeCount - 1;
+  // The last path cell is always the highest checkpoint
+  // For the remaining nodeCount - 1 checkpoints, distribute with spacing
   const chosenPathIndices: number[] = [];
-  for (let i = 0; i < innerCount && i < availableIndices.length; i++) {
-    const j = i + Math.floor(Math.random() * (availableIndices.length - i));
-    [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
-    chosenPathIndices.push(availableIndices[i]);
+
+  // Generate candidate positions with minimum spacing
+  // Divide the path (excluding first cell and last cell) into zones
+  const usableStart = 1; // skip index 0 (snake start, not a checkpoint)
+  const usableEnd = totalCells - 2; // last cell reserved for final checkpoint
+
+  if (nodeCount <= 1) {
+    // Only the end checkpoint
+    chosenPathIndices.push(totalCells - 1);
+  } else {
+    const innerCount = nodeCount - 1;
+    // Try to space checkpoints evenly, then jitter
+    const segmentLength = (usableEnd - usableStart + 1) / innerCount;
+
+    for (let i = 0; i < innerCount; i++) {
+      const idealPos = usableStart + Math.round(segmentLength * (i + 0.5));
+      // Add jitter: ±25% of segment length
+      const jitter = Math.round((Math.random() - 0.5) * segmentLength * 0.5);
+      let pos = idealPos + jitter;
+      // Clamp within usable range
+      pos = Math.max(usableStart, Math.min(usableEnd, pos));
+      chosenPathIndices.push(pos);
+    }
+
+    // Ensure minimum spacing — sort first, then enforce
+    chosenPathIndices.sort((a, b) => a - b);
+    for (let i = 1; i < chosenPathIndices.length; i++) {
+      if (chosenPathIndices[i] - chosenPathIndices[i - 1] < minSpacing) {
+        chosenPathIndices[i] = Math.min(
+          usableEnd,
+          chosenPathIndices[i - 1] + minSpacing,
+        );
+      }
+    }
+
+    // De-duplicate (in case clamping caused overlaps)
+    const uniqueIndices = [...new Set(chosenPathIndices)];
+    chosenPathIndices.length = 0;
+    chosenPathIndices.push(...uniqueIndices);
+
+    // Add the final checkpoint at end
+    chosenPathIndices.push(totalCells - 1);
   }
 
-  // Sort chosen indices so checkpoints are numbered in path order
-  chosenPathIndices.sort((a, b) => a - b);
-
-  // Append the last path cell as the final (highest) checkpoint
-  chosenPathIndices.push(totalCells - 1);
-
-  // ── Edge-based wall placement ──────────────────────────────────────
-  // Build a set of consecutive path edges (these must NEVER have walls)
+  // Step 3: Derive walls from the path
+  // Build set of consecutive path edges (these must NEVER have walls)
   const pathEdges = new Set<string>();
   for (let i = 0; i < path.length - 1; i++) {
     const [r1, c1] = path[i];
@@ -150,38 +299,36 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     pathEdges.add(wallKey(r1, c1, r2, c2));
   }
 
-  // Enumerate all edges in the grid that are NOT on the path
+  // Enumerate ALL non-path edges and wall them all initially
   const nonPathEdges: string[] = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      // Right neighbor
       if (c < cols - 1) {
         const key = wallKey(r, c, r, c + 1);
-        if (!pathEdges.has(key)) {
-          nonPathEdges.push(key);
-        }
+        if (!pathEdges.has(key)) nonPathEdges.push(key);
       }
-      // Bottom neighbor
       if (r < rows - 1) {
         const key = wallKey(r, c, r + 1, c);
-        if (!pathEdges.has(key)) {
-          nonPathEdges.push(key);
-        }
+        if (!pathEdges.has(key)) nonPathEdges.push(key);
       }
     }
   }
 
-  // Wall probability scales with difficulty: 10% at d=0, 30% at d=1
-  const wallChance = 0.05 + difficulty * 0.30;
+  // Start with ALL non-path edges walled
+  const walls: WallSet = new Set<string>(nonPathEdges);
 
-  const walls: WallSet = new Set<string>();
-  for (const edge of nonPathEdges) {
-    if (Math.random() < wallChance) {
-      walls.add(edge);
-    }
+  // Remove a fraction of walls based on difficulty (more removed = easier)
+  // d=0: remove 70% → 30% of walls remain (forgiving)
+  // d=1: remove 20% → 80% of walls remain (very constrained)
+  const removalRate = 0.70 - difficulty * 0.50;
+  const wallList = shuffleArray([...nonPathEdges]);
+  const removeCount = Math.round(wallList.length * removalRate);
+
+  for (let i = 0; i < removeCount; i++) {
+    walls.delete(wallList[i]);
   }
 
-  // Build grid
+  // Step 4: Build grid
   const grid: GridNode[][] = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => ({
       pathIndex: -1,
@@ -189,7 +336,6 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     })),
   );
 
-  // Fill path indices
   for (let i = 0; i < path.length; i++) {
     const [r, c] = path[i];
     grid[r][c] = { pathIndex: i, label: null };
@@ -205,7 +351,7 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     checkpoints.push({ row: r, col: c, label });
   }
 
-  return { rows, cols, grid, path, checkpoints, nodeCount, walls };
+  return { rows, cols, grid, path, checkpoints, nodeCount: chosenPathIndices.length, walls };
 }
 
 // ── Component ─────────────────────────────────────────────────────────
