@@ -93,12 +93,12 @@ interface GeneratedPuzzle {
  *    walls only block non-path edges.
  *
  * Difficulty scaling (0-1):
- * - d=0:   4x4 grid, 4 nodes, ~10% wall chance on non-path edges
- * - d=0.5: 5x5 grid, 6 nodes, ~20% wall chance
- * - d=1.0: 6x6 grid, 9 nodes, ~30% wall chance
+ * - Grid: 5x5 (d=0) → 7x7 (d=1). Bigger = more ambiguity.
+ * - Checkpoints: 5 (d=0) → 9 (d=1). More = more interesting, not harder.
+ * - Walls: 5% (d=0) → 35% (d=1) of non-path edges. More walls = more route constraints.
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
-  const size = Math.round(4 + difficulty * 2);
+  const size = Math.round(5 + difficulty * 2);
   const rows = size;
   const cols = size;
   const totalCells = rows * cols;
@@ -114,8 +114,8 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     }
   }
 
-  // Determine number of checkpoints (4 at d=0, 9 at d=1)
-  const nodeCount = Math.round(4 + difficulty * 5);
+  // Determine number of checkpoints (5 at d=0, 9 at d=1)
+  const nodeCount = Math.round(5 + difficulty * 4);
 
   // Place checkpoints at random (non-start) positions along the path,
   // maintaining their order along the path.
@@ -172,7 +172,7 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   }
 
   // Wall probability scales with difficulty: 10% at d=0, 30% at d=1
-  const wallChance = 0.10 + difficulty * 0.20;
+  const wallChance = 0.05 + difficulty * 0.30;
 
   const walls: WallSet = new Set<string>();
   for (const edge of nonPathEdges) {
