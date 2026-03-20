@@ -36,6 +36,36 @@ const DIR_FROM_KEY: Record<string, Direction> = {
   ArrowRight: "right",
 };
 
+// ── Edge-based wall helpers ──────────────────────────────────────────
+
+/** Walls stored as set of edge keys: "r1,c1-r2,c2" (normalized: smaller coord first) */
+type WallSet = Set<string>;
+
+function wallKey(r1: number, c1: number, r2: number, c2: number): string {
+  if (r1 < r2 || (r1 === r2 && c1 < c2)) return `${r1},${c1}-${r2},${c2}`;
+  return `${r2},${c2}-${r1},${c1}`;
+}
+
+function hasWall(walls: WallSet, r1: number, c1: number, r2: number, c2: number): boolean {
+  return walls.has(wallKey(r1, c1, r2, c2));
+}
+
+/** For each cell, compute which borders have edge-walls */
+function getCellWalls(
+  r: number,
+  c: number,
+  rows: number,
+  cols: number,
+  walls: WallSet,
+): { top: boolean; right: boolean; bottom: boolean; left: boolean } {
+  return {
+    top: r > 0 && hasWall(walls, r - 1, c, r, c),
+    right: c < cols - 1 && hasWall(walls, r, c, r, c + 1),
+    bottom: r < rows - 1 && hasWall(walls, r, c, r + 1, c),
+    left: c > 0 && hasWall(walls, r, c - 1, r, c),
+  };
+}
+
 // ── Puzzle generation ─────────────────────────────────────────────────
 
 interface GeneratedPuzzle {
@@ -47,55 +77,25 @@ interface GeneratedPuzzle {
   /** Checkpoint positions in order, 1-indexed labels */
   checkpoints: { row: number; col: number; label: number }[];
   nodeCount: number;
-  /** Set of "row,col" keys that are impassable walls */
-  walls: Set<string>;
-}
-
-/** BFS: check that all non-wall cells are reachable from start. */
-function allReachable(
-  rows: number,
-  cols: number,
-  start: [number, number],
-  walls: Set<string>,
-): boolean {
-  const visited = new Set<string>();
-  const queue: [number, number][] = [start];
-  visited.add(`${start[0]},${start[1]}`);
-
-  while (queue.length > 0) {
-    const [r, c] = queue.shift()!;
-    for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
-      const nr = r + dr;
-      const nc = c + dc;
-      const key = `${nr},${nc}`;
-      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !walls.has(key) && !visited.has(key)) {
-        visited.add(key);
-        queue.push([nr, nc]);
-      }
-    }
-  }
-
-  // Count expected: total cells minus walls
-  const expected = rows * cols - walls.size;
-  return visited.size >= expected;
+  /** Edge-based walls: set of "r1,c1-r2,c2" keys */
+  walls: WallSet;
 }
 
 /**
- * Generate a solvable snake/ZIP puzzle using a zigzag Hamiltonian path.
+ * Generate a solvable snake/ZIP puzzle using a zigzag Hamiltonian path
+ * with edge-based walls (LinkedIn ZIP style).
  *
  * 1. Create a zigzag path that visits every cell exactly once.
- * 2. Place walls (10-20% of cells) with BFS reachability check.
- * 3. Place numbered checkpoints at random positions along the remaining path.
- * 4. The first cell of the path is the snake's starting position.
+ * 2. Place numbered checkpoints along the path. Last cell = highest number.
+ * 3. Place walls on edges between adjacent cells that are NOT consecutive
+ *    on the path (10-30% chance based on difficulty). This adds complexity
+ *    without breaking solvability — the original path always works because
+ *    walls only block non-path edges.
  *
  * Difficulty scaling (0-1):
- * - size = Math.round(4 + difficulty * 2)  →  4x4 to 6x6
- * - nodeCount = Math.round(4 + difficulty * 5)  →  4 to 9
- * - walls: 10-20% of non-path cells become impassable
- *
- * The LAST cell of the Hamiltonian path (final snake move) always
- * contains the highest-numbered checkpoint so the snake naturally
- * finishes there.
+ * - d=0:   4x4 grid, 4 nodes, ~10% wall chance on non-path edges
+ * - d=0.5: 5x5 grid, 6 nodes, ~20% wall chance
+ * - d=1.0: 6x6 grid, 9 nodes, ~30% wall chance
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
   const size = Math.round(4 + difficulty * 2);
@@ -114,13 +114,13 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     }
   }
 
-  // Determine number of checkpoints (increased: 4 at d=0, 9 at d=1)
+  // Determine number of checkpoints (4 at d=0, 9 at d=1)
   const nodeCount = Math.round(4 + difficulty * 5);
 
   // Place checkpoints at random (non-start) positions along the path,
   // maintaining their order along the path.
   // Reserve index 0 for the snake start (not a checkpoint).
-  // Reserve the LAST path index (totalCells - 1) for the highest checkpoint.
+  // Reserve the LAST path index for the highest checkpoint.
   const availableIndices: number[] = [];
   for (let i = 1; i < totalCells - 1; i++) {
     availableIndices.push(i);
@@ -141,48 +141,43 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   // Append the last path cell as the final (highest) checkpoint
   chosenPathIndices.push(totalCells - 1);
 
-  // Build a set of cells on the Hamiltonian path for wall exclusion
-  const pathCellSet = new Set<string>();
-  for (const [r, c] of path) {
-    pathCellSet.add(`${r},${c}`);
+  // ── Edge-based wall placement ──────────────────────────────────────
+  // Build a set of consecutive path edges (these must NEVER have walls)
+  const pathEdges = new Set<string>();
+  for (let i = 0; i < path.length - 1; i++) {
+    const [r1, c1] = path[i];
+    const [r2, c2] = path[i + 1];
+    pathEdges.add(wallKey(r1, c1, r2, c2));
   }
 
-  // Generate walls: block 10-20% of cells NOT on the Hamiltonian path.
-  // Since the zigzag path covers ALL cells in a rectangle, we need to
-  // expand the grid slightly to have non-path cells for walls.
-  // Alternative: randomly remove some path cells from being traversable
-  // by marking them as walls (but then the snake can't fill all cells).
-  // Better approach: keep grid same, walls reduce the set of cells the
-  // snake MUST fill (walls are excluded from totalCells for win condition).
-  const walls = new Set<string>();
-  const wallPct = 0.10 + Math.random() * 0.10; // 10-20%
-  const wallTarget = Math.floor(totalCells * wallPct);
-  // Candidate wall cells: path cells that are NOT: start, end, or checkpoints
-  const checkpointPathIndices = new Set(chosenPathIndices);
-  checkpointPathIndices.add(0); // start
-  const wallCandidatePathIndices = [];
-  for (let i = 0; i < path.length; i++) {
-    if (!checkpointPathIndices.has(i)) {
-      wallCandidatePathIndices.push(i);
+  // Enumerate all edges in the grid that are NOT on the path
+  const nonPathEdges: string[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      // Right neighbor
+      if (c < cols - 1) {
+        const key = wallKey(r, c, r, c + 1);
+        if (!pathEdges.has(key)) {
+          nonPathEdges.push(key);
+        }
+      }
+      // Bottom neighbor
+      if (r < rows - 1) {
+        const key = wallKey(r, c, r + 1, c);
+        if (!pathEdges.has(key)) {
+          nonPathEdges.push(key);
+        }
+      }
     }
   }
-  // Shuffle and pick
-  for (let i = wallCandidatePathIndices.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [wallCandidatePathIndices[i], wallCandidatePathIndices[j]] =
-      [wallCandidatePathIndices[j], wallCandidatePathIndices[i]];
-  }
-  // Place walls one at a time, checking that all non-wall cells remain
-  // reachable from start via BFS (prevents unsolvable puzzles)
-  for (let i = 0; i < Math.min(wallTarget, wallCandidatePathIndices.length); i++) {
-    const pathIdx = wallCandidatePathIndices[i];
-    const [r, c] = path[pathIdx];
-    const key = `${r},${c}`;
-    walls.add(key);
 
-    // BFS reachability check
-    if (!allReachable(rows, cols, path[0], walls)) {
-      walls.delete(key); // this wall would isolate cells, skip it
+  // Wall probability scales with difficulty: 10% at d=0, 30% at d=1
+  const wallChance = 0.10 + difficulty * 0.20;
+
+  const walls: WallSet = new Set<string>();
+  for (const edge of nonPathEdges) {
+    if (Math.random() < wallChance) {
+      walls.add(edge);
     }
   }
 
@@ -223,6 +218,9 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
  * move. Moving in the opposite direction of the last move retracts
  * the head (undo). Space resets the puzzle.
  *
+ * Walls are edges BETWEEN cells (ZIP style) — they block movement
+ * between two adjacent cells but don't remove cells from the grid.
+ *
  * Win: all cells filled AND all checkpoints visited in order.
  * Fail: timeout only.
  */
@@ -247,7 +245,7 @@ export function DataStream(props: MinigameProps) {
   );
 
   const { rows, cols, grid, nodeCount, walls } = puzzle;
-  const totalCells = rows * cols - walls.size; // walls don't count toward fill requirement
+  const totalCells = rows * cols; // All cells must be filled (no cell-based walls)
 
   // ── Snake state ─────────────────────────────────────────────────────
   // The snake is stored as an ordered list of [row, col] positions.
@@ -341,14 +339,6 @@ export function DataStream(props: MinigameProps) {
           newVisited = newVisited - 1;
         }
 
-        // Also check if the new head position has a checkpoint we need to recollect
-        // (it was already visited when we first moved there, so it stays visited if label <= newVisited)
-        // Actually, the new head's checkpoint was already counted, so no action needed.
-        // But we need to check: did we un-visit a node, and does the new head
-        // have a node that's now the next target? The new head's node was collected
-        // before, so its label <= newVisited (before decrement) which means
-        // label <= newVisited (after decrement) + 1, so it's still valid.
-
         setSnake(newSnake);
         setLastDir(newLastDir);
         setVisitedNodes(newVisited);
@@ -363,16 +353,16 @@ export function DataStream(props: MinigameProps) {
       // Bounds check
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
-      // Wall check: cannot move into a wall cell
-      const key = `${nr},${nc}`;
-      if (walls.has(key)) return;
+      // Edge-wall check: cannot cross a wall between current cell and target cell
+      if (hasWall(walls, head[0], head[1], nr, nc)) return;
 
       // Collision check: cannot move into a cell already occupied by the snake
+      const targetKey = `${nr},${nc}`;
       const currentOccupied = new Set<string>();
       for (const [sr, sc] of currentSnake) {
         currentOccupied.add(`${sr},${sc}`);
       }
-      if (currentOccupied.has(key)) return;
+      if (currentOccupied.has(targetKey)) return;
 
       // Valid move — extend the snake
       const newSnake = [...currentSnake, [nr, nc] as [number, number]];
@@ -418,6 +408,9 @@ export function DataStream(props: MinigameProps) {
   const headPos = snake[snake.length - 1];
   const nextTargetLabel = visitedNodes < nodeCount ? visitedNodes + 1 : null;
 
+  // Wall border thickness
+  const wallBorder = "3px solid var(--color-cyber-magenta)";
+
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Timer */}
@@ -455,26 +448,20 @@ export function DataStream(props: MinigameProps) {
           {Array.from({ length: rows }, (_, r) =>
             Array.from({ length: cols }, (_, c) => {
               const cell = grid[r][c];
-              const isWall = walls.has(`${r},${c}`);
               const isHead = r === headPos[0] && c === headPos[1];
               const isOccupied = occupiedSet.has(`${r},${c}`);
               const isCheckpoint = cell.label !== null;
               const isVisited = cell.label !== null && cell.label <= visitedNodes;
               const isNextTarget = cell.label !== null && cell.label === nextTargetLabel;
 
+              // Compute edge-wall borders for this cell
+              const cw = getCellWalls(r, c, rows, cols, walls);
+
               // Cell styling
               let cellClass = "";
               let content: React.ReactNode = null;
 
-              if (isWall) {
-                // Wall cell — impassable
-                cellClass = "bg-white/[0.08] border-white/[0.12]";
-                content = (
-                  <span className="text-white/15 font-bold" style={{ fontSize: cellPx * 0.35 }}>
-                    &#9608;
-                  </span>
-                );
-              } else if (isHead) {
+              if (isHead) {
                 // Snake head — bright cyan/white
                 cellClass =
                   "bg-cyan-300/60 border-cyan-200 shadow-[0_0_12px_rgba(0,255,255,0.6)]";
@@ -544,6 +531,10 @@ export function DataStream(props: MinigameProps) {
                   style={{
                     width: cellPx,
                     height: cellPx,
+                    borderTop: cw.top ? wallBorder : undefined,
+                    borderRight: cw.right ? wallBorder : undefined,
+                    borderBottom: cw.bottom ? wallBorder : undefined,
+                    borderLeft: cw.left ? wallBorder : undefined,
                   }}
                 >
                   {content}
@@ -572,8 +563,8 @@ export function DataStream(props: MinigameProps) {
             <span className="text-cyber-green/70">Visited</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-sm bg-white/[0.08] border border-white/[0.12]" />
-            <span className="text-white/40">Wall</span>
+            <span className="inline-block w-3 h-3 rounded-sm border-2 border-cyber-magenta/60" />
+            <span className="text-cyber-magenta/60">Wall</span>
           </span>
         </div>
       </div>
