@@ -381,10 +381,13 @@ export function WireCutting(props: MinigameProps) {
 
       {/* Key hints */}
       <div className="mt-6 text-center">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+        <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
           Press the wire number to cut
         </p>
-        <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+        <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
+          Tap a wire to cut
+        </p>
+        <div className="desktop-only inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
           {puzzle.wires.map((_, i) => (
             <kbd
               key={i}
