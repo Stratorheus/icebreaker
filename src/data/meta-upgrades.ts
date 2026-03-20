@@ -207,15 +207,6 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     effects: [{ type: "unlock-minigame", value: 1, minigame: "network-trace" }],
   },
   {
-    id: "data-stream-license",
-    name: "Data Stream License",
-    description: "Unlocks the Data Stream protocol.",
-    category: "minigame-unlock",
-    maxTier: 1,
-    prices: [0], // dynamic: 200 + (unlocksOwned) * 100
-    effects: [{ type: "unlock-minigame", value: 1, minigame: "data-stream" }],
-  },
-  {
     id: "signal-echo-license",
     name: "Signal Echo License",
     description: "Unlocks the Signal Echo protocol.",
@@ -407,15 +398,6 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     maxTier: 1,
     prices: [200],
     effects: [{ type: "minigame-specific", value: 1000, minigame: "network-trace" }],
-  },
-  {
-    id: "data-stream-beacon",
-    name: "Node Beacon",
-    description: "Next required node pulses/blinks in Data Stream.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [175],
-    effects: [{ type: "minigame-specific", value: 1, minigame: "data-stream" }],
   },
   {
     id: "signal-echo-slow",

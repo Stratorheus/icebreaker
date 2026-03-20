@@ -12,7 +12,6 @@ export type MinigameType =
   | "cipher-crack"
   | "defrag"
   | "network-trace"
-  | "data-stream"
   | "signal-echo"
   | "checksum-verify"
   | "port-scan"
@@ -33,7 +32,6 @@ export const UNLOCKABLE_MINIGAMES: MinigameType[] = [
   "cipher-crack",
   "defrag",
   "network-trace",
-  "data-stream",
   "signal-echo",
   "checksum-verify",
   "port-scan",

@@ -279,14 +279,6 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     icon: "network",
   },
   {
-    id: "stream-master",
-    name: "Stream Master",
-    description: "Win Data Stream 25 times total.",
-    condition: { type: "minigame-streak", minigame: "data-stream", count: 25 },
-    reward: 50,
-    icon: "waves",
-  },
-  {
     id: "echo-chamber",
     name: "Echo Chamber",
     description: "Win Signal Echo 30 times total.",

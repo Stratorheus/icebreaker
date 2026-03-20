@@ -12,7 +12,6 @@ import { WireCutting } from "@/components/minigames/WireCutting";
 import { CipherCrack } from "@/components/minigames/CipherCrack";
 import { Defrag } from "@/components/minigames/Defrag";
 import { NetworkTrace } from "@/components/minigames/NetworkTrace";
-import { DataStream } from "@/components/minigames/DataStream";
 import { SignalEcho } from "@/components/minigames/SignalEcho";
 import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
 import { PortScan } from "@/components/minigames/PortScan";
@@ -188,20 +187,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
       "Larger mazes at higher difficulty — move quickly and stay oriented",
     ],
   },
-  "data-stream": {
-    title: "DATA STREAM",
-    rules: [
-      "Guide a snake (data stream) through the grid",
-      "Visit all numbered nodes IN ORDER (1, 2, 3...)",
-      "Fill EVERY cell in the grid — the snake grows with each step",
-      "Cannot move into cells already occupied by the snake body",
-    ],
-    controls: "Arrow keys = move, Reverse direction = undo, SPACE = reset puzzle",
-    tips: [
-      "Moving opposite to your last direction retracts the head (free undo)",
-      "Larger grids and more nodes at higher difficulty — plan your route carefully",
-    ],
-  },
   "signal-echo": {
     title: "SIGNAL ECHO",
     rules: [
@@ -292,7 +277,6 @@ const MINIGAME_COMPONENTS: Record<
   "cipher-crack": CipherCrack,
   "defrag": Defrag,
   "network-trace": NetworkTrace,
-  "data-stream": DataStream,
   "signal-echo": SignalEcho,
   "checksum-verify": ChecksumVerify,
   "port-scan": PortScan,
