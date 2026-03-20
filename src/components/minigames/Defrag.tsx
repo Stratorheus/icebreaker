@@ -63,11 +63,12 @@ function getNeighbors(
 }
 
 /**
- * Generate a minesweeper board.
+ * Generate a minesweeper board shell (no mines yet).
+ * Mines are placed after the first click to guarantee a safe opening.
  *
  * Difficulty scaling (0–1):
- * - Grid size: 5×5 (d=0) → 9×9 (d=1) via `Math.round(5 + difficulty * 4)`
- * - Mine count: 3 (d=0) → 14 (d=1) via `Math.round(3 + difficulty * 11)`, capped at 25% of cells
+ * - Grid size: 5×5 (d=0) → 9×9 (d=1)
+ * - Mine count: 3 (d=0) → 14 (d=1), capped at 25% of cells
  */
 function generateBoard(difficulty: number): GeneratedBoard {
   const size = Math.round(5 + difficulty * 4);
@@ -75,30 +76,55 @@ function generateBoard(difficulty: number): GeneratedBoard {
   const rows = size;
   const totalCells = rows * cols;
 
-  // Cap mines at 25% of total cells
   const rawMines = Math.round(3 + difficulty * 11);
   const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.25));
 
-  // Pick unique mine positions
-  const minePositions = new Set<number>();
-  while (minePositions.size < mineCount) {
-    minePositions.add(Math.floor(Math.random() * totalCells));
-  }
-
-  // Build cells with adjacency counts
-  const cells: DefragCell[] = Array.from({ length: totalCells }, (_, i) => {
-    const isMine = minePositions.has(i);
-    let adjacentMines = 0;
-    if (!isMine) {
-      const neighbors = getNeighbors(i, cols, rows);
-      for (const n of neighbors) {
-        if (minePositions.has(n)) adjacentMines++;
-      }
-    }
-    return { id: i, isMine, adjacentMines };
-  });
+  // Cells start with no mines — placed on first click via placeMines()
+  const cells: DefragCell[] = Array.from({ length: totalCells }, (_, i) => ({
+    id: i, isMine: false, adjacentMines: 0,
+  }));
 
   return { cells, cols, rows, mineCount };
+}
+
+/**
+ * Place mines on the board, avoiding the clicked cell and all its neighbors.
+ * This guarantees the first click always triggers a flood fill (0-cell cascade).
+ */
+function placeMines(
+  cells: DefragCell[],
+  cols: number,
+  rows: number,
+  mineCount: number,
+  safeIndex: number,
+): void {
+  const totalCells = rows * cols;
+  // Protected zone: clicked cell + all neighbors
+  const protectedSet = new Set([safeIndex, ...getNeighbors(safeIndex, cols, rows)]);
+
+  const candidates = Array.from({ length: totalCells }, (_, i) => i)
+    .filter((i) => !protectedSet.has(i));
+
+  // Shuffle candidates and pick first mineCount
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  const actualMines = Math.min(mineCount, candidates.length);
+  const minePositions = new Set(candidates.slice(0, actualMines));
+
+  // Apply mines and recompute adjacency
+  for (const cell of cells) {
+    cell.isMine = minePositions.has(cell.id);
+    cell.adjacentMines = 0;
+  }
+  for (const cell of cells) {
+    if (!cell.isMine) {
+      const neighbors = getNeighbors(cell.id, cols, rows);
+      cell.adjacentMines = neighbors.filter((n) => cells[n].isMine).length;
+    }
+  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -111,18 +137,13 @@ function generateBoard(difficulty: number): GeneratedBoard {
  * Arrow keys navigate cursor, Space = uncover, Enter = flag.
  */
 export function Defrag(props: MinigameProps) {
-  const { difficulty, activePowerUps } = props;
+  const { difficulty } = props;
   const { timer, complete, fail, isActive } = useMinigame("defrag", props);
 
   const resolvedRef = useRef(false);
 
-  // Safe Start module: first click is always safe (relocate mine if needed)
-  const hasSafeStart = useMemo(() => {
-    return activePowerUps.some(
-      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "defrag",
-    );
-  }, [activePowerUps]);
   const firstClickRef = useRef(true);
+  const minesPlacedRef = useRef(false);
 
   // Generate board on mount (stable across re-renders)
   const board = useMemo(
@@ -216,29 +237,14 @@ export function Defrag(props: MinigameProps) {
       const currentState = cellStatesRef.current[cellIndex];
       if (currentState !== "hidden") return; // already revealed or flagged
 
-      const cell = cells[cellIndex];
-
-      // Safe Start: if first click hits a mine, relocate it to a random safe cell
-      if (cell.isMine && firstClickRef.current && hasSafeStart) {
+      // First click: place mines now (guarantees safe opening with flood fill)
+      if (!minesPlacedRef.current) {
+        minesPlacedRef.current = true;
         firstClickRef.current = false;
-        // Find a non-mine cell to swap with
-        const safeCells = cells.filter((c) => !c.isMine && c.id !== cellIndex);
-        if (safeCells.length > 0) {
-          const target = safeCells[Math.floor(Math.random() * safeCells.length)];
-          // Swap mine status
-          cell.isMine = false;
-          target.isMine = true;
-          // Recompute adjacency for affected area
-          for (const c of cells) {
-            if (!c.isMine) {
-              const neighbors = getNeighbors(c.id, cols, rows);
-              c.adjacentMines = neighbors.filter((n) => cells[n].isMine).length;
-            }
-          }
-        }
-      } else {
-        firstClickRef.current = false;
+        placeMines(cells, cols, rows, mineCount, cellIndex);
       }
+
+      const cell = cells[cellIndex];
 
       if (cell.isMine) {
         // Hit a mine — show all mines briefly, then fail
