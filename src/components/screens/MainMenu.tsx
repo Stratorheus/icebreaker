@@ -80,6 +80,40 @@ export function MainMenu() {
           [RESET PROGRESS]
         </button>
       </div>
+
+      {/* Footer */}
+      <div className="mt-8 mb-4 text-center text-white/20 text-[10px] uppercase tracking-widest font-mono">
+        <span>Made by{" "}
+          <a
+            href="https://skorupa.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
+          >
+            Martin Skorupa
+          </a>
+        </span>
+        <span className="mx-1.5">&middot;</span>
+        <a
+          href="https://linkedin.com/in/martin-skorupa"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
+        >
+          LinkedIn
+        </a>
+        <span className="mx-1.5">&middot;</span>
+        <span>Inspired by{" "}
+          <a
+            href="https://store.steampowered.com/app/1812820/Bitburner/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
+          >
+            Bitburner
+          </a>
+        </span>
+      </div>
     </div>
   );
 }

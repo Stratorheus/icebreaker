@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // ---------------------------------------------------------------------------
 // IP / Subnet helpers
@@ -277,6 +278,7 @@ export function SubnetScan(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("subnet-scan", props);
 
   const resolvedRef = useRef(false);
+  const isTouch = useTouchDevice();
 
   // CIDR Helper module: show expanded IP range
   const hasCidrHelper = useMemo(() => {
@@ -451,7 +453,7 @@ export function SubnetScan(props: MinigameProps) {
         <div className="w-full max-w-sm space-y-1.5">
           {puzzle.addresses.map((addr, idx) => {
             const isSelected = selectedSet.has(addr);
-            const isCursor = cursorIndex === idx;
+            const isCursor = !isTouch && cursorIndex === idx;
             const isCorrect = puzzle.correctSet.has(addr);
             // After resolve, show missed correct answers
             const showMissed = resolvedRef.current && isCorrect && !isSelected;
@@ -484,10 +486,10 @@ export function SubnetScan(props: MinigameProps) {
             }
 
             if (isCursor && !resolvedRef.current) {
-              itemClasses += " ring-2 ring-cyber-magenta ring-offset-0";
+              itemClasses += " ring-2 ring-cyber-cyan ring-offset-0";
               itemStyle = {
                 ...itemStyle,
-                boxShadow: `${itemStyle.boxShadow ?? ""}, 0 0 12px rgba(255, 0, 255, 0.4)`.replace(
+                boxShadow: `${itemStyle.boxShadow ?? ""}, 0 0 12px rgba(0, 255, 255, 0.3)`.replace(
                   /^, /,
                   "",
                 ),
