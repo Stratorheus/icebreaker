@@ -136,7 +136,7 @@ export function MinigameScreen() {
         const diffReducerT = purchasedUpgrades["difficulty-reducer"] ?? 0;
         const diff = getDifficulty(floor) * Math.pow(0.95, diffReducerT);
         const creditTier = purchasedUpgrades["credit-multiplier"] ?? 0;
-        const creditMul = 1 + creditTier * 0.1;
+        const creditMul = Math.pow(1.03, creditTier);
         const unlockedCount = useGameStore.getState().unlockedMinigames.length;
         const unlockBonus = Math.max(0, unlockedCount - 5) * 0.05; // STARTING_MINIGAMES = 5
         const totalMul = creditMul * (1 + unlockBonus);

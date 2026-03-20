@@ -178,7 +178,7 @@ export function RunShop() {
 
   // Compute data reward preview for quit button
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = 1 + dataTier * 0.1;
+  const dataMultiplier = Math.pow(1.03, dataTier);
   const dataReward = Math.round(getDataReward(floor) * dataMultiplier);
 
   // Sub-views: Codex and Stats with back button returning to shop
