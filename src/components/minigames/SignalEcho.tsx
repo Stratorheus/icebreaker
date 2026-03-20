@@ -398,8 +398,8 @@ export function SignalEcho(props: MinigameProps) {
         </div>
       </div>
 
-      {/* Arrow key hints */}
-      <div className="mt-4 text-center">
+      {/* Arrow key hints — desktop */}
+      <div className="desktop-only mt-4 text-center">
         <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
           Arrow keys or click panels
         </p>
@@ -419,6 +419,13 @@ export function SignalEcho(props: MinigameProps) {
             </kbd>
           </div>
         </div>
+      </div>
+
+      {/* Touch instruction */}
+      <div className="touch-only mt-4 text-center">
+        <p className="text-white/30 text-xs uppercase tracking-widest">
+          TAP the panels to repeat the sequence
+        </p>
       </div>
     </div>
   );

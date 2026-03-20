@@ -352,8 +352,8 @@ export function FindSymbol(props: MinigameProps) {
         </p>
       </div>
 
-      {/* Instructions */}
-      <div className="mt-6 text-center">
+      {/* Instructions — desktop */}
+      <div className="desktop-only mt-6 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Click or use arrow keys + Enter to select
         </p>
@@ -376,6 +376,13 @@ export function FindSymbol(props: MinigameProps) {
             Enter
           </kbd>
         </div>
+      </div>
+
+      {/* Touch instruction */}
+      <div className="touch-only mt-6 text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest">
+          TAP the matching hex code in the grid
+        </p>
       </div>
     </div>
   );

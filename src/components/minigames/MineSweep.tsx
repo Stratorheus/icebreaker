@@ -379,10 +379,13 @@ export function MineSweep(props: MinigameProps) {
           </p>
         ) : (
           <>
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
               Click or arrow keys + Enter/Space to toggle mark
             </p>
-            <div className="inline-flex flex-col items-center gap-1">
+            <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
+              TAP to mark corrupted sectors
+            </p>
+            <div className="desktop-only inline-flex flex-col items-center gap-1">
               <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
                 {"\u2191"}
               </kbd>
