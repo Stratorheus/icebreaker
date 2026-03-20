@@ -278,7 +278,7 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "cipher-crack": 12,
   "defrag": 30,
   "network-trace": 20,
-  "data-stream": 18,
+  "data-stream": 25,
   "signal-echo": 20,
   "checksum-verify": 15,
   "port-scan": 15,
