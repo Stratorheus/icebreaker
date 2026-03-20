@@ -535,8 +535,8 @@ export function SubnetScan(props: MinigameProps) {
           ))}
         </div>
 
-        {/* Control hints */}
-        <div className="mt-3 text-center space-y-1">
+        {/* Control hints — desktop */}
+        <div className="desktop-only mt-3 text-center space-y-1">
           <p className="text-white/30 text-xs uppercase tracking-widest">
             Arrow keys to navigate, Space to toggle, or click
           </p>
@@ -551,6 +551,13 @@ export function SubnetScan(props: MinigameProps) {
               SPACE
             </kbd>
           </div>
+        </div>
+
+        {/* Touch instruction */}
+        <div className="touch-only mt-3 text-center">
+          <p className="text-white/30 text-xs uppercase tracking-widest">
+            TAP addresses that belong to the subnet
+          </p>
         </div>
       </div>
     </div>

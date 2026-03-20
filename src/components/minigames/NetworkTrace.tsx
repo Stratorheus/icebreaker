@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { TouchControls } from "@/components/layout/TouchControls";
 import { generateMaze } from "@/lib/maze-generator";
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -261,8 +262,8 @@ export function NetworkTrace(props: MinigameProps) {
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="mt-4 text-center">
+      {/* Instructions — desktop */}
+      <div className="desktop-only mt-4 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Arrow keys to navigate
         </p>
@@ -283,6 +284,14 @@ export function NetworkTrace(props: MinigameProps) {
           </div>
         </div>
       </div>
+
+      {/* Touch: D-pad + instruction */}
+      <div className="touch-only mt-2 text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+          Use the D-pad to navigate
+        </p>
+      </div>
+      <TouchControls type="dpad" />
     </div>
   );
 }

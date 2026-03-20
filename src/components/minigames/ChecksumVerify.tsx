@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 
@@ -82,6 +83,15 @@ export function ChecksumVerify(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("checksum-verify", props);
 
   const resolvedRef = useRef(false);
+
+  // Touch device: hidden input for system keyboard
+  const isTouch = useTouchDevice();
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (isTouch && hiddenInputRef.current) {
+      setTimeout(() => hiddenInputRef.current?.focus(), 300);
+    }
+  }, [isTouch]);
 
   // Calculator module: show intermediate result hint
   const hasCalculator = useMemo(() => {
@@ -323,8 +333,27 @@ export function ChecksumVerify(props: MinigameProps) {
         </div>
       </div>
 
-      {/* Control hints */}
-      <div className="mt-4 text-center space-y-1">
+      {/* Hidden input for mobile keyboard */}
+      <input
+        ref={hiddenInputRef}
+        type="text"
+        inputMode="numeric"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        className="fixed -top-24 -left-24 w-px h-px opacity-0"
+        onInput={(e) => {
+          const target = e.target as HTMLInputElement;
+          for (const char of target.value) {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
+          }
+          target.value = "";
+        }}
+      />
+
+      {/* Control hints — desktop */}
+      <div className="desktop-only mt-4 text-center space-y-1">
         <p className="text-white/30 text-xs uppercase tracking-widest">
           Type digits, ENTER or SPACE to confirm
         </p>
@@ -342,6 +371,31 @@ export function ChecksumVerify(props: MinigameProps) {
             ENTER
           </kbd>
         </div>
+      </div>
+
+      {/* Touch: tap to type + confirm button */}
+      <div className="touch-only mt-4 text-center space-y-2">
+        <button
+          type="button"
+          className="px-4 py-2 border border-cyber-cyan/40 rounded-lg bg-cyber-cyan/10 text-cyber-cyan text-xs uppercase tracking-widest font-mono animate-pulse"
+          onClick={() => hiddenInputRef.current?.focus()}
+        >
+          TAP HERE TO TYPE
+        </button>
+        <div>
+          <button
+            type="button"
+            className="px-6 py-2 border border-cyber-green/50 rounded-lg bg-cyber-green/10 text-cyber-green text-xs uppercase tracking-widest font-mono font-bold"
+            onClick={() => {
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+            }}
+          >
+            CONFIRM
+          </button>
+        </div>
+        <p className="text-white/30 text-xs uppercase tracking-widest">
+          Type digits, then CONFIRM
+        </p>
       </div>
     </div>
   );

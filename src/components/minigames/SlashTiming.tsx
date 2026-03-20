@@ -167,8 +167,11 @@ export function SlashTiming(props: MinigameProps) {
       {/* Timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-8" />
 
-      {/* Central indicator */}
-      <div className="flex-1 flex items-center justify-center">
+      {/* Central indicator — tap anywhere to strike on mobile */}
+      <div
+        className="flex-1 flex items-center justify-center w-full cursor-pointer touch-manipulation"
+        onClick={handleSpace}
+      >
         <div
           className={`
             relative flex flex-col items-center justify-center
@@ -204,14 +207,23 @@ export function SlashTiming(props: MinigameProps) {
 
       {/* Instruction */}
       <div className="mt-8 text-center">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+        <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
           Press Space to strike during the{" "}
           <span className="text-cyber-green">green</span> phase
         </p>
-        <div className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+        <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
+          Tap to strike during the{" "}
+          <span className="text-cyber-green">green</span> phase
+        </p>
+        <div className="desktop-only inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
           <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
             SPACE
           </kbd>
+        </div>
+        <div className="touch-only inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+          <span className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
+            TAP TO STRIKE
+          </span>
         </div>
       </div>
     </div>

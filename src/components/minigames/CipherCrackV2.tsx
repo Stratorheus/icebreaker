@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TECH_WORDS } from "@/data/words";
 
@@ -119,6 +120,15 @@ export function CipherCrackV2(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("cipher-crack-v2", props);
 
   const resolvedRef = useRef(false);
+
+  // Touch device: hidden input for system keyboard
+  const isTouch = useTouchDevice();
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (isTouch && hiddenInputRef.current) {
+      setTimeout(() => hiddenInputRef.current?.focus(), 300);
+    }
+  }, [isTouch]);
 
   // Cipher Hint meta upgrade: show first letter of answer
   const extraHintLetter = useMemo(() => {
@@ -264,8 +274,40 @@ export function CipherCrackV2(props: MinigameProps) {
         </p>
       </div>
 
-      <div className="mt-6 text-center">
+      {/* Hidden input for mobile keyboard */}
+      <input
+        ref={hiddenInputRef}
+        type="text"
+        inputMode="text"
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        className="fixed -top-24 -left-24 w-px h-px opacity-0"
+        onInput={(e) => {
+          const target = e.target as HTMLInputElement;
+          for (const char of target.value) {
+            window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
+          }
+          target.value = "";
+        }}
+      />
+
+      <div className="desktop-only mt-6 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest">
+          Type the decrypted word &mdash; wrong key = fail
+        </p>
+      </div>
+
+      <div className="touch-only mt-6 text-center">
+        <button
+          type="button"
+          className="px-4 py-2 border border-cyber-cyan/40 rounded-lg bg-cyber-cyan/10 text-cyber-cyan text-xs uppercase tracking-widest font-mono animate-pulse"
+          onClick={() => hiddenInputRef.current?.focus()}
+        >
+          TAP HERE TO TYPE
+        </button>
+        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">
           Type the decrypted word &mdash; wrong key = fail
         </p>
       </div>
