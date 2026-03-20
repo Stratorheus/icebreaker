@@ -3,7 +3,7 @@ import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
 import { getMinigameDisplayName } from "@/data/minigame-names";
-import { MINIGAME_BRIEFINGS, getMinigameControls } from "@/data/minigame-descriptions";
+import { MINIGAME_BRIEFINGS } from "@/data/minigame-descriptions";
 import type { MinigameBriefing } from "@/data/minigame-descriptions";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
