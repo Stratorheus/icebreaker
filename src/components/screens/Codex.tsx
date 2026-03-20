@@ -3,214 +3,9 @@ import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
 import { UNLOCKABLE_MINIGAMES } from "@/types/game";
 import { getMinigameDisplayName } from "@/data/minigame-names";
-
-// ---------------------------------------------------------------------------
-// Briefing data (mirrors Training.tsx — kept in sync manually)
-// ---------------------------------------------------------------------------
-
-interface BriefingData {
-  rules: string[];
-  controls: string;
-  tips: string[];
-}
-
-const BRIEFINGS: Record<MinigameType, BriefingData> = {
-  "slash-timing": {
-    rules: [
-      "Three phases cycle in sequence: GUARD → PREPARE → ATTACK",
-      "Press SPACE only during the green ATTACK window to succeed",
-      "Pressing SPACE during GUARD or PREPARE causes immediate failure",
-      "Missing the ATTACK window restarts the cycle — keep waiting",
-    ],
-    controls: "SPACE — strike",
-    tips: [
-      "Watch for the PREPARE phase as your cue to get ready",
-      "At higher difficulty the ATTACK window shrinks — precision matters",
-    ],
-  },
-  "close-brackets": {
-    rules: [
-      "A sequence of opening brackets is displayed",
-      "Type the matching closing brackets in REVERSE order (stack style)",
-      "Bracket pairs: ( → )  [ → ]  { → }  < → >  | → |  \\ → /",
-      "Any wrong key causes immediate failure",
-    ],
-    controls: "Keyboard keys: ) ] } > | /",
-    tips: [
-      "Read the opening sequence from right to left to find your first key",
-      "Build muscle memory for each bracket pair before timed runs",
-    ],
-  },
-  "type-backward": {
-    rules: [
-      "A word is shown on screen — type it in reverse letter by letter",
-      "Only the letters of the reversed word are accepted",
-      "Any incorrect key causes immediate failure",
-      "Complete all letters to succeed",
-    ],
-    controls: "Keyboard — type each letter",
-    tips: [
-      "Say the word aloud in reverse before typing to lock in the order",
-      "Short words first — longer words appear at higher difficulty",
-    ],
-  },
-  "match-arrows": {
-    rules: [
-      "A row of hidden arrow slots is shown — one is revealed at a time",
-      "Press the matching arrow key to advance to the next slot",
-      "Wrong arrow key = immediate failure",
-      "Match all arrows in sequence to complete",
-    ],
-    controls: "Arrow keys: ↑ ↓ ← →",
-    tips: [
-      "Focus on each revealed arrow one at a time, not the full row",
-      "At higher difficulty the row gets longer — stay calm and methodical",
-    ],
-  },
-  "find-symbol": {
-    rules: [
-      "A target sequence is shown at the top of the screen",
-      "Find and select the current target symbol in the grid below",
-      "Match all targets in order to complete — wrong pick = failure",
-      "Both keyboard navigation and mouse click are supported",
-    ],
-    controls: "Arrow keys + ENTER to navigate, or click with mouse",
-    tips: [
-      "At higher difficulty visually similar symbols are mixed in — look carefully",
-      "Use the cursor highlight to track your grid position with keyboard",
-    ],
-  },
-  "mine-sweep": {
-    rules: [
-      "Corrupted sectors are revealed briefly in a PREVIEW phase — memorise their locations",
-      "Sectors hide during the MARK phase — mark the cells you memorised",
-      "Marking exactly the correct cells wins; any wrong mark = failure",
-      "The grid auto-checks when you've marked the same count as corrupted sectors",
-    ],
-    controls: "Arrow keys + SPACE to mark, or click cells",
-    tips: [
-      "Group corrupted sectors by row or region in your mind during preview",
-      "Higher difficulty = more corrupted sectors, smaller preview window — act fast",
-    ],
-  },
-  "wire-cutting": {
-    rules: [
-      "A set of coloured wires and a rule panel are displayed",
-      "Read the rules carefully to deduce the correct cutting order",
-      "Press the number key matching a wire to cut it",
-      "Wrong order = immediate failure; cut all required wires to succeed",
-    ],
-    controls: "Number keys 1–9 to cut wires, or click a wire",
-    tips: [
-      "Some wires may be SKIP — do not cut those at all",
-      "Work out the full order on paper mentally before making the first cut",
-    ],
-  },
-  "cipher-crack": {
-    rules: [
-      "An encrypted word is shown — decode it by typing the plaintext",
-      "The cipher method (ROT-N or substitution) is hinted on screen",
-      "Type the decrypted word letter by letter; any mistake = failure",
-      "Decode all letters to complete the breach",
-    ],
-    controls: "Keyboard — type the decoded letters",
-    tips: [
-      "ROT ciphers: shift each letter back by the stated amount",
-      "Substitution: map each letter using the shown key table",
-    ],
-  },
-  "defrag": {
-    rules: [
-      "Grid of hidden cells — some contain mines",
-      "Uncover cells to reveal numbers (count of adjacent mines)",
-      "Cells with 0 adjacent mines auto-expand in a flood fill",
-      "Uncover all safe cells to win — hitting a mine = fail",
-    ],
-    controls: "Arrow keys to move, SPACE to uncover, ENTER to flag. Mouse: L-click uncover, R-click flag",
-    tips: [
-      "Use numbers to deduce mine positions — flag suspected mines",
-      "Start near the center for better odds of hitting a 0-cell cascade",
-    ],
-  },
-  "network-trace": {
-    rules: [
-      "A maze is generated — navigate from entry point to target server",
-      "Use arrow keys to move through open paths",
-      "Walls block movement — find the correct route through the maze",
-      "Reach the target server (◎) to succeed — fail only by timeout",
-    ],
-    controls: "Arrow keys to move through the maze",
-    tips: [
-      "Stick to one wall (left or right) and follow it — it always leads to the exit",
-      "Larger mazes at higher difficulty — move quickly and stay oriented",
-    ],
-  },
-  "signal-echo": {
-    rules: [
-      "4 colored panels (Up=Cyan, Right=Magenta, Down=Green, Left=Orange)",
-      "Watch the sequence light up, then repeat it with arrow keys or clicks",
-      "Each successful round adds one more step to the sequence",
-      "Any wrong input = immediate failure",
-    ],
-    controls: "Arrow keys or click the panels to repeat the sequence",
-    tips: [
-      "Verbalize the directions as the sequence plays (e.g. 'up, left, down...')",
-      "Higher difficulty starts with longer sequences and faster display speed",
-    ],
-  },
-  "checksum-verify": {
-    rules: [
-      "A series of math expressions is displayed one at a time",
-      "Type the correct answer using number keys (0-9) and minus (-)",
-      "Press ENTER or SPACE to confirm — wrong answer = immediate failure",
-      "Solve all expressions to verify the data integrity",
-    ],
-    controls: "Number keys (0-9), minus (-), Backspace, ENTER/SPACE to confirm",
-    tips: [
-      "At low difficulty it's simple addition/subtraction — stay calm",
-      "Higher difficulty adds two-digit math and multiplication up to 9x9",
-    ],
-  },
-  "port-scan": {
-    rules: [
-      "A grid of port numbers is displayed — open ports flash green one by one",
-      "Memorize which ports flash during the display phase (timer paused)",
-      "After display, select all open ports — selecting a wrong port = immediate failure",
-      "All correct selections = success; timer runs during the select phase",
-    ],
-    controls: "Arrow keys to navigate, SPACE to toggle select, or click with mouse",
-    tips: [
-      "Group open ports by position during the display phase",
-      "Higher difficulty increases grid size and the number of open ports",
-    ],
-  },
-  "subnet-scan": {
-    rules: [
-      "An IP range (CIDR notation) is displayed at the top",
-      "A list of IP addresses is shown below the range",
-      "Select all addresses that belong to the displayed subnet",
-      "Wrong selection = immediate failure; all correct = success",
-    ],
-    controls: "Arrow keys to navigate, SPACE to toggle, or click",
-    tips: [
-      "/24 = first 3 numbers must match, /16 = first 2, /8 = first 1",
-      "A help box at the bottom explains the current subnet mask",
-    ],
-  },
-  "cipher-crack-v2": {
-    rules: [
-      "An encrypted word is shown — it uses only ROT ciphers",
-      "An alphabet reference chart is always displayed for decoding",
-      "Find the encrypted letter on the bottom row, read the original above",
-      "Type the decrypted word letter by letter; any mistake = failure",
-    ],
-    controls: "Keyboard — type the decoded letters",
-    tips: [
-      "At low difficulty it's a simple ROT shift — each letter moves the same amount",
-      "At higher difficulty the word is reversed before shifting — decode then un-reverse",
-    ],
-  },
-};
+import { MINIGAME_BRIEFINGS } from "@/data/minigame-descriptions";
+import type { MinigameBriefing } from "@/data/minigame-descriptions";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 const ALL_MINIGAMES: MinigameType[] = [
   "slash-timing",
@@ -241,10 +36,11 @@ function UnlockedEntry({
   onToggle,
 }: {
   type: MinigameType;
-  briefing: BriefingData;
+  briefing: MinigameBriefing;
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const isTouch = useTouchDevice();
   return (
     <div className="border border-white/10 bg-white/[0.02]">
       {/* Header / toggle */}
@@ -295,7 +91,7 @@ function UnlockedEntry({
             <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-cyan/40 mb-1.5">
               CONTROLS
             </h3>
-            <p className="text-cyber-cyan/80 text-sm font-mono">{briefing.controls}</p>
+            <p className="text-cyber-cyan/80 text-sm font-mono">{isTouch ? briefing.controls.touch : briefing.controls.desktop}</p>
           </section>
 
           {/* Tips */}
@@ -407,7 +203,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
             <UnlockedEntry
               key={type}
               type={type}
-              briefing={BRIEFINGS[type]}
+              briefing={MINIGAME_BRIEFINGS[type]}
               expanded={expanded.has(type)}
               onToggle={() => toggle(type)}
             />

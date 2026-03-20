@@ -5,24 +5,13 @@ import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TouchControls } from "@/components/layout/TouchControls";
 import { generateMaze } from "@/lib/maze-generator";
+import type { MazeData } from "@/lib/maze-generator";
 
-// ── Component ─────────────────────────────────────────────────────────
+// ── BFS solver ────────────────────────────────────────────────────────
 
-/**
- * NetworkTrace — maze navigation minigame.
- *
- * Navigate from the entry point (START) to the target server (END)
- * using arrow keys. Walls block movement. Win by reaching END.
- * Fail only by timeout.
- *
- * Difficulty scaling (0–1):
- * - Cell size: 5×5 (d=0) → 11×11 (d=1) via `Math.round(5 + difficulty * 6)`
- * - Grid size: (2*cells+1) × (2*cells+1)
- */
-/** BFS to find shortest path through maze grid. Returns set of "r,c" keys. */
-function solveMaze(grid: boolean[][], start: [number, number], end: [number, number]): Set<string> {
-  const rows = grid.length;
-  const cols = grid[0].length;
+/** BFS to find shortest path through edge-based maze. Returns set of "r,c" keys. */
+function solveMaze(maze: MazeData): Set<string> {
+  const { cells, rows, cols, start, end } = maze;
   const key = (r: number, c: number) => `${r},${c}`;
   const visited = new Set<string>();
   const parent = new Map<string, string | null>();
@@ -30,16 +19,23 @@ function solveMaze(grid: boolean[][], start: [number, number], end: [number, num
   visited.add(key(start[0], start[1]));
   parent.set(key(start[0], start[1]), null);
 
-  const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+  const dirs: { dr: number; dc: number; wall: "north" | "south" | "east" | "west" }[] = [
+    { dr: -1, dc: 0, wall: "north" },
+    { dr: 1, dc: 0, wall: "south" },
+    { dr: 0, dc: -1, wall: "west" },
+    { dr: 0, dc: 1, wall: "east" },
+  ];
 
   while (queue.length > 0) {
     const [r, c] = queue.shift()!;
     if (r === end[0] && c === end[1]) break;
-    for (const [dr, dc] of dirs) {
+
+    for (const { dr, dc, wall } of dirs) {
       const nr = r + dr;
       const nc = c + dc;
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-      if (grid[nr][nc]) continue; // wall
+      // Check if wall blocks this direction
+      if (cells[r][c][wall]) continue;
       const k = key(nr, nc);
       if (visited.has(k)) continue;
       visited.add(k);
@@ -58,6 +54,17 @@ function solveMaze(grid: boolean[][], start: [number, number], end: [number, num
   return path;
 }
 
+// ── Component ─────────────────────────────────────────────────────────
+
+/**
+ * NetworkTrace — maze navigation minigame with edge-based walls.
+ *
+ * Navigate from the entry point (START) to the target server (END).
+ * Walls are rendered as CSS borders on cells — thin neon lines.
+ *
+ * Difficulty scaling (0–1):
+ * - Cell size: 5×5 (d=0) → 11×11 (d=1)
+ */
 export function NetworkTrace(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
   const { timer, complete, isActive } = useMinigame("network-trace", props);
@@ -71,22 +78,20 @@ export function NetworkTrace(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
-  // Generate maze on mount (stable across re-renders)
+  // Generate maze on mount
   const maze = useMemo(() => {
     const cellSize = Math.round(5 + difficulty * 6);
     return generateMaze(cellSize, cellSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { grid, start, end } = maze;
-  const gridRows = grid.length;
-  const gridCols = grid[0].length;
+  const { cells, rows, cols, start, end } = maze;
 
   // Solve the maze (for path highlight)
   const solutionPath = useMemo(() => {
     if (!hasPathHighlight) return new Set<string>();
-    return solveMaze(grid, start, end);
-  }, [hasPathHighlight, grid, start, end]);
+    return solveMaze(maze);
+  }, [hasPathHighlight, maze]);
 
   // Flash the path for 1s on mount
   const [showPathHighlight, setShowPathHighlight] = useState(hasPathHighlight);
@@ -129,15 +134,19 @@ export function NetworkTrace(props: MinigameProps) {
       const nc = cc + dc;
 
       // Bounds check
-      if (nr < 0 || nr >= gridRows || nc < 0 || nc >= gridCols) return;
+      if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
-      // Wall check — cannot move into a wall cell
-      if (grid[nr][nc]) return;
+      // Wall check — check the edge in the direction of movement
+      const cell = cells[cr][cc];
+      if (dr === -1 && cell.north) return;
+      if (dr === 1 && cell.south) return;
+      if (dc === -1 && cell.west) return;
+      if (dc === 1 && cell.east) return;
 
       setPlayerRow(nr);
       setPlayerCol(nc);
     },
-    [isActive, grid, gridRows, gridCols],
+    [isActive, cells, rows, cols],
   );
 
   // ── Keyboard navigation ────────────────────────────────────────────
@@ -154,10 +163,9 @@ export function NetworkTrace(props: MinigameProps) {
 
   useKeyboard(keyMap);
 
-  // ── Dynamic cell sizing to fit on screen ───────────────────────────
-  // Target: maze should fit in roughly 70vh x 70vw with some padding
-  // We compute pixel size per cell based on grid dimensions
-  const cellPx = gridCols <= 11 ? 28 : gridCols <= 17 ? 18 : 13;
+  // ── Dynamic cell sizing ────────────────────────────────────────────
+  const cellPx = cols <= 5 ? 40 : cols <= 7 ? 32 : cols <= 9 ? 24 : 18;
+  const wallWidth = cols <= 7 ? 2 : 1;
 
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
@@ -179,63 +187,82 @@ export function NetworkTrace(props: MinigameProps) {
         {/* Divider */}
         <div className="w-24 h-px bg-white/10" />
 
-        {/* Maze grid */}
+        {/* Maze grid — edge-based walls via CSS borders */}
         <div
           className="grid"
           style={{
-            gridTemplateColumns: `repeat(${gridCols}, ${cellPx}px)`,
-            gridTemplateRows: `repeat(${gridRows}, ${cellPx}px)`,
+            gridTemplateColumns: `repeat(${cols}, ${cellPx}px)`,
+            gridTemplateRows: `repeat(${rows}, ${cellPx}px)`,
             gap: 0,
           }}
         >
-          {grid.map((row, r) =>
-            row.map((isWall, c) => {
+          {cells.map((row, r) =>
+            row.map((cell, c) => {
               const isPlayer = r === playerRow && c === playerCol;
               const isStart = r === start[0] && c === start[1];
               const isEnd = r === end[0] && c === end[1];
+              const isOnPath = showPathHighlight && solutionPath.has(`${r},${c}`);
 
-              let cellClass = "";
+              // Wall colors — neon cyan for walls
+              const wallColor = "rgba(0, 255, 255, 0.35)";
+              const wallColorBright = "rgba(0, 255, 255, 0.6)";
+
+              // Build border styles for each edge
+              const borderTop = cell.north
+                ? `${wallWidth}px solid ${wallColorBright}`
+                : `${wallWidth}px solid transparent`;
+              const borderBottom = cell.south
+                ? `${wallWidth}px solid ${wallColor}`
+                : `${wallWidth}px solid transparent`;
+              const borderLeft = cell.west
+                ? `${wallWidth}px solid ${wallColorBright}`
+                : `${wallWidth}px solid transparent`;
+              const borderRight = cell.east
+                ? `${wallWidth}px solid ${wallColor}`
+                : `${wallWidth}px solid transparent`;
+
+              // Cell background
+              let bgClass = "bg-transparent";
               let content: React.ReactNode = null;
 
-              if (isWall) {
-                // Wall cell
-                cellClass = "bg-slate-900 border-slate-800/50";
-              } else if (isPlayer) {
-                // Player cursor
-                cellClass =
-                  "bg-cyber-cyan/40 border-cyber-cyan/80 shadow-[0_0_8px_rgba(0,255,255,0.5)]";
+              if (isPlayer) {
+                bgClass = "bg-cyber-cyan/25";
                 content = (
-                  <span className="text-cyber-cyan font-bold" style={{ fontSize: cellPx * 0.6 }}>
+                  <span
+                    className="text-cyber-cyan font-bold drop-shadow-[0_0_6px_rgba(0,255,255,0.8)]"
+                    style={{ fontSize: cellPx * 0.5 }}
+                  >
                     ◆
                   </span>
                 );
               } else if (isEnd) {
-                // Target server
-                cellClass =
-                  "bg-cyber-magenta/20 border-cyber-magenta/60 animate-pulse";
+                bgClass = "bg-cyber-magenta/15 animate-pulse";
                 content = (
-                  <span className="text-cyber-magenta font-bold" style={{ fontSize: cellPx * 0.5 }}>
+                  <span
+                    className="text-cyber-magenta font-bold drop-shadow-[0_0_6px_rgba(255,0,102,0.6)]"
+                    style={{ fontSize: cellPx * 0.4 }}
+                  >
                     ◎
                   </span>
                 );
-              } else if (isStart) {
-                // Entry point (already passed through)
-                cellClass = "bg-cyber-green/10 border-cyber-green/30";
-              } else if (showPathHighlight && solutionPath.has(`${r},${c}`)) {
-                // Path highlight flash
-                cellClass = "bg-cyber-green/20 border-cyber-green/40";
-              } else {
-                // Path cell
-                cellClass = "bg-white/[0.04] border-white/[0.04]";
+              } else if (isStart && !(r === playerRow && c === playerCol)) {
+                bgClass = "bg-cyber-green/8";
+              } else if (isOnPath) {
+                bgClass = "bg-cyber-green/15";
               }
 
               return (
                 <div
                   key={`${r}-${c}`}
-                  className={`flex items-center justify-center border ${cellClass}`}
+                  className={`flex items-center justify-center ${bgClass}`}
                   style={{
                     width: cellPx,
                     height: cellPx,
+                    borderTop,
+                    borderBottom,
+                    borderLeft,
+                    borderRight,
+                    boxSizing: "border-box",
                   }}
                 >
                   {content}

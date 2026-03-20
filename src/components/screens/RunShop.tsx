@@ -141,8 +141,8 @@ export function RunShop() {
   const addCredits = useGameStore((s) => s.addCredits);
   const quitRun = useGameStore((s) => s.quitRun);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
-  const data = useGameStore((s) => s.data);
-  const dataAtRunStart = useGameStore((s) => s.dataAtRunStart);
+  const dataDripThisRun = useGameStore((s) => s.dataDripThisRun);
+  const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
 
   const [view, setView] = useState<VendorView>("shop");
   const [confirmQuit, setConfirmQuit] = useState(false);
@@ -179,10 +179,12 @@ export function RunShop() {
     generateRunShop(floor);
   };
 
-  // Compute data reward preview for quit button
+  // Compute data reward preview for quit button (total projected: base + drip + milestones + credits)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
   const dataMultiplier = Math.pow(1.03, dataTier);
-  const dataReward = Math.round(getDataReward(floor) * dataMultiplier);
+  const baseDataReward = Math.round(getDataReward(floor) * dataMultiplier);
+  const creditsSavedPreview = Math.floor(credits * 0.15);
+  const dataReward = baseDataReward + dataDripThisRun + milestoneDataThisRun + creditsSavedPreview;
 
   // Sub-views: Codex and Stats with back button returning to shop
   if (view === "codex") {
@@ -239,7 +241,7 @@ export function RunShop() {
             RUN DATA
           </span>
           <span className="font-bold text-sm tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
-            <Hexagon size={14} /> +{Math.max(0, data - dataAtRunStart).toLocaleString()}
+            <Hexagon size={14} /> +{(dataDripThisRun + milestoneDataThisRun).toLocaleString()}
           </span>
         </div>
       </div>

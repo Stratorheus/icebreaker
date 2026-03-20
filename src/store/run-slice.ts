@@ -46,6 +46,8 @@ export interface RunSlice {
   dataAtRunStart: number;
   /** Milestone data accumulated during the run (awarded on death/quit, subject to penalty). */
   milestoneDataThisRun: number;
+  /** Per-minigame data drip accumulated during the run (awarded on death/quit). */
+  dataDripThisRun: number;
 
   // Actions
   startRun: () => void;
@@ -121,6 +123,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   quitVoluntarily: false,
   dataAtRunStart: 0,
   milestoneDataThisRun: 0,
+  dataDripThisRun: 0,
 };
 
 // Helper type: extract only action keys
@@ -221,6 +224,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       quitVoluntarily: false,
       dataAtRunStart: get().data,
       milestoneDataThisRun: 0,
+      dataDripThisRun: 0,
     });
   },
 
@@ -245,10 +249,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
 
     // Per-minigame data drip: small data reward per win, scales with floor
+    // Accumulated locally (not added to persistent store until run ends)
     const minigameDataDrip = Math.round(state.floor * 0.5);
-    if (minigameDataDrip > 0) {
-      state.addData(minigameDataDrip);
-    }
 
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
@@ -296,6 +298,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       status: nextStatus,
       milestoneFloor,
       milestoneDataThisRun,
+      dataDripThisRun: state.dataDripThisRun + minigameDataDrip,
     });
   },
 

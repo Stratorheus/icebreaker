@@ -59,28 +59,29 @@ export function HUD() {
         "select-none",
       )}
     >
-      {/* Left: Logo */}
-      <div className="flex items-center gap-2 glitch-flicker">
+      {/* Left: Logo (hidden on mobile to save space) */}
+      <div className="hidden sm:flex items-center gap-2 glitch-flicker">
         <span className="text-cyber-cyan font-bold">ICE</span>
         <span className="text-cyber-magenta font-bold">BREAKER</span>
         <span className="text-white/30 text-[10px]">{`v${__APP_VERSION__}`}</span>
       </div>
 
-      {/* Right: Stats */}
-      <div className="flex items-center gap-4">
+      {/* Right: Stats (becomes full-width on mobile) */}
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Floor */}
         <div className="flex items-center gap-1 text-cyber-cyan/80 glitch-subtle">
           <span aria-hidden="true">{"\u25C6"}</span>
-          <span>FLOOR {floor}</span>
+          <span className="hidden sm:inline">FLOOR </span>
+          <span>{floor}</span>
         </div>
 
         {/* HP bar */}
         <div className="flex items-center gap-1">
           <span className="text-white/50 glitch-subtle">HP</span>
-          <span className="text-cyber-green">
+          <span className="hidden sm:inline text-cyber-green">
             {"\u2588".repeat(hpBarFilled)}
           </span>
-          <span className="text-white/20">
+          <span className="hidden sm:inline text-white/20">
             {"\u2591".repeat(hpBarEmpty)}
           </span>
           <span
@@ -101,7 +102,7 @@ export function HUD() {
         <div className="flex items-center gap-1 glitch-subtle" style={{ color: "var(--color-currency-credits)" }}>
           <Coins size={14} />
           <span className="tabular-nums">
-            {credits.toLocaleString()} CR
+            {credits.toLocaleString()}<span className="hidden sm:inline"> CR</span>
           </span>
         </div>
 
@@ -130,12 +131,12 @@ export function HUD() {
               <span>{inventory.length}</span>
             </button>
 
-            {/* Power-up popover */}
+            {/* Power-up popover — clamped to viewport on mobile */}
             {showPowerUps && (
               <div
                 className={cn(
                   "absolute right-0 top-full mt-2",
-                  "w-64 max-h-80 overflow-y-auto",
+                  "w-64 max-w-[calc(100vw-2rem)] max-h-80 overflow-y-auto",
                   "bg-cyber-bg/95 backdrop-blur-md",
                   "border border-cyber-cyan/20",
                   "shadow-lg shadow-cyber-cyan/5",

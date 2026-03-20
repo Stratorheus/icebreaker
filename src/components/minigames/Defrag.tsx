@@ -4,6 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TouchControls } from "@/components/layout/TouchControls";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -167,6 +168,8 @@ export function Defrag(props: MinigameProps) {
   useEffect(() => {
     cursorColRef.current = cursorCol;
   }, [cursorCol]);
+
+  const isTouch = useTouchDevice();
 
   // ── Touch flag mode toggle ──────────────────────────────────────
   const [flagMode, setFlagMode] = useState(false);
@@ -365,7 +368,7 @@ export function Defrag(props: MinigameProps) {
           {cells.map((cell, i) => {
             const cellRow = Math.floor(i / cols);
             const cellCol = i % cols;
-            const isCursor = cellRow === cursorRow && cellCol === cursorCol;
+            const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
             const state = cellStates[i];
             const isMineRevealed = showMines && cell.isMine;
 
