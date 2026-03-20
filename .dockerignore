@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.local
+.git
+.github
+.superpowers
+docs
+*.log
+npm-debug.log*
+.vscode
+.idea
+.DS_Store
+*.sw?
+ogimg.png
+favicon.png
