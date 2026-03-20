@@ -248,9 +248,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
 
-    // Per-minigame data drip: small data reward per win, scales with floor
+    // Per-minigame data drip: reward per win, scales with floor
     // Accumulated locally (not added to persistent store until run ends)
-    const minigameDataDrip = Math.round(state.floor * 0.5);
+    const minigameDataDrip = Math.round(1 + state.floor * 0.8);
 
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
@@ -398,9 +398,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
-    // Consume floor-scoped power-ups (e.g. heal-on-success)
+    // Consume floor-scoped power-ups (heal-on-success, time-bonus)
     const inventory = state.inventory.filter(
-      (p) => p.effect.type !== "heal-on-success",
+      (p) => p.effect.type !== "heal-on-success" && p.effect.type !== "time-bonus",
     );
 
     set({

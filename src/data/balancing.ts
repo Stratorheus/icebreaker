@@ -29,9 +29,9 @@ export function getMinigamesPerFloor(floor: number): number {
   return Math.min(1 + floor, 8);
 }
 
-/** Data (◆) rewarded for clearing a floor. */
+/** Data (◆) rewarded for clearing a floor. Sublinear to avoid early-floor windfalls. */
 export function getDataReward(floor: number): number {
-  return floor * 10;
+  return Math.round(3 + floor * 4);
 }
 
 /** Bonus data awarded at milestone floors. Every 5th floor gets a milestone, scaling linearly. */

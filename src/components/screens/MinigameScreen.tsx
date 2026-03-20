@@ -166,12 +166,11 @@ export function MinigameScreen() {
 
         // Consume minigame-specific power-ups (e.g. arrow-compass, mine-detector,
         // slash-calibration, bracket-auto-close) — these should be one-use, not permanent.
-        // Also consume time-bonus power-ups that were active during this minigame.
+        // Time-bonus power-ups persist through the entire floor (consumed in advanceFloor).
         const currentInventory = useGameStore.getState().inventory;
         const toConsume = currentInventory.filter(
           (p) =>
-            (p.effect.minigame && p.effect.minigame === result.minigame) ||
-            p.effect.type === "time-bonus",
+            (p.effect.minigame && p.effect.minigame === result.minigame),
         );
         for (const pu of toConsume) {
           usePowerUp(pu.id);
@@ -278,7 +277,7 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "mine-sweep": 15,
   "wire-cutting": 12,
   "cipher-crack": 12,
-  "defrag": 30,
+  "defrag": 40,
   "network-trace": 20,
   "signal-echo": 20,
   "checksum-verify": 15,
