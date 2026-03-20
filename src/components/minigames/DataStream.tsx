@@ -51,12 +51,42 @@ interface GeneratedPuzzle {
   walls: Set<string>;
 }
 
+/** BFS: check that all non-wall cells are reachable from start. */
+function allReachable(
+  rows: number,
+  cols: number,
+  start: [number, number],
+  walls: Set<string>,
+): boolean {
+  const visited = new Set<string>();
+  const queue: [number, number][] = [start];
+  visited.add(`${start[0]},${start[1]}`);
+
+  while (queue.length > 0) {
+    const [r, c] = queue.shift()!;
+    for (const [dr, dc] of [[0, 1], [0, -1], [1, 0], [-1, 0]]) {
+      const nr = r + dr;
+      const nc = c + dc;
+      const key = `${nr},${nc}`;
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !walls.has(key) && !visited.has(key)) {
+        visited.add(key);
+        queue.push([nr, nc]);
+      }
+    }
+  }
+
+  // Count expected: total cells minus walls
+  const expected = rows * cols - walls.size;
+  return visited.size >= expected;
+}
+
 /**
  * Generate a solvable snake/ZIP puzzle using a zigzag Hamiltonian path.
  *
  * 1. Create a zigzag path that visits every cell exactly once.
- * 2. Place numbered checkpoints at random positions along this path.
- * 3. The first cell of the path is the snake's starting position.
+ * 2. Place walls (10-20% of cells) with BFS reachability check.
+ * 3. Place numbered checkpoints at random positions along the remaining path.
+ * 4. The first cell of the path is the snake's starting position.
  *
  * Difficulty scaling (0-1):
  * - size = Math.round(4 + difficulty * 2)  →  4x4 to 6x6
@@ -142,10 +172,18 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     [wallCandidatePathIndices[i], wallCandidatePathIndices[j]] =
       [wallCandidatePathIndices[j], wallCandidatePathIndices[i]];
   }
+  // Place walls one at a time, checking that all non-wall cells remain
+  // reachable from start via BFS (prevents unsolvable puzzles)
   for (let i = 0; i < Math.min(wallTarget, wallCandidatePathIndices.length); i++) {
     const pathIdx = wallCandidatePathIndices[i];
     const [r, c] = path[pathIdx];
-    walls.add(`${r},${c}`);
+    const key = `${r},${c}`;
+    walls.add(key);
+
+    // BFS reachability check
+    if (!allReachable(rows, cols, path[0], walls)) {
+      walls.delete(key); // this wall would isolate cells, skip it
+    }
   }
 
   // Build grid
