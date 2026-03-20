@@ -265,7 +265,7 @@ function CountdownPhase({
 const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "slash-timing": 8,
   "close-brackets": 8,
-  "type-backward": 13,
+  "type-backward": 18,
   "match-arrows": 8,
   "find-symbol": 12,
   "mine-sweep": 15,
@@ -273,7 +273,7 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "cipher-crack": 12,
   "defrag": 30,
   "network-trace": 20,
-  "data-stream": 25,
+  "data-stream": 18,
   "signal-echo": 20,
   "checksum-verify": 15,
   "port-scan": 15,

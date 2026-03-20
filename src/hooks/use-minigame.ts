@@ -59,13 +59,14 @@ export function useMinigame(
   }, [timer.addTime]);
 
   // Apply time-bonus power-ups and auto-start — runs once on mount
+  // Power-up values are in SECONDS but addTime() expects MILLISECONDS.
   useEffect(() => {
-    const bonusMs = activePowerUps
+    const bonusSecs = activePowerUps
       .filter((p) => p.effect.type === "time-bonus")
       .reduce((sum, p) => sum + p.effect.value, 0);
 
-    if (bonusMs > 0) {
-      addTimeRef.current(bonusMs);
+    if (bonusSecs > 0) {
+      addTimeRef.current(bonusSecs * 1000);
     }
 
     timer.start();

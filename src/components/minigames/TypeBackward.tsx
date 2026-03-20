@@ -10,15 +10,9 @@ function pickRandom<T>(pool: readonly T[], count: number): T[] {
   return shuffled.slice(0, count);
 }
 
-/** Choose the word pool based on difficulty. */
-function getWordPool(difficulty: number): readonly string[] {
-  if (difficulty < 0.3) {
-    return TECH_WORDS.short;
-  }
-  if (difficulty <= 0.6) {
-    return [...TECH_WORDS.short, ...TECH_WORDS.medium];
-  }
-  return [...TECH_WORDS.medium, ...TECH_WORDS.long];
+/** Mixed word pool at all difficulties — variety is key. */
+function getWordPool(): readonly string[] {
+  return [...TECH_WORDS.short, ...TECH_WORDS.medium, ...TECH_WORDS.long];
 }
 
 /**
@@ -57,12 +51,12 @@ export function TypeBackward(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
-  // Number of words: 2 (d=0) -> 5 (d=1)
-  const wordCount = Math.round(2 + difficulty * 3);
+  // Number of words: 4 (d=0) -> 8 (d=1), scaled by word count not length
+  const wordCount = Math.round(4 + difficulty * 4);
 
   // Generate word sequence on mount
   const originalWords = useMemo(() => {
-    const pool = getWordPool(difficulty);
+    const pool = getWordPool();
     return pickRandom(pool, wordCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

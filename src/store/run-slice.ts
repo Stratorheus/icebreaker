@@ -68,11 +68,23 @@ type FullStore = RunSlice & MetaSlice & ShopSlice;
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Pick `count` random items from `pool` (with replacement allowed across picks). */
+/** Pick `count` random items from `pool` (with replacement allowed across picks).
+ *  No item appears more than 2 times consecutively. */
 function pickRandom<T>(pool: T[], count: number): T[] {
   const result: T[] = [];
   for (let i = 0; i < count; i++) {
     result.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  // Post-process: no 3+ consecutive identical entries
+  if (pool.length > 1) {
+    for (let i = 2; i < result.length; i++) {
+      if (result[i] === result[i - 1] && result[i] === result[i - 2]) {
+        const alternatives = pool.filter((x) => x !== result[i]);
+        if (alternatives.length > 0) {
+          result[i] = alternatives[Math.floor(Math.random() * alternatives.length)];
+        }
+      }
+    }
   }
   return result;
 }
@@ -309,10 +321,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     // On fail: DON'T advance the index — re-roll the current slot with a new
     // random minigame so the player must still complete N total minigames.
+    // Ensure the re-rolled game is different from the current one.
     const newFloorMinigames = [...state.floorMinigames];
     const pool = state.unlockedMinigames;
+    const currentType = newFloorMinigames[state.currentMinigameIndex];
+    const alternatives = pool.length > 1 ? pool.filter((m) => m !== currentType) : pool;
     newFloorMinigames[state.currentMinigameIndex] =
-      pool[Math.floor(Math.random() * pool.length)];
+      alternatives[Math.floor(Math.random() * alternatives.length)];
 
     set({
       hp: newHp,

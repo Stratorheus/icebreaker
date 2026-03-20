@@ -25,7 +25,7 @@ interface GeneratedGrid {
  *
  * Difficulty scaling (0–1):
  * - Grid size: 3×3 (d=0) → 6×6 (d=1)
- * - Mine count: 2 (d=0) → 8 (d=1), capped at ~40% of cells
+ * - Mine count: 3 (d=0) → 10 (d=1), capped at ~40% of cells
  * - Preview duration: 3s (d=0) → 1s (d=1)
  */
 function generateGrid(difficulty: number): GeneratedGrid {
@@ -35,7 +35,7 @@ function generateGrid(difficulty: number): GeneratedGrid {
   const totalCells = rows * cols;
 
   // Cap mines at 40% of total cells
-  const rawMines = Math.round(2 + difficulty * 6);
+  const rawMines = Math.round(3 + difficulty * 7);
   const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.4));
 
   const previewMs = (3 - difficulty * 2) * 1000;

@@ -47,6 +47,8 @@ interface GeneratedPuzzle {
   /** Checkpoint positions in order, 1-indexed labels */
   checkpoints: { row: number; col: number; label: number }[];
   nodeCount: number;
+  /** Set of "row,col" keys that are impassable walls */
+  walls: Set<string>;
 }
 
 /**
@@ -58,7 +60,8 @@ interface GeneratedPuzzle {
  *
  * Difficulty scaling (0-1):
  * - size = Math.round(4 + difficulty * 2)  →  4x4 to 6x6
- * - nodeCount = Math.round(3 + difficulty * 4)  →  3 to 7
+ * - nodeCount = Math.round(4 + difficulty * 5)  →  4 to 9
+ * - walls: 10-20% of non-path cells become impassable
  *
  * The LAST cell of the Hamiltonian path (final snake move) always
  * contains the highest-numbered checkpoint so the snake naturally
@@ -81,8 +84,8 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     }
   }
 
-  // Determine number of checkpoints (increased: 3 at d=0, 7 at d=1)
-  const nodeCount = Math.round(3 + difficulty * 4);
+  // Determine number of checkpoints (increased: 4 at d=0, 9 at d=1)
+  const nodeCount = Math.round(4 + difficulty * 5);
 
   // Place checkpoints at random (non-start) positions along the path,
   // maintaining their order along the path.
@@ -108,6 +111,43 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   // Append the last path cell as the final (highest) checkpoint
   chosenPathIndices.push(totalCells - 1);
 
+  // Build a set of cells on the Hamiltonian path for wall exclusion
+  const pathCellSet = new Set<string>();
+  for (const [r, c] of path) {
+    pathCellSet.add(`${r},${c}`);
+  }
+
+  // Generate walls: block 10-20% of cells NOT on the Hamiltonian path.
+  // Since the zigzag path covers ALL cells in a rectangle, we need to
+  // expand the grid slightly to have non-path cells for walls.
+  // Alternative: randomly remove some path cells from being traversable
+  // by marking them as walls (but then the snake can't fill all cells).
+  // Better approach: keep grid same, walls reduce the set of cells the
+  // snake MUST fill (walls are excluded from totalCells for win condition).
+  const walls = new Set<string>();
+  const wallPct = 0.10 + Math.random() * 0.10; // 10-20%
+  const wallTarget = Math.floor(totalCells * wallPct);
+  // Candidate wall cells: path cells that are NOT: start, end, or checkpoints
+  const checkpointPathIndices = new Set(chosenPathIndices);
+  checkpointPathIndices.add(0); // start
+  const wallCandidatePathIndices = [];
+  for (let i = 0; i < path.length; i++) {
+    if (!checkpointPathIndices.has(i)) {
+      wallCandidatePathIndices.push(i);
+    }
+  }
+  // Shuffle and pick
+  for (let i = wallCandidatePathIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [wallCandidatePathIndices[i], wallCandidatePathIndices[j]] =
+      [wallCandidatePathIndices[j], wallCandidatePathIndices[i]];
+  }
+  for (let i = 0; i < Math.min(wallTarget, wallCandidatePathIndices.length); i++) {
+    const pathIdx = wallCandidatePathIndices[i];
+    const [r, c] = path[pathIdx];
+    walls.add(`${r},${c}`);
+  }
+
   // Build grid
   const grid: GridNode[][] = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => ({
@@ -132,7 +172,7 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
     checkpoints.push({ row: r, col: c, label });
   }
 
-  return { rows, cols, grid, path, checkpoints, nodeCount };
+  return { rows, cols, grid, path, checkpoints, nodeCount, walls };
 }
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -168,8 +208,8 @@ export function DataStream(props: MinigameProps) {
     [],
   );
 
-  const { rows, cols, grid, nodeCount } = puzzle;
-  const totalCells = rows * cols;
+  const { rows, cols, grid, nodeCount, walls } = puzzle;
+  const totalCells = rows * cols - walls.size; // walls don't count toward fill requirement
 
   // ── Snake state ─────────────────────────────────────────────────────
   // The snake is stored as an ordered list of [row, col] positions.
@@ -285,8 +325,11 @@ export function DataStream(props: MinigameProps) {
       // Bounds check
       if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) return;
 
-      // Collision check: cannot move into a cell already occupied by the snake
+      // Wall check: cannot move into a wall cell
       const key = `${nr},${nc}`;
+      if (walls.has(key)) return;
+
+      // Collision check: cannot move into a cell already occupied by the snake
       const currentOccupied = new Set<string>();
       for (const [sr, sc] of currentSnake) {
         currentOccupied.add(`${sr},${sc}`);
@@ -303,7 +346,7 @@ export function DataStream(props: MinigameProps) {
       setLastDir(dir);
       setVisitedNodes(newVisited);
     },
-    [isActive, rows, cols, grid, checkAndCollectNode],
+    [isActive, rows, cols, grid, walls, checkAndCollectNode],
   );
 
   // ── Reset handler ───────────────────────────────────────────────────
@@ -374,6 +417,7 @@ export function DataStream(props: MinigameProps) {
           {Array.from({ length: rows }, (_, r) =>
             Array.from({ length: cols }, (_, c) => {
               const cell = grid[r][c];
+              const isWall = walls.has(`${r},${c}`);
               const isHead = r === headPos[0] && c === headPos[1];
               const isOccupied = occupiedSet.has(`${r},${c}`);
               const isCheckpoint = cell.label !== null;
@@ -384,7 +428,15 @@ export function DataStream(props: MinigameProps) {
               let cellClass = "";
               let content: React.ReactNode = null;
 
-              if (isHead) {
+              if (isWall) {
+                // Wall cell — impassable
+                cellClass = "bg-white/[0.08] border-white/[0.12]";
+                content = (
+                  <span className="text-white/15 font-bold" style={{ fontSize: cellPx * 0.35 }}>
+                    &#9608;
+                  </span>
+                );
+              } else if (isHead) {
                 // Snake head — bright cyan/white
                 cellClass =
                   "bg-cyan-300/60 border-cyan-200 shadow-[0_0_12px_rgba(0,255,255,0.6)]";
@@ -480,6 +532,10 @@ export function DataStream(props: MinigameProps) {
           <span className="flex items-center gap-1.5">
             <span className="inline-block w-3 h-3 rounded-sm bg-cyber-green/20 border border-cyber-green/50" />
             <span className="text-cyber-green/70">Visited</span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="inline-block w-3 h-3 rounded-sm bg-white/[0.08] border border-white/[0.12]" />
+            <span className="text-white/40">Wall</span>
           </span>
         </div>
       </div>
