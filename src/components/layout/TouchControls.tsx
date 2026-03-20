@@ -80,8 +80,7 @@ export function TouchControls({ type }: TouchControlsProps) {
 
   return (
     <div
-      className="touch-only fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center bg-[#06060e]/90 backdrop-blur-sm border-t border-white/10"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="touch-only w-full flex items-center justify-center border-t border-white/10 pt-3 pb-2"
     >
       <div className="px-4 py-3">
         {type === "dpad" && <DPad />}

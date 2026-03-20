@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { TouchControls } from "@/components/layout/TouchControls";
 
 /** Arrow directions with display characters and corresponding key codes */
 const ARROWS = [
@@ -199,8 +200,8 @@ export function MatchArrows(props: MinigameProps) {
         )}
       </div>
 
-      {/* Arrow key hints (layout reference -- always shown) */}
-      <div className="mt-8 text-center">
+      {/* Arrow key hints (layout reference -- desktop) */}
+      <div className="desktop-only mt-8 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Match the arrow with arrow keys
         </p>
@@ -223,6 +224,14 @@ export function MatchArrows(props: MinigameProps) {
           </div>
         </div>
       </div>
+
+      {/* Touch: D-pad + instruction */}
+      <div className="touch-only mt-4 text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+          TAP the matching direction
+        </p>
+      </div>
+      <TouchControls type="dpad" />
     </div>
   );
 }
