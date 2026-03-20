@@ -70,7 +70,7 @@
   }
 
   body {
-    background-color: var(--color-cyber-bg);
+    background-color: transparent;
     color: hsl(var(--foreground));
     font-family: var(--font-mono);
     isolation: isolate;
