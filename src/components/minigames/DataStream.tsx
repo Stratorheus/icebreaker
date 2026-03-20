@@ -317,10 +317,12 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   // Start with ALL non-path edges walled
   const walls: WallSet = new Set<string>(nonPathEdges);
 
-  // Remove a fraction of walls based on difficulty (more removed = easier)
-  // d=0: remove 70% → 30% of walls remain (forgiving)
-  // d=1: remove 20% → 80% of walls remain (very constrained)
-  const removalRate = 0.70 - difficulty * 0.50;
+  // Remove walls based on difficulty.
+  // INVERTED: more walls removed = more open grid = HARDER (no corridors guiding you)
+  // d=0: remove 30% → 70% walls remain (corridors guide you, easy)
+  // d=0.5: remove 60% → 40% remain (some guidance, moderate)
+  // d=1: remove 90% → 10% walls remain (wide open, must figure out path yourself)
+  const removalRate = 0.30 + difficulty * 0.60;
   const wallList = shuffleArray([...nonPathEdges]);
   const removeCount = Math.round(wallList.length * removalRate);
 
