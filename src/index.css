@@ -1,6 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Audiowide — heading font (SIL Open Font License) */
+@font-face {
+  font-family: "Audiowide";
+  src: url("/fonts/Audiowide-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-cyber-cyan: #00ffff;
   --color-cyber-magenta: #ff0066;
@@ -11,6 +20,7 @@
   --color-currency-credits: #FFD700;
   --color-currency-data: #A855F7;
 
+  --font-heading: "Audiowide", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace,
     monospace;
 }
