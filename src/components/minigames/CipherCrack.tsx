@@ -299,11 +299,10 @@ export function CipherCrack(props: MinigameProps) {
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck={false}
-        className="absolute opacity-0 w-0 h-0"
+        className="fixed -top-24 -left-24 w-px h-px opacity-0"
         onInput={(e) => {
           const target = e.target as HTMLInputElement;
-          const char = target.value.slice(-1);
-          if (char) {
+          for (const char of target.value) {
             window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
           }
           target.value = "";
