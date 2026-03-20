@@ -4,6 +4,8 @@ import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { getCredits, getDifficulty, getTimeLimit } from "@/data/balancing";
 import { getMinigameDisplayName } from "@/data/minigame-names";
+import { getMinigameHint } from "@/data/minigame-descriptions";
+import { useTouchDevice } from "@/hooks/use-touch-device";
 import { checkSkip } from "@/lib/power-up-effects";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
@@ -40,6 +42,7 @@ export function MinigameScreen() {
   const inventory = useGameStore((s) => s.inventory);
   const usePowerUp = useGameStore((s) => s.usePowerUp);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const isTouch = useTouchDevice();
   const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
   const bonusTimeSecs = useGameStore((s) => s.bonusTimeSecs);
 
@@ -79,7 +82,7 @@ export function MinigameScreen() {
         hintConsumedRef.current = true;
         usePowerUp(hintPowerUp.id);
         setCountdownValue(4); // 4-3-2-1-GO instead of 3-2-1-GO
-        setHintText(getMinigameHint(floorMinigames[currentMinigameIndex]));
+        setHintText(getMinigameHint(floorMinigames[currentMinigameIndex], isTouch));
       } else {
         setCountdownValue(3);
         setHintText(null);
@@ -508,38 +511,4 @@ function ResultFlash({
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Brief contextual hint for each minigame type (shown when Hint Module is active). */
-function getMinigameHint(type: MinigameType): string {
-  switch (type) {
-    case "slash-timing":
-      return "Wait for the GREEN flash, then press Space.";
-    case "close-brackets":
-      return "Type closing brackets in REVERSE order.";
-    case "type-backward":
-      return "Read mirrored words, type the originals in order.";
-    case "match-arrows":
-      return "Press the arrow key that matches the revealed arrow.";
-    case "find-symbol":
-      return "Click/select each target symbol in order.";
-    case "mine-sweep":
-      return "Memorize corrupted sector positions during the preview phase.";
-    case "wire-cutting":
-      return "Cut wires in the order shown by the sequence.";
-    case "cipher-crack":
-      return "Reverse the letter shift to find the original word.";
-    case "defrag":
-      return "Uncover cells, avoid mines. Numbers show adjacent mine count.";
-    case "network-trace":
-      return "Navigate the maze from entry to target using arrow keys.";
-    case "signal-echo":
-      return "Repeat the signal pattern in the correct sequence.";
-    case "checksum-verify":
-      return "Solve each math expression — type the answer and press Enter.";
-    case "port-scan":
-      return "Memorize which ports flash green, then select them all.";
-    case "subnet-scan":
-      return "Select IPs that belong to the displayed CIDR range.";
-    case "cipher-crack-v2":
-      return "Use the alphabet chart to decode the ROT cipher.";
-  }
-}
+// getMinigameHint is now imported from @/data/minigame-descriptions
