@@ -277,7 +277,7 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "mine-sweep": 15,
   "wire-cutting": 12,
   "cipher-crack": 12,
-  "defrag": 30,
+  "defrag": 40,
   "network-trace": 20,
   "signal-echo": 20,
   "checksum-verify": 15,
