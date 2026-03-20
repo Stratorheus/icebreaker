@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
 import { UNLOCKABLE_MINIGAMES } from "@/types/game";
+import { getMinigameDisplayName } from "@/data/minigame-names";
 
 // ---------------------------------------------------------------------------
 // Briefing data (mirrors Training.tsx — kept in sync manually)
 // ---------------------------------------------------------------------------
 
 interface BriefingData {
-  title: string;
   rules: string[];
   controls: string;
   tips: string[];
@@ -16,7 +16,6 @@ interface BriefingData {
 
 const BRIEFINGS: Record<MinigameType, BriefingData> = {
   "slash-timing": {
-    title: "SLASH TIMING",
     rules: [
       "Three phases cycle in sequence: GUARD → PREPARE → ATTACK",
       "Press SPACE only during the green ATTACK window to succeed",
@@ -30,7 +29,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "close-brackets": {
-    title: "CLOSE BRACKETS",
     rules: [
       "A sequence of opening brackets is displayed",
       "Type the matching closing brackets in REVERSE order (stack style)",
@@ -44,7 +42,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "type-backward": {
-    title: "TYPE BACKWARD",
     rules: [
       "A word is shown on screen — type it in reverse letter by letter",
       "Only the letters of the reversed word are accepted",
@@ -58,7 +55,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "match-arrows": {
-    title: "MATCH ARROWS",
     rules: [
       "A row of hidden arrow slots is shown — one is revealed at a time",
       "Press the matching arrow key to advance to the next slot",
@@ -72,7 +68,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "find-symbol": {
-    title: "FIND SYMBOL",
     rules: [
       "A target sequence is shown at the top of the screen",
       "Find and select the current target symbol in the grid below",
@@ -86,7 +81,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "mine-sweep": {
-    title: "MEMORY SCAN",
     rules: [
       "Corrupted sectors are revealed briefly in a PREVIEW phase — memorise their locations",
       "Sectors hide during the MARK phase — mark the cells you memorised",
@@ -100,7 +94,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "wire-cutting": {
-    title: "WIRE CUTTING",
     rules: [
       "A set of coloured wires and a rule panel are displayed",
       "Read the rules carefully to deduce the correct cutting order",
@@ -114,7 +107,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "cipher-crack": {
-    title: "CIPHER CRACK",
     rules: [
       "An encrypted word is shown — decode it by typing the plaintext",
       "The cipher method (ROT-N or substitution) is hinted on screen",
@@ -128,7 +120,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "defrag": {
-    title: "DEFRAG",
     rules: [
       "Grid of hidden cells — some contain mines",
       "Uncover cells to reveal numbers (count of adjacent mines)",
@@ -142,7 +133,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "network-trace": {
-    title: "NETWORK TRACE",
     rules: [
       "A maze is generated — navigate from entry point to target server",
       "Use arrow keys to move through open paths",
@@ -156,7 +146,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "signal-echo": {
-    title: "SIGNAL ECHO",
     rules: [
       "4 colored panels (Up=Cyan, Right=Magenta, Down=Green, Left=Orange)",
       "Watch the sequence light up, then repeat it with arrow keys or clicks",
@@ -170,7 +159,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "checksum-verify": {
-    title: "CHECKSUM VERIFY",
     rules: [
       "A series of math expressions is displayed one at a time",
       "Type the correct answer using number keys (0-9) and minus (-)",
@@ -184,7 +172,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "port-scan": {
-    title: "PORT SCAN",
     rules: [
       "A grid of port numbers is displayed — open ports flash green one by one",
       "Memorize which ports flash during the display phase (timer paused)",
@@ -198,7 +185,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "subnet-scan": {
-    title: "SUBNET SCAN",
     rules: [
       "An IP range (CIDR notation) is displayed at the top",
       "A list of IP addresses is shown below the range",
@@ -212,7 +198,6 @@ const BRIEFINGS: Record<MinigameType, BriefingData> = {
     ],
   },
   "cipher-crack-v2": {
-    title: "CIPHER CRACK V2",
     rules: [
       "An encrypted word is shown — it uses only ROT ciphers",
       "An alphabet reference chart is always displayed for decoding",
@@ -276,7 +261,7 @@ function UnlockedEntry({
         <div className="flex items-center gap-3">
           <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
           <span className="text-cyber-cyan text-sm font-bold uppercase tracking-wider glitch-text">
-            {briefing.title}
+            {getMinigameDisplayName(type).toUpperCase()}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest hidden sm:inline">
             {type}
