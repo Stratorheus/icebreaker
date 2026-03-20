@@ -48,7 +48,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-cyber-bg text-white font-mono">
+    <div className="min-h-screen text-white font-mono">
       <ScanlineOverlay />
       <HUD />
       {renderScreen()}

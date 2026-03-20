@@ -413,7 +413,7 @@ export function PortScan(props: MinigameProps) {
             }
 
             if (isCursor) {
-              cellClasses += " ring-2 ring-cyber-magenta ring-offset-0";
+              cellClasses += " ring-2 ring-cyber-cyan ring-offset-0";
               cellStyle = {
                 ...cellStyle,
                 boxShadow: `${cellStyle.boxShadow ?? ""}, 0 0 12px rgba(255, 0, 255, 0.4)`.replace(
