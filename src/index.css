@@ -148,3 +148,11 @@
   97% { opacity: 0.5; }
   97.5% { opacity: 1; }
 }
+
+/* ── Touch/Desktop visibility ──────────────────────────────── */
+@media (pointer: coarse) {
+  .desktop-only { display: none !important; }
+}
+@media (pointer: fine) {
+  .touch-only { display: none !important; }
+}
