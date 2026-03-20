@@ -172,7 +172,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "bracket-auto-close",
     name: "Bracket Auto-Close",
-    description: "One random bracket is pre-closed in Close Brackets.",
+    description: "One random bracket is pre-closed in Code Inject.",
     category: "assist",
     basePrice: 45,
     effect: { type: "auto-close", value: 1, minigame: "close-brackets" },
@@ -181,7 +181,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "arrow-compass",
     name: "Arrow Compass",
-    description: "See 2 arrows ahead in Match Arrows instead of just 1.",
+    description: "See 2 arrows ahead in Packet Route instead of just 1.",
     category: "assist",
     basePrice: 40,
     effect: { type: "peek-ahead", value: 2, minigame: "match-arrows" },

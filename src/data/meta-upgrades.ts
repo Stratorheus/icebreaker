@@ -163,8 +163,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   // ── PROTOCOL UNLOCK ──────────────────────────────────────────────────────
   {
     id: "find-symbol-license",
-    name: "Find Symbol License",
-    description: "Unlocks the Find Symbol protocol for future runs.",
+    name: "Address Lookup License",
+    description: "Unlocks the Address Lookup protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -181,8 +181,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   },
   {
     id: "cipher-crack-license",
-    name: "Cipher Crack License",
-    description: "Unlocks the Cipher Crack protocol for future runs.",
+    name: "Cipher Crack V1 License",
+    description: "Unlocks the Cipher Crack V1 protocol for future runs.",
     category: "minigame-unlock",
     maxTier: 1,
     prices: [300],
@@ -257,7 +257,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "bracket-reducer",
     name: "Bracket Reducer",
-    description: "Removes one bracket type from Close Brackets, reducing complexity.",
+    description: "Removes one bracket type from Code Inject, reducing complexity.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -279,7 +279,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "symbol-scanner",
     name: "Symbol Scanner",
-    description: "The target symbol blinks when the cursor is nearby in Find Symbol.",
+    description: "The target symbol blinks when the cursor is nearby in Address Lookup.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -301,7 +301,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "type-assist",
     name: "Type Assist",
-    description: "The first letter of the word is shown in Type Backward.",
+    description: "The first letter of the word is shown in Decrypt Signal.",
     category: "game-specific",
     maxTier: 1,
     prices: [175],
@@ -319,7 +319,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "cipher-hint",
     name: "Cipher Hint",
-    description: "An extra cipher hint letter is shown in Cipher Crack.",
+    description: "An extra cipher hint letter is shown in Cipher Crack V1.",
     category: "game-specific",
     maxTier: 1,
     prices: [225],
@@ -337,7 +337,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "bracket-mirror",
     name: "Bracket Mirror",
-    description: "Matching brackets flash the same color for 0.3 s in Close Brackets.",
+    description: "Matching brackets flash the same color for 0.3 s in Code Inject.",
     category: "game-specific",
     maxTier: 1,
     prices: [150],
@@ -346,7 +346,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "symbol-magnifier",
     name: "Symbol Magnifier",
-    description: "The target symbol is displayed 30 % larger in Find Symbol.",
+    description: "The target symbol is displayed 30 % larger in Address Lookup.",
     category: "game-specific",
     maxTier: 1,
     prices: [150],
