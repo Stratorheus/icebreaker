@@ -325,9 +325,3 @@ export function getMinigameHint(type: MinigameType, isTouch: boolean): string {
   const briefing = MINIGAME_BRIEFINGS[type];
   return isTouch ? briefing.hint.touch : briefing.hint.desktop;
 }
-
-/** Get the controls description for a minigame (touch or desktop variant). */
-export function getMinigameControls(type: MinigameType, isTouch: boolean): string {
-  const briefing = MINIGAME_BRIEFINGS[type];
-  return isTouch ? briefing.controls.touch : briefing.controls.desktop;
-}
