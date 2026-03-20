@@ -76,8 +76,8 @@ function generateBoard(difficulty: number): GeneratedBoard {
   const rows = size;
   const totalCells = rows * cols;
 
-  const rawMines = Math.round(3 + difficulty * 11);
-  const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.25));
+  const rawMines = Math.round(2 + difficulty * 8);
+  const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.20));
 
   // Cells start with no mines — placed on first click via placeMines()
   const cells: DefragCell[] = Array.from({ length: totalCells }, (_, i) => ({
@@ -407,6 +407,7 @@ export function Defrag(props: MinigameProps) {
                             ? "border-cyber-cyan/80 bg-cyber-cyan/10 shadow-[0_0_10px_rgba(0,255,255,0.2)]"
                             : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 cursor-pointer"
                   }
+                  ${isCursor && !isMineRevealed ? "ring-2 ring-cyber-cyan ring-offset-0 z-10" : ""}
                 `}
               >
                 {isMineRevealed ? (
