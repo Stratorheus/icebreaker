@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { TouchControls } from "@/components/layout/TouchControls";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -166,6 +167,9 @@ export function Defrag(props: MinigameProps) {
   useEffect(() => {
     cursorColRef.current = cursorCol;
   }, [cursorCol]);
+
+  // ── Touch flag mode toggle ──────────────────────────────────────
+  const [flagMode, setFlagMode] = useState(false);
 
   // ── Flood fill (BFS) for 0-cells ─────────────────────────────────
   const floodFill = useCallback(
@@ -370,7 +374,7 @@ export function Defrag(props: MinigameProps) {
                 key={cell.id}
                 type="button"
                 disabled={!isActive || resolvedRef.current}
-                onClick={() => uncoverCell(i)}
+                onClick={() => flagMode ? toggleFlag(i) : uncoverCell(i)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   toggleFlag(i);
@@ -413,8 +417,8 @@ export function Defrag(props: MinigameProps) {
         </div>
       </div>
 
-      {/* Instructions */}
-      <div className="mt-4 text-center">
+      {/* Instructions — desktop */}
+      <div className="desktop-only mt-4 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           L-Click / Space = uncover &nbsp;|&nbsp; R-Click / Enter = flag
         </p>
@@ -443,6 +447,28 @@ export function Defrag(props: MinigameProps) {
           </div>
         </div>
       </div>
+
+      {/* Touch: flag mode toggle + D-pad */}
+      <div className="touch-only mt-4 text-center space-y-2">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-1">
+          TAP = {flagMode ? "flag" : "uncover"} &nbsp;|&nbsp; toggle mode below
+        </p>
+        <button
+          type="button"
+          onClick={() => setFlagMode((v) => !v)}
+          className={`
+            px-4 py-2 rounded-lg border text-xs uppercase tracking-widest font-mono font-bold
+            transition-all duration-150
+            ${flagMode
+              ? "border-cyber-magenta/60 bg-cyber-magenta/15 text-cyber-magenta"
+              : "border-cyber-cyan/60 bg-cyber-cyan/15 text-cyber-cyan"
+            }
+          `}
+        >
+          MODE: {flagMode ? "⚑ FLAG" : "◆ UNCOVER"}
+        </button>
+      </div>
+      <TouchControls type="dpad" />
     </div>
   );
 }
