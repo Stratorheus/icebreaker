@@ -61,8 +61,10 @@ export function TypeBackward(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
-  // Number of words: 4 (d=0) -> 8 (d=1), scaled by word count not length
-  const wordCount = Math.round(4 + difficulty * 4);
+  // Number of words: range-based, 2-4 (d=0) -> 5-8 (d=1)
+  const wordCountMin = Math.round(2 + difficulty * 3);
+  const wordCountMax = Math.round(4 + difficulty * 4);
+  const wordCount = wordCountMin + Math.floor(Math.random() * (wordCountMax - wordCountMin + 1));
 
   // Generate word sequence on mount
   const originalWords = useMemo(() => {

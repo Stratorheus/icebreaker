@@ -183,7 +183,7 @@ export function RunShop() {
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
   const dataMultiplier = Math.pow(1.03, dataTier);
   const baseDataReward = Math.round(getDataReward(floor) * dataMultiplier);
-  const creditsSavedPreview = Math.floor(credits * 0.15);
+  const creditsSavedPreview = Math.floor(credits * 0.08);
   const dataReward = baseDataReward + dataDripThisRun + milestoneDataThisRun + creditsSavedPreview;
 
   // Sub-views: Codex and Stats with back button returning to shop
@@ -241,7 +241,7 @@ export function RunShop() {
             RUN DATA
           </span>
           <span className="font-bold text-sm tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
-            <Hexagon size={14} /> +{(dataDripThisRun + milestoneDataThisRun).toLocaleString()}
+            <Hexagon size={14} /> +{(baseDataReward + dataDripThisRun + milestoneDataThisRun).toLocaleString()}
           </span>
         </div>
       </div>

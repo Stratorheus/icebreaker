@@ -32,8 +32,10 @@ export function MatchArrows(props: MinigameProps) {
     props,
   );
 
-  // Row length: 4 (d=0) -> 10 (d=1)
-  const rowLength = Math.round(4 + difficulty * 6);
+  // Row length: range-based, 3-5 (d=0) -> 7-10 (d=1)
+  const rowMin = Math.round(3 + difficulty * 4);
+  const rowMax = Math.round(5 + difficulty * 5);
+  const rowLength = rowMin + Math.floor(Math.random() * (rowMax - rowMin + 1));
 
   // Peek-ahead: how many arrows ahead of the current one to reveal (percentage-based from meta, fixed from run-shop)
   const peekAhead = useMemo(() => {

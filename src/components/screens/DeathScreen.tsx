@@ -39,8 +39,8 @@ export function DeathScreen() {
   const dataMultiplier = Math.pow(1.03, dataTier);
   const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
 
-  // Credits → Data conversion: leftover credits convert at 15% rate
-  const creditsSaved = Math.floor(credits * 0.15);
+  // Credits → Data conversion: leftover credits convert at 8% rate
+  const creditsSaved = Math.floor(credits * 0.08);
 
   // Milestones earned this run (now subject to death penalty)
   const milestoneData = milestoneDataThisRun;
@@ -125,7 +125,7 @@ export function DeathScreen() {
 
       {/* Data breakdown */}
       <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
-        <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
+        <BreakdownRow label="FLOOR REWARD" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
         {dataDripThisRun > 0 && (
           <BreakdownRow
             label="PROTOCOL WINS"
