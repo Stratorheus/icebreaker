@@ -31,6 +31,7 @@ export function DeathScreen() {
   const runStartTime = useGameStore((s) => s.runStartTime);
 
   const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
+  const dataDripThisRun = useGameStore((s) => s.dataDripThisRun);
 
   // Base run data reward
   // Data Siphon meta upgrade: +3% per purchase (multiplicative)
@@ -44,8 +45,8 @@ export function DeathScreen() {
   // Milestones earned this run (now subject to death penalty)
   const milestoneData = milestoneDataThisRun;
 
-  // Pre-penalty subtotal (base + credits saved + milestones)
-  const prePenaltyData = baseDataEarned + creditsSaved + milestoneData;
+  // Pre-penalty subtotal (base + drip + credits saved + milestones)
+  const prePenaltyData = baseDataEarned + dataDripThisRun + creditsSaved + milestoneData;
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
@@ -125,6 +126,14 @@ export function DeathScreen() {
       {/* Data breakdown */}
       <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
         <BreakdownRow label="BASE DATA" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
+        {dataDripThisRun > 0 && (
+          <BreakdownRow
+            label="PROTOCOL WINS"
+            value={`+${dataDripThisRun}`}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            className="text-cyber-green/70"
+          />
+        )}
         {creditsSaved > 0 && (
           <BreakdownRow
             label="CREDITS SAVED"
