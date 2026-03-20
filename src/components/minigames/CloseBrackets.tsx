@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { TouchControls } from "@/components/layout/TouchControls";
 
 /** Opener -> closer mapping */
 const BRACKET_PAIRS: Record<string, string> = {
@@ -232,8 +233,8 @@ export function CloseBrackets(props: MinigameProps) {
         )}
       </div>
 
-      {/* Instruction */}
-      <div className="mt-8 text-center">
+      {/* Instruction — desktop */}
+      <div className="desktop-only mt-8 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Type the matching closers in reverse order
         </p>
@@ -248,6 +249,14 @@ export function CloseBrackets(props: MinigameProps) {
           ))}
         </div>
       </div>
+
+      {/* Touch: bracket buttons + instruction */}
+      <div className="touch-only mt-4 text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+          TAP the matching closers
+        </p>
+      </div>
+      <TouchControls type="brackets" />
     </div>
   );
 }
