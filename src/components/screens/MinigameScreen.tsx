@@ -50,6 +50,7 @@ export function MinigameScreen() {
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
   const [lastEarnedCredits, setLastEarnedCredits] = useState(0);
+  const [lastHadSpeedBonus, setLastHadSpeedBonus] = useState(false);
   const [hintText, setHintText] = useState<string | null>(null);
 
   // Track the floorMinigames array reference to detect re-rolls (fail
@@ -144,6 +145,9 @@ export function MinigameScreen() {
         const speedTaxT = purchasedUpgrades["speed-tax"] ?? 0;
         const speedBonus = speedTaxT > 0 ? Math.round(base * speedTaxT * 0.05) : 0;
         earnedCredits = Math.round(base * totalMul) + speedBonus;
+        // Speed bonus applies when completing under 10 s (timeMs < 10000)
+        const hasSpeedBonus = result.timeMs < 10000;
+        setLastHadSpeedBonus(hasSpeedBonus);
       }
       setLastEarnedCredits(earnedCredits);
 
@@ -212,6 +216,7 @@ export function MinigameScreen() {
           <ResultFlash
             success={lastResult ?? false}
             earnedCredits={lastEarnedCredits}
+            hadSpeedBonus={lastHadSpeedBonus}
           />
         )}
       </div>
@@ -475,9 +480,11 @@ function MinigameRouter({
 function ResultFlash({
   success,
   earnedCredits,
+  hadSpeedBonus,
 }: {
   success: boolean;
   earnedCredits: number;
+  hadSpeedBonus: boolean;
 }) {
   return (
     <div className="text-center select-none">
@@ -491,6 +498,11 @@ function ResultFlash({
       {success && earnedCredits > 0 && (
         <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
           +{earnedCredits} CR
+        </p>
+      )}
+      {success && hadSpeedBonus && (
+        <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
+          SPEED BONUS
         </p>
       )}
       <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">
