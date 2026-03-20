@@ -1,5 +1,5 @@
 /**
- * Tech / cyberpunk word list for the Type Backward minigame.
+ * Tech / cyberpunk word list for the Decrypt Signal minigame.
  * Total: 120+ words categorised by character length.
  */
 export const TECH_WORDS = {

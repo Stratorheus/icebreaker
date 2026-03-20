@@ -72,7 +72,7 @@ export function MineSweep(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // 2h. Mine Detector (flag-mine): pre-reveal mines after preview ends
+  // 2h. Sector Scanner (flag-mine): pre-reveal mines after preview ends
   const flagMineCount = useMemo(() => {
     let count = 0;
     for (const pu of activePowerUps) {
@@ -193,7 +193,7 @@ export function MineSweep(props: MinigameProps) {
 
       const cell = cells[cellIndex];
 
-      // Un-marking is allowed unless it was auto-flagged by Mine Detector
+      // Un-marking is allowed unless it was auto-flagged by Sector Scanner
       if (markedCellsRef.current.has(cellIndex) && !autoFlaggedMines.has(cellIndex)) {
         setMarkedCells((prev) => {
           const next = new Set(prev);

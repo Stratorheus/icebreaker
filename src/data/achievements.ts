@@ -101,7 +101,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "cipher-punk",
     name: "Cipher Punk",
-    description: "Solve Cipher Crack in under 3 seconds.",
+    description: "Solve Cipher Crack V1 in under 3 seconds.",
     condition: { type: "minigame-speed", minigame: "cipher-crack", maxTimeMs: 3_000 },
     reward: 50,
     icon: "key",
@@ -109,7 +109,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "bracket-master",
     name: "Bracket Master",
-    description: "Win Close Brackets 10 times in a row.",
+    description: "Win Code Inject 10 times in a row.",
     condition: { type: "minigame-streak", minigame: "close-brackets", count: 10 },
     reward: 40,
     icon: "code",
@@ -133,7 +133,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "arrow-perfect",
     name: "Arrow Perfect",
-    description: "Win Match Arrows in under 2 seconds.",
+    description: "Win Packet Route in under 2 seconds.",
     condition: { type: "minigame-speed", minigame: "match-arrows", maxTimeMs: 2_000 },
     reward: 50,
     icon: "move",
@@ -141,7 +141,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "warp-typist",
     name: "Warp Typist",
-    description: "Win Type Backward 8 times in a row.",
+    description: "Win Decrypt Signal 8 times in a row.",
     condition: { type: "minigame-streak", minigame: "type-backward", count: 8 },
     reward: 40,
     icon: "keyboard",
@@ -241,7 +241,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "symbol-stalker",
     name: "Symbol Stalker",
-    description: "Win Find Symbol 30 times total.",
+    description: "Win Address Lookup 30 times total.",
     condition: { type: "minigame-streak", minigame: "find-symbol", count: 30 },
     reward: 50,
     icon: "search",
@@ -249,7 +249,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "cipher-scholar",
     name: "Cipher Scholar",
-    description: "Win Cipher Crack 25 times total.",
+    description: "Win Cipher Crack V1 25 times total.",
     condition: { type: "minigame-streak", minigame: "cipher-crack", count: 25 },
     reward: 50,
     icon: "scroll",
