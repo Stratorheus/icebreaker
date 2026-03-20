@@ -61,11 +61,18 @@ export function MatchArrows(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // Generate random arrow sequence on mount
+  // Generate random arrow sequence on mount (max 2 identical in a row)
   const sequence = useMemo(() => {
     const seq: ArrowKey[] = [];
     for (let i = 0; i < rowLength; i++) {
       seq.push(ARROWS[Math.floor(Math.random() * ARROWS.length)].key);
+    }
+    // Post-process: no 3+ consecutive identical arrows
+    for (let i = 2; i < seq.length; i++) {
+      if (seq[i] === seq[i - 1] && seq[i] === seq[i - 2]) {
+        const alts = ARROWS.filter((a) => a.key !== seq[i]);
+        seq[i] = alts[Math.floor(Math.random() * alts.length)].key;
+      }
     }
     return seq;
     // eslint-disable-next-line react-hooks/exhaustive-deps

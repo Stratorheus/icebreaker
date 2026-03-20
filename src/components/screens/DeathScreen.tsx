@@ -30,18 +30,22 @@ export function DeathScreen() {
   const credits = useGameStore((s) => s.credits);
   const runStartTime = useGameStore((s) => s.runStartTime);
 
-  // Base run data reward (no milestone bonus — milestones are already
-  // awarded during completeMinigame() so including them here double-counts)
-  // 1c. Data Siphon meta upgrade: +10/20/30% data
+  const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
+
+  // Base run data reward
+  // Data Siphon meta upgrade: +3% per purchase (multiplicative)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = 1 + dataTier * 0.1;
+  const dataMultiplier = Math.pow(1.03, dataTier);
   const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
 
   // Credits → Data conversion: leftover credits convert at 15% rate
   const creditsSaved = Math.floor(credits * 0.15);
 
-  // Pre-penalty subtotal (base + credits saved)
-  const prePenaltyData = baseDataEarned + creditsSaved;
+  // Milestones earned this run (now subject to death penalty)
+  const milestoneData = milestoneDataThisRun;
+
+  // Pre-penalty subtotal (base + credits saved + milestones)
+  const prePenaltyData = baseDataEarned + creditsSaved + milestoneData;
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
   // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
@@ -52,6 +56,7 @@ export function DeathScreen() {
   const dataAfterPenalty = prePenaltyData - penaltyAmount;
 
   // Achievement bonus is computed after awards run — initially 0, updated in useEffect.
+  // Not shown on voluntary quit screen (#12).
   const [achievementBonus, setAchievementBonus] = useState(0);
   const [totalDataEarned, setTotalDataEarned] = useState(dataAfterPenalty);
 
@@ -83,9 +88,10 @@ export function DeathScreen() {
       totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
     });
 
-    // Check run-end achievements (total-runs, total-minigames) after stats
-    // are updated. Zustand set() is synchronous so getState() is fresh.
-    awardNewAchievements();
+    // Check run-end achievements — skip on voluntary quit (#12)
+    if (!quitVoluntarily) {
+      awardNewAchievements();
+    }
 
     // Calculate total data actually added (base - penalty + achievement bonuses)
     const dataAfterAll = useGameStore.getState().data;
@@ -127,7 +133,15 @@ export function DeathScreen() {
             className="text-cyber-green/70"
           />
         )}
-        {achievementBonus > 0 && (
+        {milestoneData > 0 && (
+          <BreakdownRow
+            label="MILESTONE BONUS"
+            value={`+${milestoneData}`}
+            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            className="text-cyber-cyan/70"
+          />
+        )}
+        {!quitVoluntarily && achievementBonus > 0 && (
           <BreakdownRow
             label="ACHIEVEMENT BONUS"
             value={`+${achievementBonus}`}

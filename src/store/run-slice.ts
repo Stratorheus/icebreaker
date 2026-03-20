@@ -42,6 +42,10 @@ export interface RunSlice {
   itemsBoughtThisRun: number;
   /** True when the player voluntarily quit the run (shows different death screen). */
   quitVoluntarily: boolean;
+  /** Snapshot of persistent data balance at run start (for "data earned this run" display). */
+  dataAtRunStart: number;
+  /** Milestone data accumulated during the run (awarded on death/quit, subject to penalty). */
+  milestoneDataThisRun: number;
 
   // Actions
   startRun: () => void;
@@ -68,11 +72,23 @@ type FullStore = RunSlice & MetaSlice & ShopSlice;
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Pick `count` random items from `pool` (with replacement allowed across picks). */
+/** Pick `count` random items from `pool` (with replacement allowed across picks).
+ *  No item appears more than 2 times consecutively. */
 function pickRandom<T>(pool: T[], count: number): T[] {
   const result: T[] = [];
   for (let i = 0; i < count; i++) {
     result.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  // Post-process: no 3+ consecutive identical entries
+  if (pool.length > 1) {
+    for (let i = 2; i < result.length; i++) {
+      if (result[i] === result[i - 1] && result[i] === result[i - 2]) {
+        const alternatives = pool.filter((x) => x !== result[i]);
+        if (alternatives.length > 0) {
+          result[i] = alternatives[Math.floor(Math.random() * alternatives.length)];
+        }
+      }
+    }
   }
   return result;
 }
@@ -103,6 +119,8 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   previousStatus: null,
   itemsBoughtThisRun: 0,
   quitVoluntarily: false,
+  dataAtRunStart: 0,
+  milestoneDataThisRun: 0,
 };
 
 // Helper type: extract only action keys
@@ -201,6 +219,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       milestoneFloor: 0,
       itemsBoughtThisRun: 0,
       quitVoluntarily: false,
+      dataAtRunStart: get().data,
+      milestoneDataThisRun: 0,
     });
   },
 
@@ -208,9 +228,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const state = get();
     const difficulty = getDifficulty(state.floor);
 
-    // 1b. Credit Multiplier meta upgrade: +10/20/30% credits
+    // 1b. Credit Multiplier meta upgrade: +3% per purchase (multiplicative)
     const creditTier = state.purchasedUpgrades["credit-multiplier"] ?? 0;
-    const creditMultiplier = 1 + creditTier * 0.1;
+    const creditMultiplier = Math.pow(1.03, creditTier);
 
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
@@ -247,11 +267,16 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // When floor is complete, check if it's a milestone floor
     let nextStatus = state.status;
     let milestoneFloor = 0;
+    let milestoneDataThisRun = state.milestoneDataThisRun;
     if (isLastMinigame) {
-      const isMilestone = getMilestoneBonus(state.floor) > 0;
-      if (isMilestone) {
-        // Award milestone bonus data immediately
-        state.addData(getMilestoneBonus(state.floor));
+      const rawMilestone = getMilestoneBonus(state.floor);
+      if (rawMilestone > 0) {
+        // Fix #10: reduce milestone if player already reached this floor before
+        // First time reaching → full bonus; already reached → 25% bonus
+        const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
+        const milestoneReward = Math.round(rawMilestone * milestoneScale);
+        // Fix #11: don't award immediately — accumulate for death/quit screen
+        milestoneDataThisRun += milestoneReward;
         nextStatus = "milestone";
         milestoneFloor = state.floor;
       } else {
@@ -270,6 +295,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         : state.currentMinigameIndex + 1,
       status: nextStatus,
       milestoneFloor,
+      milestoneDataThisRun,
     });
   },
 
@@ -309,10 +335,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     // On fail: DON'T advance the index — re-roll the current slot with a new
     // random minigame so the player must still complete N total minigames.
+    // Ensure the re-rolled game is different from the current one.
     const newFloorMinigames = [...state.floorMinigames];
     const pool = state.unlockedMinigames;
+    const currentType = newFloorMinigames[state.currentMinigameIndex];
+    const alternatives = pool.length > 1 ? pool.filter((m) => m !== currentType) : pool;
     newFloorMinigames[state.currentMinigameIndex] =
-      pool[Math.floor(Math.random() * pool.length)];
+      alternatives[Math.floor(Math.random() * alternatives.length)];
 
     set({
       hp: newHp,

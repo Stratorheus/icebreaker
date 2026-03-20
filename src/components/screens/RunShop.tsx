@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
-import { getDataReward } from "@/data/balancing";
+import { getDataReward, getDifficulty } from "@/data/balancing";
+import { Hexagon } from "lucide-react";
 import {
   Clock,
   Zap,
@@ -140,6 +141,8 @@ export function RunShop() {
   const addCredits = useGameStore((s) => s.addCredits);
   const quitRun = useGameStore((s) => s.quitRun);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const data = useGameStore((s) => s.data);
+  const dataAtRunStart = useGameStore((s) => s.dataAtRunStart);
 
   const [view, setView] = useState<VendorView>("shop");
   const [confirmQuit, setConfirmQuit] = useState(false);
@@ -178,7 +181,7 @@ export function RunShop() {
 
   // Compute data reward preview for quit button
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = 1 + dataTier * 0.1;
+  const dataMultiplier = Math.pow(1.03, dataTier);
   const dataReward = Math.round(getDataReward(floor) * dataMultiplier);
 
   // Sub-views: Codex and Stats with back button returning to shop
@@ -195,11 +198,14 @@ export function RunShop() {
       <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-1 glitch-text">
         VENDOR NODE
       </h1>
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
+      <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
         {">"}_&nbsp;FLOOR {floor} CLEARED
       </p>
+      <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
+        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getDifficulty(floor + 1) * 100)}%
+      </p>
 
-      {/* Status bar: HP + Credits */}
+      {/* Status bar: HP + Credits + Data earned this run */}
       <div className="flex items-center gap-6 mb-8">
         <div className="flex items-center gap-2">
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
@@ -225,6 +231,15 @@ export function RunShop() {
           </span>
           <span className="font-bold text-lg tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-credits)" }}>
             <Coins size={16} /> {credits.toLocaleString()}
+          </span>
+        </div>
+        <div className="w-px h-5 bg-white/10" />
+        <div className="flex items-center gap-2">
+          <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
+            RUN DATA
+          </span>
+          <span className="font-bold text-sm tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
+            <Hexagon size={14} /> +{Math.max(0, data - dataAtRunStart).toLocaleString()}
           </span>
         </div>
       </div>

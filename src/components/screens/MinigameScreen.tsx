@@ -50,6 +50,7 @@ export function MinigameScreen() {
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastResult, setLastResult] = useState<boolean | null>(null);
   const [lastEarnedCredits, setLastEarnedCredits] = useState(0);
+  const [lastHadSpeedBonus, setLastHadSpeedBonus] = useState(false);
   const [hintText, setHintText] = useState<string | null>(null);
 
   // Track the floorMinigames array reference to detect re-rolls (fail
@@ -136,7 +137,7 @@ export function MinigameScreen() {
         const diffReducerT = purchasedUpgrades["difficulty-reducer"] ?? 0;
         const diff = getDifficulty(floor) * Math.pow(0.95, diffReducerT);
         const creditTier = purchasedUpgrades["credit-multiplier"] ?? 0;
-        const creditMul = 1 + creditTier * 0.1;
+        const creditMul = Math.pow(1.03, creditTier);
         const unlockedCount = useGameStore.getState().unlockedMinigames.length;
         const unlockBonus = Math.max(0, unlockedCount - 5) * 0.05; // STARTING_MINIGAMES = 5
         const totalMul = creditMul * (1 + unlockBonus);
@@ -144,6 +145,9 @@ export function MinigameScreen() {
         const speedTaxT = purchasedUpgrades["speed-tax"] ?? 0;
         const speedBonus = speedTaxT > 0 ? Math.round(base * speedTaxT * 0.05) : 0;
         earnedCredits = Math.round(base * totalMul) + speedBonus;
+        // Speed bonus applies when completing under 10 s (timeMs < 10000)
+        const hasSpeedBonus = result.timeMs < 10000;
+        setLastHadSpeedBonus(hasSpeedBonus);
       }
       setLastEarnedCredits(earnedCredits);
 
@@ -212,6 +216,7 @@ export function MinigameScreen() {
           <ResultFlash
             success={lastResult ?? false}
             earnedCredits={lastEarnedCredits}
+            hadSpeedBonus={lastHadSpeedBonus}
           />
         )}
       </div>
@@ -265,7 +270,7 @@ function CountdownPhase({
 const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "slash-timing": 8,
   "close-brackets": 8,
-  "type-backward": 13,
+  "type-backward": 18,
   "match-arrows": 8,
   "find-symbol": 12,
   "mine-sweep": 15,
@@ -273,7 +278,7 @@ const BASE_TIME_LIMITS: Record<MinigameType, number> = {
   "cipher-crack": 12,
   "defrag": 30,
   "network-trace": 20,
-  "data-stream": 25,
+  "data-stream": 18,
   "signal-echo": 20,
   "checksum-verify": 15,
   "port-scan": 15,
@@ -475,9 +480,11 @@ function MinigameRouter({
 function ResultFlash({
   success,
   earnedCredits,
+  hadSpeedBonus,
 }: {
   success: boolean;
   earnedCredits: number;
+  hadSpeedBonus: boolean;
 }) {
   return (
     <div className="text-center select-none">
@@ -491,6 +498,11 @@ function ResultFlash({
       {success && earnedCredits > 0 && (
         <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
           +{earnedCredits} CR
+        </p>
+      )}
+      {success && hadSpeedBonus && (
+        <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
+          SPEED BONUS
         </p>
       )}
       <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">

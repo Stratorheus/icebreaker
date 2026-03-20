@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
-import { Coins } from "lucide-react";
+import { Coins, Hexagon } from "lucide-react";
 
 /**
  * Top bar HUD — visible during "playing", "shop", and "milestone" statuses.
@@ -17,6 +17,7 @@ export function HUD() {
   const hp = useGameStore((s) => s.hp);
   const maxHp = useGameStore((s) => s.maxHp);
   const credits = useGameStore((s) => s.credits);
+  const data = useGameStore((s) => s.data);
   const inventory = useGameStore((s) => s.inventory);
 
   const [showPowerUps, setShowPowerUps] = useState(false);
@@ -101,6 +102,14 @@ export function HUD() {
           <Coins size={14} />
           <span className="tabular-nums">
             {credits.toLocaleString()} CR
+          </span>
+        </div>
+
+        {/* Data balance */}
+        <div className="flex items-center gap-1 glitch-subtle" style={{ color: "var(--color-currency-data)" }}>
+          <Hexagon size={12} />
+          <span className="tabular-nums text-[10px]">
+            {data.toLocaleString()}
           </span>
         </div>
 
