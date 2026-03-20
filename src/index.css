@@ -46,10 +46,66 @@
     border-color: hsl(var(--border));
   }
 
+  html {
+    background-color: var(--color-cyber-bg);
+    background-image:
+      radial-gradient(at 7% 61%, hsla(200, 90%, 40%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 96% 5%, hsla(315, 90%, 28%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 51% 34%, hsla(270, 95%, 35%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 84% 40%, hsla(210, 90%, 32%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 30% 65%, hsla(190, 85%, 33%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 26% 94%, hsla(195, 95%, 29%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 7% 34%, hsla(310, 95%, 28%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 65% 92%, hsla(255, 90%, 32%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 19% 7%, hsla(245, 95%, 34%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 87% 75%, hsla(200, 90%, 36%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 48% 52%, hsla(180, 85%, 28%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 84% 10%, hsla(280, 90%, 29%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 71% 22%, hsla(220, 90%, 37%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 39% 71%, hsla(265, 90%, 30%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 38% 9%, hsla(330, 95%, 32%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 34% 33%, hsla(205, 85%, 30%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 6% 62%, hsla(295, 90%, 33%, 0.07) 0px, transparent 50%),
+      radial-gradient(at 74% 44%, hsla(320, 90%, 31%, 0.07) 0px, transparent 50%);
+  }
+
   body {
     background-color: var(--color-cyber-bg);
     color: hsl(var(--foreground));
     font-family: var(--font-mono);
+    isolation: isolate;
+  }
+
+  /* iOS Safari toolbar workaround: fade mesh overlay on touch devices */
+  @media (pointer: coarse) {
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background-image:
+        radial-gradient(at 7% 61%, hsla(200, 90%, 40%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 96% 5%, hsla(315, 90%, 28%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 51% 34%, hsla(270, 95%, 35%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 84% 40%, hsla(210, 90%, 32%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 30% 65%, hsla(190, 85%, 33%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 26% 94%, hsla(195, 95%, 29%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 7% 34%, hsla(310, 95%, 28%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 65% 92%, hsla(255, 90%, 32%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 19% 7%, hsla(245, 95%, 34%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 87% 75%, hsla(200, 90%, 36%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 48% 52%, hsla(180, 85%, 28%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 84% 10%, hsla(280, 90%, 29%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 71% 22%, hsla(220, 90%, 37%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 39% 71%, hsla(265, 90%, 30%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 38% 9%, hsla(330, 95%, 32%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 34% 33%, hsla(205, 85%, 30%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 6% 62%, hsla(295, 90%, 33%, 0.10) 0px, transparent 50%),
+        radial-gradient(at 74% 44%, hsla(320, 90%, 31%, 0.10) 0px, transparent 50%);
+      mask-image: linear-gradient(to bottom, black calc(100% - 8rem), transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 8rem), transparent 100%);
+      pointer-events: none;
+    }
   }
 }
 
