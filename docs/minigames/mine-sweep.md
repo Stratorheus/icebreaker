@@ -65,6 +65,12 @@ Effective time: `round(15 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs
 
 Note: The preview phase consumes time from the overall timer, so the actual mark phase has `effectiveTime - previewMs/1000` seconds of active play.
 
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
+
 ## Code Reference
 
 - **Component**: `src/components/minigames/MineSweep.tsx`

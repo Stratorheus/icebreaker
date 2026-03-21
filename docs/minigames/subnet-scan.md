@@ -42,7 +42,7 @@ At low difficulty, easy-to-reason prefixes (/8, /16, /24) are used where full oc
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
 | **CIDR Helper** (`subnet-cidr-helper`) | Meta upgrade | `minigame-specific` | Displays the expanded IP range (e.g., `192.168.5.0 -- 192.168.5.255`) below the CIDR notation. |
-| **Timer Extension** (`timer-extension`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
+| **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
 ## Controls
@@ -64,6 +64,12 @@ At low difficulty, easy-to-reason prefixes (/8, /16, /24) are used where full oc
 Scaling formula: `round(20 * (1 - difficulty * 0.4) * floorScale * 1.03^timerExtTier)`
 
 Where `floorScale = max(0.4, 1 - (floor - 15) * 0.02)` for floors > 15, otherwise 1.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

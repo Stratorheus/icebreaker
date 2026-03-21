@@ -42,7 +42,7 @@ A grid of network port numbers is displayed. During the display phase, "open" po
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
 | **Deep Scan** (`port-scan-deep`) | Meta upgrade | `minigame-specific` | Open ports flash **twice** instead of once (`flashRepeat = 2`). A 200 ms gap separates the two full sequences. |
-| **Timer Extension** (`timer-extension`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
+| **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
 ## Controls
@@ -66,6 +66,12 @@ Scaling formula: `round(15 * (1 - difficulty * 0.4) * floorScale * 1.03^timerExt
 Where `floorScale = max(0.4, 1 - (floor - 15) * 0.02)` for floors > 15, otherwise 1.
 
 Note: the timer is paused during the entire display phase and only runs during the select phase.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

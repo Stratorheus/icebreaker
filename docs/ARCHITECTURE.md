@@ -55,7 +55,7 @@ Created in `src/store/game-store.ts` with `zustand/middleware/persist`.
 
 Owns all ephemeral per-run state. Reset on every `startRun()`.
 
-Key state: `hp`, `maxHp`, `floor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `runScore`, `status`, `bonusTimeSecs`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`.
+Key state: `hp`, `maxHp`, `floor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `runScore`, `status`, `bonusTimeSecs`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`, `timeSiphonBonus`, `cascadeClockPct`.
 
 Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `pauseRun`, `resumeRun`, `quitRun`, `endRun`, `dismissMilestone`.
 
@@ -103,7 +103,7 @@ Slices access each other through `get()` since all three are composed into a sin
 1. **Floor minigames**: `pickRandom(unlockedMinigames, getMinigamesPerFloor(1))` — floor 1 gets 2 minigames.
 2. **HP**: `100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus`. Unlock HP bonus = `(unlockedMinigames.length - 5) * 5`.
 3. **Credits**: `25 + (50 if head-start purchased)`.
-4. **Bonus time**: `+1 s` on floor 1 timers if `pre-loaded` purchased.
+4. **Bonus time**: removed (`pre-loaded` upgrade was removed).
 5. **Starting inventory**: 0, 1, or 2 random power-ups from `RUN_SHOP_POOL` (via `quick-boot` / `dual-core`).
 6. **Snapshots**: `dataAtRunStart`, `milestoneDataThisRun = 0`, `dataDripThisRun = 0`.
 
@@ -113,7 +113,7 @@ Each minigame goes through three phases (`Phase = "countdown" | "active" | "resu
 
 1. **Countdown**: Displays minigame name, floor/protocol number, counts 3-2-1-GO (~666 ms per tick). If a Hint Module power-up is in inventory, it is consumed and countdown extends to 4-3-2-1-GO with a hint line shown. Before transitioning to "active", `checkSkip(inventory)` runs; if a skip power-up is found, the minigame auto-completes as success without playing.
 
-2. **Active**: The `MinigameRouter` renders the correct minigame component. It computes effective difficulty (with `difficulty-reducer` meta upgrade), time limit (with `timer-extension` meta upgrade and `bonusTimeSecs`), and merges run inventory power-ups with synthetic meta-upgrade power-ups into `activePowerUps`. The minigame component calls `onComplete(result)` when the player wins or the timer expires.
+2. **Active**: The `MinigameRouter` renders the correct minigame component. It computes effective difficulty (with `difficulty-reducer` meta upgrade), time limit (with `delay-injector` meta upgrade), and merges run inventory power-ups with synthetic meta-upgrade power-ups into `activePowerUps`. The minigame component calls `onComplete(result)` when the player wins or the timer expires.
 
 3. **Result**: Displays "SUCCESS" or "FAILED" with credit amount for 1 second, then dispatches to store:
    - Success: `recordMinigameResult(type, true)` then `completeMinigame(result)`.
@@ -310,11 +310,15 @@ getTimeLimit(baseTime, difficulty, floor?) {
 }
 ```
 
-With `timer-extension` meta upgrade: `final = Math.round(timeLimit * Math.pow(1.03, tier))`.
+With `cascade-clock` meta upgrade: `baseTime * (1 + cascadeClockPct)` where `cascadeClockPct` grows by +2% per consecutive win, capped per tier (10/20/30/40/50%).
 
-With `pre-loaded` meta upgrade: `+1 s` on floor 1 only (`bonusTimeSecs`).
+With `time-siphon` run-shop item: adds flat `timeSiphonBonus` seconds (grows +0.2 s per win, floor-scoped, resets on fail/advanceFloor).
+
+With `delay-injector` meta upgrade: `final = Math.round((baseTime * (1 + cascadeClockPct) + timeSiphonBonus) * Math.pow(1.03, tier))`.
 
 With `time-bonus` power-ups: added by `useMinigame` hook on mount.
+
+With `deadline-override` run-shop item: when timer progress drops below 5%, injects 1 s bonus time once (single use, consumed after the minigame).
 
 ### Damage on Fail
 
@@ -395,13 +399,14 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 | ID | Name | Type | Effect |
 |---|---|---|---|
 | `hp-boost` | HP Boost | Stackable (infinite) | +5 max HP per purchase |
-| `timer-extension` | Timer Extension | Stackable (infinite) | +3% all timers per purchase (multiplicative) |
+| `delay-injector` | Delay Injector | Stackable (infinite) | +3% all timers per purchase (multiplicative) |
 | `difficulty-reducer` | Difficulty Reducer | Stackable (infinite) | -5% effective difficulty per purchase (multiplicative) |
 | `thicker-armor` | Thicker Armor | 3 tiers | -10%/-20%/-30% incoming damage |
 | `credit-multiplier` | Credit Multiplier | Stackable (infinite) | +3% credits per purchase (multiplicative) |
 | `data-siphon` | Data Siphon | Stackable (infinite) | +3% data per purchase (multiplicative) |
 | `speed-tax` | Speed Tax | 3 tiers | Speed bonuses +15%/+25%/+40% more effective |
 | `data-recovery` | Data Recovery | 3 tiers | Death penalty reduced to 20%/15%/10% |
+| `cascade-clock` | Cascade Clock | 5 tiers | +2% base timer per consecutive win; cap 10/20/30/40/50% per tier; resets on fail, persists across floors |
 
 **Starting bonus upgrades** (single-tier or tiered):
 | ID | Name | Effect |
@@ -410,7 +415,7 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 | `dual-core` | Dual Core | Start with 2 random power-ups (requires quick-boot) |
 | `overclocked` | Overclocked | +10/+15/+20 bonus starting HP (3 tiers) |
 | `head-start` | Head Start | +50 bonus starting credits |
-| `pre-loaded` | Pre-Loaded | +1 s on all timers during floor 1 |
+| ~~`pre-loaded`~~ | ~~Pre-Loaded~~ | Removed |
 | `cache-primed` | Cache Primed | Run shop always offers a heal item |
 
 **Minigame unlocks**: 10 unlockable protocols (see section 4). Dynamic pricing: `200 + unlocksOwned * 100`. Some have prerequisites (e.g., cipher-crack-v2 requires cipher-crack-license).
@@ -429,7 +434,7 @@ The `startRun()` function in run-slice.ts reads `purchasedUpgrades` from the met
 ```
 maxHp = 100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus
 startCredits = 25 + (50 if head-start)
-bonusTimeSecs = 1 if pre-loaded, else 0
+bonusTimeSecs = (removed — pre-loaded upgrade no longer exists)
 powerUpCount = 2 if dual-core, 1 if quick-boot, 0 otherwise
 ```
 
@@ -441,18 +446,20 @@ Each unlocked minigame beyond the starting 5 grants +5 max HP and +5% global cre
 
 ## 7. Power-Up System
 
-### Run Shop Items (20 items in pool)
+### Run Shop Items (22 items in pool)
 
 Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 
-**Time** (5 items):
+**Time** (7 items):
 | Item | Effect | Base Price |
 |---|---|---|
 | Time Freeze | `time-bonus` +1 s | 30 |
-| Quick Hack | `time-bonus` +2 s | 55 |
-| Chrono Surge | `time-bonus` +1.5 s | 45 |
+| Clock Boost | `time-bonus` +2 s | 55 |
+| Chrono Surge | `time-bonus` +1.5 s | 40 |
 | Lag Spike | `time-bonus` +0.5 s | 20 |
-| Scan Module | `time-bonus` +3 s | 35 |
+| Buffer Extend | `time-bonus` +2.5 s | 70 |
+| Time Siphon | `time-siphon` +0.2 s per win (floor-scoped) | 35 |
+| Deadline Override | `deadline-override` 1 s pause at 5% timer (single use) | 50 |
 
 **Defense** (3 items):
 | Item | Effect | Base Price |
@@ -500,7 +507,8 @@ interface PowerUpEffect {
     | "heal" | "heal-on-success"
     | "preview" | "hint" | "highlight-danger"
     | "window-extend" | "auto-close" | "reveal-first"
-    | "peek-ahead" | "flag-mine" | "minigame-specific";
+    | "peek-ahead" | "flag-mine" | "minigame-specific"
+    | "time-siphon" | "deadline-override" | "cascade-clock";
   value: number;
   minigame?: MinigameType;
 }
@@ -516,10 +524,11 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 |---|---|---|
 | Immediate | On purchase (never enters inventory) | `heal` items |
 | Per-minigame | After each game if `effect.minigame` matches | Slash Calibration, Arrow Compass, Sector Scanner |
-| Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success` |
+| Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon` |
 | On-trigger | On fail event | `shield`, `damage-reduction`, `damage-reduction-stacked` |
 | On-trigger | Before active phase starts | `skip`, `skip-silent` |
 | On-trigger | At countdown start | `hint` (Hint Module) |
+| Per-minigame | After each game | `deadline-override` (single use, consumed after first minigame) |
 
 ### Run Shop Generation
 

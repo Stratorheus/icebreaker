@@ -48,7 +48,7 @@ Additional rules are added to ensure every wire in the cut order is mentioned.
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
 | **Wire Guide** (`wire-labels`) | Meta upgrade | `hint` | Dims non-target wires and highlights the next wire to cut. The keyboard hint bar also shows the next wire key in green. |
-| **Timer Extension** (`timer-extension`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
+| **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
 ## Controls
@@ -69,6 +69,12 @@ Additional rules are added to ensure every wire in the cut order is mentioned.
 Scaling formula: `round(12 * (1 - difficulty * 0.4) * floorScale * 1.03^timerExtTier)`
 
 Where `floorScale = max(0.4, 1 - (floor - 15) * 0.02)` for floors > 15, otherwise 1.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

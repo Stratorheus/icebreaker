@@ -68,6 +68,12 @@ Effective time: `round(20 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs
 - At d=0: `round(20 * 1.0) = 20s` base.
 - At d=1: `round(20 * 0.6) = 12s` base.
 
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
+
 ## Code Reference
 
 - **Component**: `src/components/minigames/NetworkTrace.tsx`

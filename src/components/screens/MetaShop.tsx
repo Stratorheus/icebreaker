@@ -524,14 +524,14 @@ function formatEffect(effect: { type: string; value: number }): string {
       return `+${effect.value} bonus starting HP`;
     case "start-credits":
       return `+${effect.value} starting credits`;
-    case "floor1-time-bonus":
-      return `+${effect.value}s floor 1 timers`;
     case "guaranteed-heal-shop":
       return "Guaranteed heal in floor 1 shop";
     case "unlock-minigame":
       return "Unlocks protocol (+5 max HP, +5% credits)";
     case "death-penalty-reduction":
       return `-${Math.round(effect.value * 100)}% death penalty`;
+    case "cascade-clock":
+      return `+2% base timer per win (cap ${Math.round(effect.value * 100)}%)`;
     default:
       return effect.type.replace(/-/g, " ");
   }

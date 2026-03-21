@@ -58,6 +58,18 @@ export function useMinigame(
     addTimeRef.current = timer.addTime;
   }, [timer.addTime]);
 
+  // Deadline Override: when timer progress drops below 5%, inject bonus time once.
+  // Tracked per-minigame via a ref so it only fires once per mount.
+  const deadlineTriggeredRef = useRef(false);
+  useEffect(() => {
+    if (deadlineTriggeredRef.current) return;
+    if (timer.progress > 0.05 || timer.progress <= 0) return;
+    const dlOverride = activePowerUps.find((p) => p.effect.type === "deadline-override");
+    if (!dlOverride) return;
+    deadlineTriggeredRef.current = true;
+    timer.addTime(dlOverride.effect.value * 1000);
+  }, [timer.progress, activePowerUps, timer]);
+
   // Apply time-bonus power-ups and auto-start — runs once on mount
   // Power-up values are in SECONDS but addTime() expects MILLISECONDS.
   useEffect(() => {

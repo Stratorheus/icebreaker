@@ -70,7 +70,10 @@ export interface PowerUpEffect {
     | "reveal-first"
     | "peek-ahead"
     | "flag-mine"
-    | "minigame-specific";
+    | "minigame-specific"
+    | "time-siphon"
+    | "deadline-override"
+    | "cascade-clock";
   value: number;
   minigame?: MinigameType;
 }

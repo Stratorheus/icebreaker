@@ -47,7 +47,7 @@ Word length categories in `TECH_WORDS`:
 |----------|--------|-------------|-----------|
 | **Type Assist** (`type-assist`) | Meta upgrade | `hint` | Shows the **first letter** of the current expected answer above the input area. |
 | **Reverse Trainer** (`reverse-trainer`) | Meta upgrade | `minigame-specific` | Words are displayed in **normal order** (not mirrored) -- the player simply types what they see. The display order is still reversed, but since words are un-mirrored, it becomes a straight typing test. |
-| **Timer Extension** (`timer-extension`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
+| **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
 When Reverse Trainer is active, the `expectedAnswers` array becomes the display words themselves (no reversal needed), and a label "REVERSE TRAINER ACTIVE -- WORDS SHOWN NORMALLY" appears.
@@ -70,6 +70,12 @@ When Reverse Trainer is active, the `expectedAnswers` array becomes the display 
 Scaling formula: `round(18 * (1 - difficulty * 0.4) * floorScale * 1.03^timerExtTier)`
 
 Where `floorScale = max(0.4, 1 - (floor - 15) * 0.02)` for floors > 15, otherwise 1.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

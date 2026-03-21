@@ -41,7 +41,7 @@ Where `windowExtendBonus` is the sum of all `window-extend` effect values from a
 |----------|--------|-------------|-----------|
 | **Slash Calibration** (`slash-calibration`) | Run shop | `window-extend` | Attack window widened by 20% (`value: 0.2`). |
 | **Slash Window** (`slash-window`) | Meta upgrade | `window-extend` | Attack window widened by 25% (`value: 0.25`). |
-| **Timer Extension** (`timer-extension`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
+| **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
 Both window-extend bonuses stack additively. With both active: `effectiveAttackWindow = base * (1 + 0.2 + 0.25) = base * 1.45`.
@@ -63,6 +63,12 @@ Both window-extend bonuses stack additively. With both active: `effectiveAttackW
 Scaling formula: `round(8 * (1 - difficulty * 0.4) * floorScale * 1.03^timerExtTier)`
 
 Where `floorScale = max(0.4, 1 - (floor - 15) * 0.02)` for floors > 15, otherwise 1.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

@@ -45,7 +45,6 @@ export function MinigameScreen() {
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
   const isTouch = useTouchDevice();
   const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
-  const bonusTimeSecs = useGameStore((s) => s.bonusTimeSecs);
 
   const currentMinigame = floorMinigames[currentMinigameIndex];
 
@@ -168,10 +167,12 @@ export function MinigameScreen() {
         // Consume minigame-specific power-ups (e.g. arrow-compass, mine-detector,
         // slash-calibration, bracket-auto-close) — these should be one-use, not permanent.
         // Time-bonus power-ups persist through the entire floor (consumed in advanceFloor).
+        // Deadline Override is single-use: consumed after the first minigame it's present for.
         const currentInventory = useGameStore.getState().inventory;
         const toConsume = currentInventory.filter(
           (p) =>
-            (p.effect.minigame && p.effect.minigame === result.minigame),
+            (p.effect.minigame && p.effect.minigame === result.minigame) ||
+            p.effect.type === "deadline-override",
         );
         for (const pu of toConsume) {
           usePowerUp(pu.id);
@@ -208,7 +209,6 @@ export function MinigameScreen() {
           <MinigameRouter
             type={currentMinigame}
             floor={floor}
-            bonusTimeSecs={floor === 1 ? bonusTimeSecs : 0}
             purchasedUpgrades={purchasedUpgrades}
             onComplete={handleComplete}
           />
@@ -422,26 +422,31 @@ function buildMetaPowerUps(
 function MinigameRouter({
   type,
   floor,
-  bonusTimeSecs,
   purchasedUpgrades,
   onComplete,
 }: {
   type: MinigameType;
   floor: number;
-  bonusTimeSecs: number;
   purchasedUpgrades: Record<string, number>;
   onComplete: (result: MinigameResult) => void;
 }) {
   const inventory = useGameStore((s) => s.inventory);
+  const timeSiphonBonus = useGameStore((s) => s.timeSiphonBonus);
+  const cascadeClockPct = useGameStore((s) => s.cascadeClockPct);
 
   // Difficulty reducer (stackable): multiply by 0.95 per purchase (diminishing returns, never 0)
   const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
   const difficulty = getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
 
-  // Timer extension (stackable): multiply by 1.03 per purchase (diminishing returns)
-  const timerExtTier = purchasedUpgrades["timer-extension"] ?? 0;
-  const baseTimeLimit = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor) + bonusTimeSecs;
-  const timeLimit = Math.round(baseTimeLimit * Math.pow(1.03, timerExtTier));
+  // Delay Injector (stackable): multiply by 1.03 per purchase (diminishing returns)
+  const timerExtTier = purchasedUpgrades["delay-injector"] ?? 0;
+  // Time calculation:
+  //   1. Get base time limit from difficulty/floor scaling
+  //   2. Apply Cascade Clock: multiply by (1 + cascadeClockPct) — stacks from consecutive wins
+  //   3. Add Time Siphon bonus (flat seconds from consecutive wins, floor-scoped)
+  //   4. Apply Delay Injector meta upgrade (multiplicative)
+  const baseTime = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor);
+  const timeLimit = Math.round((baseTime * (1 + cascadeClockPct) + timeSiphonBonus) * Math.pow(1.03, timerExtTier));
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics
