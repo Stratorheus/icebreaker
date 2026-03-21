@@ -111,7 +111,7 @@ Slices access each other through `get()` since all three are composed into a sin
 
 Each minigame goes through three phases (`Phase = "countdown" | "active" | "result"`):
 
-1. **Countdown**: Displays minigame name, floor/protocol number, counts 3-2-1-GO (~666 ms per tick). If a Hint Module power-up is in inventory, it is consumed and countdown extends to 4-3-2-1-GO with a hint line shown. Before transitioning to "active", `checkSkip(inventory)` runs. Priority: Warp Gate (skip-floor, 15% rewards for all remaining) > Null Route (skip-silent, full rewards) > Backdoor (skip, 0 rewards). All count as success. Warp Gate calls `skipRemainingFloor(0.15)` to batch-complete remaining protocols and go straight to vendor/milestone.
+1. **Countdown**: Displays minigame name, floor/protocol number, counts 3-2-1-GO (~666 ms per tick). Before transitioning to "active", `checkSkip(inventory)` runs. Priority: Warp Gate (skip-floor, 15% rewards for all remaining) > Null Route (skip-silent, full rewards) > Backdoor (skip, 0 rewards). All count as success. Warp Gate calls `skipRemainingFloor(0.15)` to batch-complete remaining protocols and go straight to vendor/milestone.
 
 2. **Active**: The `MinigameRouter` renders the correct minigame component. It computes effective difficulty (with `difficulty-reducer` meta upgrade), time limit (with `delay-injector` meta upgrade), and merges run inventory power-ups with synthetic meta-upgrade power-ups into `activePowerUps`. The minigame component calls `onComplete(result)` when the player wins or the timer expires.
 
@@ -239,8 +239,6 @@ This allows minigame components to consume all bonuses through a single uniform 
 - **Shield** power-ups are consumed on fail trigger (in `failMinigame` via `applyShield()`).
 - **Skip** power-ups (Backdoor, Null Route) are consumed before the active phase begins (in countdown logic via `checkSkip()`). Warp Gate (`skip-floor`) also triggers at countdown and calls `skipRemainingFloor()` to skip all remaining protocols on the floor at 15% rewards.
 - **Heal** (immediate) items are consumed on purchase in the shop (never added to inventory).
-- **Hint Module** is consumed at the start of the countdown phase.
-
 ### Time-Bonus Persistence Through Floor
 
 `time-bonus` power-ups remain in inventory across all minigames on a floor. The `useMinigame` hook reads them on every mount and applies them to the timer. They are only removed when `advanceFloor()` filters the inventory.
@@ -451,7 +449,7 @@ Each unlocked minigame beyond the starting 5 grants +5 max HP and +5% global cre
 
 ## 7. Power-Up System
 
-### Run Shop Items (23 items in pool)
+### Run Shop Items (22 items in pool)
 
 Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 
@@ -488,11 +486,6 @@ Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 | Repair Drone | `heal` +15 HP (immediate) | 50 |
 | Nano Repair | `heal-on-success` +5 HP per win (floor) | 45 |
 | HP Leech | `hp-leech` +2 HP after every protocol (floor) | 40 |
-
-**Vision** (1 item):
-| Item | Effect | Base Price |
-|---|---|---|
-| Hint Module | `hint` (reveals hint during countdown) | 40 |
 
 **Assist** (4 items):
 | Item | Effect | Base Price |
@@ -534,7 +527,6 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 | Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon`, `hp-leech` |
 | On-trigger | On fail event | `shield`, `damage-reduction`, `damage-reduction-stacked` |
 | On-trigger | Before active phase starts | `skip`, `skip-silent`, `skip-floor` |
-| On-trigger | At countdown start | `hint` (Hint Module) |
 | Per-minigame | After each game | `deadline-override` (single use, consumed after first minigame) |
 
 ### Run Shop Generation
@@ -672,7 +664,7 @@ Uses shadcn/ui dark theme (zinc base) with standard CSS custom properties (`--ba
 | `src/hooks/use-touch-device.ts` | Touch device detection hook |
 | `src/data/balancing.ts` | All economy formulas: difficulty, damage, credits, time limits, prices |
 | `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 40+ persistent upgrades across 4 categories |
-| `src/data/power-ups.ts` | RUN_SHOP_POOL: 20 run-shop power-up items |
+| `src/data/power-ups.ts` | RUN_SHOP_POOL: 22 run-shop power-up items |
 | `src/data/achievements.ts` | ACHIEVEMENT_POOL: 30+ achievements with conditions and rewards |
 | `src/data/minigame-descriptions.ts` | MINIGAME_BRIEFINGS: rules, controls, tips, hints per minigame |
 | `src/data/minigame-names.ts` | MINIGAME_DISPLAY_NAMES: type ID to display name mapping |

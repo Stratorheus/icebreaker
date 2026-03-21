@@ -73,7 +73,6 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | Lag Spike (+0.5 s) | 20 CR | time |
 | Time Freeze (+1 s) | 30 CR | time |
 | Buffer Extend (+2.5 s) | 70 CR | time |
-| Hint Module | 40 CR | vision |
 | Chrono Surge (+1.5 s) | 40 CR | time |
 | Damage Reducer (75% reduction) | 40 CR | defense |
 | Nano Repair (+5 HP/win) | 45 CR | healing |

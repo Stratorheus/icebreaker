@@ -5,8 +5,6 @@ import type { MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
 import { getMinigameDisplayName } from "@/data/minigame-names";
-import { getMinigameHint } from "@/data/minigame-descriptions";
-import { useTouchDevice } from "@/hooks/use-touch-device";
 import { checkSkip } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
@@ -44,7 +42,6 @@ export function MinigameScreen() {
   const inventory = useGameStore((s) => s.inventory);
   const usePowerUp = useGameStore((s) => s.usePowerUp);
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
-  const isTouch = useTouchDevice();
   const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
   const skipRemainingFloor = useGameStore((s) => s.skipRemainingFloor);
 
@@ -55,13 +52,11 @@ export function MinigameScreen() {
   const [lastResult, setLastResult] = useState<boolean | null>(null);
   const [lastEarnedCredits, setLastEarnedCredits] = useState(0);
   const [lastHadSpeedBonus, setLastHadSpeedBonus] = useState(false);
-  const [hintText, setHintText] = useState<string | null>(null);
 
   // Track the floorMinigames array reference to detect re-rolls (fail
   // replaces the entry at the same index, so the array ref changes).
   const prevIndexRef = useRef(currentMinigameIndex);
   const prevFloorMinigamesRef = useRef(floorMinigames);
-  const hintConsumedRef = useRef(false);
 
   // Reset phase when minigame index changes (next minigame) OR when
   // floorMinigames array changes (re-roll after fail)
@@ -72,28 +67,12 @@ export function MinigameScreen() {
     ) {
       prevIndexRef.current = currentMinigameIndex;
       prevFloorMinigamesRef.current = floorMinigames;
-      hintConsumedRef.current = false;
 
-      // Check for run-shop hint power-up (not meta upgrade synthetics —
-      // those have minigame-specific hints handled per-component)
-      const hintPowerUp = inventory.find(
-        (p) => p.effect.type === "hint" && !p.effect.minigame,
-      );
-      if (hintPowerUp) {
-        // Consume the power-up and extend countdown by 1 tick
-        hintConsumedRef.current = true;
-        usePowerUp(hintPowerUp.id);
-        setCountdownValue(4); // 4-3-2-1-GO instead of 3-2-1-GO
-        setHintText(getMinigameHint(floorMinigames[currentMinigameIndex], isTouch));
-      } else {
-        setCountdownValue(3);
-        setHintText(null);
-      }
-
+      setCountdownValue(3);
       setPhase("countdown");
       setLastResult(null);
     }
-  }, [currentMinigameIndex, floorMinigames, inventory, usePowerUp]);
+  }, [currentMinigameIndex, floorMinigames]);
 
   // Countdown timer — with skip check at the moment we would go "active"
   useEffect(() => {
@@ -244,7 +223,6 @@ export function MinigameScreen() {
             floor={floor}
             index={currentMinigameIndex}
             total={floorMinigames.length}
-            hint={hintText}
           />
         )}
 
@@ -279,14 +257,12 @@ function CountdownPhase({
   floor,
   index,
   total,
-  hint,
 }: {
   minigameName: string;
   value: number;
   floor: number;
   index: number;
   total: number;
-  hint: string | null;
 }) {
   return (
     <div className="text-center select-none">
@@ -296,11 +272,6 @@ function CountdownPhase({
       <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}
       </h2>
-      {hint && (
-        <p className="text-cyber-green text-sm font-mono tracking-wider mb-6 animate-pulse">
-          HINT: {hint}
-        </p>
-      )}
       <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
         {value > 0 ? value : "GO"}
       </p>
@@ -548,8 +519,3 @@ function ResultFlash({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-// getMinigameHint is now imported from @/data/minigame-descriptions
