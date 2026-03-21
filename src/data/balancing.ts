@@ -64,3 +64,61 @@ export function getTimeLimit(baseTime: number, difficulty: number, floor?: numbe
     : 1;
   return Math.round(baseTime * difficultyScale * floorScale);
 }
+
+// ---------------------------------------------------------------------------
+// Centralized power-up stacking helpers
+// ---------------------------------------------------------------------------
+// Canonical order: FLAT FIRST, PERCENTAGES LAST.
+// Percentages amplify everything below them.
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute effective difficulty with meta Difficulty Reducer applied.
+ */
+export function getEffectiveDifficulty(floor: number, diffReducerTier: number): number {
+  return getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
+}
+
+/**
+ * Compute effective time limit with all stacking applied.
+ * Order: base + flat bonuses, then x percentage multipliers.
+ */
+export function getEffectiveTimeLimit(
+  baseTimeLimitSecs: number,
+  difficulty: number,
+  floor: number,
+  timeSiphonBonus: number,
+  cascadeClockPct: number,
+  delayInjectorTier: number,
+): number {
+  const base = getTimeLimit(baseTimeLimitSecs, difficulty, floor);
+  return Math.round((base + timeSiphonBonus) * (1 + cascadeClockPct) * Math.pow(1.03, delayInjectorTier));
+}
+
+/**
+ * Compute base damage with Thicker Armor meta applied.
+ */
+export function getEffectiveDamage(floor: number, armorTier: number): number {
+  const raw = getDamage(floor);
+  const armorReductions = [0, 0.05, 0.10, 0.15, 0.20, 0.25]; // index 0 = no armor
+  const reduction = armorReductions[Math.min(armorTier, armorReductions.length - 1)] ?? 0;
+  return Math.round(raw * (1 - reduction));
+}
+
+/**
+ * Compute credits earned with all meta bonuses.
+ * Order: base + speedTax flat, then x credit multiplier x unlock bonus.
+ */
+export function getEffectiveCredits(
+  timeMs: number,
+  difficulty: number,
+  creditTier: number,
+  speedTaxTier: number,
+  unlockBonus: number,
+): number {
+  const base = getCredits(timeMs, difficulty);
+  const speedTaxFlat = speedTaxTier > 0 ? Math.round(base * speedTaxTier * 0.05) : 0;
+  const withFlat = base + speedTaxFlat;
+  const creditMultiplier = Math.pow(1.03, creditTier);
+  return Math.round(withFlat * creditMultiplier * (1 + unlockBonus));
+}

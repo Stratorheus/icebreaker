@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
@@ -230,23 +230,18 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   completeMinigame: (result: MinigameResult) => {
     const state = get();
-    const difficulty = getDifficulty(state.floor);
-
-    // 1b. Credit Multiplier meta upgrade: +3% per purchase (multiplicative)
-    const creditTier = state.purchasedUpgrades["credit-multiplier"] ?? 0;
-    const creditMultiplier = Math.pow(1.03, creditTier);
+    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
 
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
-    const totalCreditMultiplier = creditMultiplier * (1 + unlockBonus);
 
-    const baseCredits = getCredits(result.timeMs, difficulty);
-
-    // 1e. Speed Tax meta upgrade: flat bonus per tier on top of credits
-    const speedTaxTier = state.purchasedUpgrades["speed-tax"] ?? 0;
-    const speedBonus = speedTaxTier > 0 ? Math.round(baseCredits * speedTaxTier * 0.05) : 0;
-
-    const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
+    const earned = getEffectiveCredits(
+      result.timeMs,
+      difficulty,
+      state.purchasedUpgrades["credit-multiplier"] ?? 0,
+      state.purchasedUpgrades["speed-tax"] ?? 0,
+      unlockBonus,
+    );
 
     // Per-minigame data drip: reward per win, scales with floor
     // Accumulated locally (not added to persistent store until run ends)
@@ -331,12 +326,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   failMinigame: () => {
     const state = get();
-    const rawDamage = getDamage(state.floor);
-
-    // 1a. Thicker Armor meta upgrade: reduce base damage by 5/10/15/20/25%
-    const armorTier = state.purchasedUpgrades["thicker-armor"] ?? 0;
-    const armorReduction = armorTier > 0 ? [0.05, 0.10, 0.15, 0.20, 0.25][armorTier - 1] : 0;
-    const baseDamage = Math.round(rawDamage * (1 - armorReduction));
+    const baseDamage = getEffectiveDamage(state.floor, state.purchasedUpgrades["thicker-armor"] ?? 0);
 
     // Apply the strongest shield / damage-reduction power-up
     const { damage, consumed, decremented } = applyShield(state.inventory, baseDamage);
