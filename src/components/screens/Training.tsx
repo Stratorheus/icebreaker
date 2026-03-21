@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import type { MinigameType } from "@/types/game";
+import type { MinigameType, PowerUpInstance } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
 import { getMinigameDisplayName } from "@/data/minigame-names";
 import { MINIGAME_BRIEFINGS } from "@/data/minigame-descriptions";
@@ -27,7 +27,6 @@ import { CipherCrackV2 } from "@/components/minigames/CipherCrackV2";
 // ---------------------------------------------------------------------------
 
 const TRAINING_TIME_LIMIT = 30; // generous 30s for all trial rounds
-const TOTAL_ROUNDS = 3;
 
 const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
   { label: "TRIVIAL", value: 0.05 },
@@ -68,6 +67,86 @@ const MINIGAME_COMPONENTS: Record<
 };
 
 // ---------------------------------------------------------------------------
+// Build meta power-ups (replicated from MinigameScreen)
+// ---------------------------------------------------------------------------
+
+function buildMetaPowerUps(
+  purchasedUpgrades: Record<string, number>,
+  type: MinigameType,
+): PowerUpInstance[] {
+  const synth: PowerUpInstance[] = [];
+
+  function addIfOwned(
+    upgradeId: string,
+    effectType: PowerUpInstance["effect"]["type"],
+    valueByTier: number[],
+    minigame?: MinigameType,
+  ) {
+    const tier = purchasedUpgrades[upgradeId] ?? 0;
+    if (tier <= 0) return;
+    const value = valueByTier[tier - 1] ?? valueByTier[valueByTier.length - 1];
+    synth.push({
+      id: `meta-${upgradeId}`,
+      type: `meta-${upgradeId}`,
+      name: upgradeId,
+      description: "",
+      effect: { type: effectType, value, minigame },
+    });
+  }
+
+  switch (type) {
+    case "close-brackets":
+      addIfOwned("bracket-reducer", "minigame-specific", [1], "close-brackets");
+      addIfOwned("bracket-mirror", "auto-close", [0.3], "close-brackets");
+      break;
+    case "mine-sweep":
+      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.35, 0.50], "mine-sweep");
+      break;
+    case "find-symbol":
+      addIfOwned("symbol-scanner", "hint", [1], "find-symbol");
+      addIfOwned("symbol-magnifier", "minigame-specific", [1], "find-symbol");
+      break;
+    case "match-arrows":
+      addIfOwned("arrow-preview", "peek-ahead", [0.15, 0.25, 0.40], "match-arrows");
+      break;
+    case "type-backward":
+      addIfOwned("type-assist", "hint", [1], "type-backward");
+      addIfOwned("reverse-trainer", "minigame-specific", [1], "type-backward");
+      break;
+    case "wire-cutting":
+      addIfOwned("wire-labels", "hint", [1], "wire-cutting");
+      addIfOwned("wire-schematic", "preview", [1500], "wire-cutting");
+      break;
+    case "cipher-crack":
+      addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
+      break;
+    case "slash-timing":
+      addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
+      break;
+    case "defrag":
+      addIfOwned("defrag-safe-start", "minigame-specific", [1], "defrag");
+      break;
+    case "network-trace":
+      addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");
+      break;
+    case "signal-echo":
+      addIfOwned("signal-echo-slow", "minigame-specific", [0.3], "signal-echo");
+      break;
+    case "checksum-verify":
+      addIfOwned("checksum-calculator", "minigame-specific", [1], "checksum-verify");
+      break;
+    case "port-scan":
+      addIfOwned("port-scan-deep", "minigame-specific", [2], "port-scan");
+      break;
+    case "subnet-scan":
+      addIfOwned("subnet-cidr-helper", "minigame-specific", [1], "subnet-scan");
+      break;
+  }
+
+  return synth;
+}
+
+// ---------------------------------------------------------------------------
 // Training screen phases
 // ---------------------------------------------------------------------------
 
@@ -93,6 +172,8 @@ export function Training() {
   const [lastSuccess, setLastSuccess] = useState<boolean | null>(null);
   const [roundResults, setRoundResults] = useState<boolean[]>([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
+  const [useMetaUpgrades, setUseMetaUpgrades] = useState(false);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   const type = trainingMinigame;
 
@@ -109,9 +190,10 @@ export function Training() {
 
   // When a game is picked from the picker phase
   const handlePickGame = useCallback(
-    (pickedType: MinigameType, difficulty: number) => {
+    (pickedType: MinigameType, difficulty: number, metaUpgrades: boolean) => {
       setTrainingMinigame(pickedType);
       setSelectedDifficulty(difficulty);
+      setUseMetaUpgrades(metaUpgrades);
       setPhase("briefing");
       setRound(1);
       setRoundResults([]);
@@ -136,6 +218,30 @@ export function Training() {
     return () => clearTimeout(timer);
   }, [phase, countdownValue]);
 
+  // Escape key handler for quit confirmation
+  useEffect(() => {
+    if (phase !== "active" && phase !== "countdown" && phase !== "round-result") return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setShowQuitConfirm(true);
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [phase]);
+
+  // Quit confirm handlers
+  const handleQuitConfirm = useCallback(() => {
+    setShowQuitConfirm(false);
+    setPhase("complete");
+  }, []);
+
+  const handleQuitCancel = useCallback(() => {
+    setShowQuitConfirm(false);
+  }, []);
+
   // Handle round completion
   const handleRoundComplete = useCallback(
     (result: MinigameResult) => {
@@ -145,16 +251,12 @@ export function Training() {
       setPhase("round-result");
 
       setTimeout(() => {
-        if (round >= TOTAL_ROUNDS) {
-          setPhase("complete");
-        } else {
-          setRound((r) => r + 1);
-          setCountdownValue(3);
-          setPhase("countdown");
-        }
+        setRound((r) => r + 1);
+        setCountdownValue(3);
+        setPhase("countdown");
       }, 1200);
     },
-    [round],
+    [],
   );
 
   // Picker phase: show list of unlocked minigames with difficulty selection
@@ -186,9 +288,10 @@ export function Training() {
   }
 
   const briefing = MINIGAME_BRIEFINGS[type];
+  const showQuitButton = phase === "active" || phase === "countdown" || phase === "round-result";
 
   return (
-    <div className="min-h-screen flex flex-col pt-12">
+    <div className="min-h-screen flex flex-col pt-12 relative">
       {phase === "briefing" && (
         <BriefingPhase
           type={type}
@@ -206,7 +309,6 @@ export function Training() {
           <CountdownPhase
             type={type}
             round={round}
-            total={TOTAL_ROUNDS}
             value={countdownValue}
           />
         </div>
@@ -217,6 +319,7 @@ export function Training() {
           <ActiveRound
             type={type}
             difficulty={selectedDifficulty}
+            useMetaUpgrades={useMetaUpgrades}
             onComplete={handleRoundComplete}
           />
         </div>
@@ -227,7 +330,6 @@ export function Training() {
           <RoundResultFlash
             success={lastSuccess ?? false}
             round={round}
-            total={TOTAL_ROUNDS}
           />
         </div>
       )}
@@ -239,6 +341,70 @@ export function Training() {
             results={roundResults}
             onFinish={handleFinish}
           />
+        </div>
+      )}
+
+      {/* Quit button — top-right during active gameplay phases */}
+      {showQuitButton && (
+        <button
+          type="button"
+          onClick={() => setShowQuitConfirm(true)}
+          className="
+            absolute top-3 right-3 z-40
+            py-1 px-2.5
+            text-[10px] uppercase tracking-widest font-mono
+            border border-white/15 text-white/30
+            hover:bg-white/5 hover:text-white/60 hover:border-white/30
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          ESC
+        </button>
+      )}
+
+      {/* Quit confirmation overlay */}
+      {showQuitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-6 p-8 border border-white/15 bg-black/90">
+            <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-magenta glitch-text">
+              QUIT TRAINING?
+            </h2>
+            <p className="text-white/40 text-xs uppercase tracking-widest">
+              CURRENT PROGRESS WILL BE SAVED TO RESULTS
+            </p>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={handleQuitConfirm}
+                className="
+                  py-2.5 px-8
+                  text-sm uppercase tracking-widest font-mono font-bold
+                  border border-cyber-magenta/50 text-cyber-magenta
+                  hover:bg-cyber-magenta/10 hover:border-cyber-magenta/80
+                  active:bg-cyber-magenta/20
+                  transition-colors duration-150
+                  cursor-pointer select-none
+                "
+              >
+                CONFIRM
+              </button>
+              <button
+                type="button"
+                onClick={handleQuitCancel}
+                className="
+                  py-2.5 px-8
+                  text-sm uppercase tracking-widest font-mono
+                  border border-white/20 text-white/50
+                  hover:bg-white/5 hover:text-white/80
+                  transition-colors duration-150
+                  cursor-pointer select-none
+                "
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -255,10 +421,11 @@ function PickerPhase({
   onBack,
 }: {
   unlockedMinigames: MinigameType[];
-  onPick: (type: MinigameType, difficulty: number) => void;
+  onPick: (type: MinigameType, difficulty: number, metaUpgrades: boolean) => void;
   onBack: () => void;
 }) {
   const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
+  const [useMetaUpgrades, setUseMetaUpgrades] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
@@ -304,6 +471,37 @@ function PickerPhase({
         </div>
       </div>
 
+      {/* Meta upgrades toggle */}
+      <div className="w-full max-w-2xl mb-6">
+        <label className="flex items-center gap-3 cursor-pointer select-none group">
+          <div
+            className={`
+              w-8 h-4 rounded-full relative transition-colors duration-150
+              ${useMetaUpgrades ? "bg-cyber-cyan/30 border-cyber-cyan/50" : "bg-white/5 border-white/15"}
+              border
+            `}
+            onClick={() => setUseMetaUpgrades((v) => !v)}
+          >
+            <div
+              className={`
+                absolute top-0.5 w-3 h-3 rounded-full transition-all duration-150
+                ${useMetaUpgrades ? "left-4 bg-cyber-cyan" : "left-0.5 bg-white/30"}
+              `}
+            />
+          </div>
+          <span
+            className={`
+              text-[10px] uppercase tracking-[0.3em] font-mono
+              ${useMetaUpgrades ? "text-cyber-cyan" : "text-white/30"}
+              group-hover:text-white/50 transition-colors duration-150
+            `}
+            onClick={() => setUseMetaUpgrades((v) => !v)}
+          >
+            APPLY META UPGRADES
+          </span>
+        </label>
+      </div>
+
       {/* Minigame list */}
       <div className="w-full max-w-2xl space-y-2 mb-8">
         {unlockedMinigames.map((type) => {
@@ -311,7 +509,7 @@ function PickerPhase({
             <button
               key={type}
               type="button"
-              onClick={() => onPick(type, selectedDifficulty)}
+              onClick={() => onPick(type, selectedDifficulty, useMetaUpgrades)}
               className="
                 w-full flex items-center justify-between
                 px-4 py-3
@@ -328,7 +526,7 @@ function PickerPhase({
                 </span>
               </div>
               <span className="text-white/20 text-[10px] uppercase tracking-widest">
-                {TOTAL_ROUNDS} ROUNDS
+                UNLIMITED
               </span>
             </button>
           );
@@ -436,10 +634,10 @@ function BriefingPhase({
         {/* Trial info */}
         <div className="border border-dashed border-white/10 p-3 flex items-center gap-3">
           <span className="text-white/20 text-xs uppercase tracking-widest">
-            TRIAL ROUNDS
+            UNLIMITED ROUNDS
           </span>
           <span className="text-white/60 text-xs font-mono tabular-nums">
-            {TOTAL_ROUNDS}x @ {diffLabel} DIFFICULTY
+            @ {diffLabel} DIFFICULTY
           </span>
           <span className="ml-auto text-white/20 text-xs uppercase tracking-widest">
             RESULTS NOT RECORDED
@@ -484,18 +682,16 @@ function BriefingPhase({
 function CountdownPhase({
   type,
   round,
-  total,
   value,
 }: {
   type: MinigameType;
   round: number;
-  total: number;
   value: number;
 }) {
   return (
     <div className="text-center select-none">
       <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
-        TRAINING — ROUND {round}/{total}
+        TRAINING — ROUND {round}
       </p>
       <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {getMinigameDisplayName(type).toUpperCase()}
@@ -514,18 +710,27 @@ function CountdownPhase({
 function ActiveRound({
   type,
   difficulty,
+  useMetaUpgrades,
   onComplete,
 }: {
   type: MinigameType;
   difficulty: number;
+  useMetaUpgrades: boolean;
   onComplete: (result: MinigameResult) => void;
 }) {
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+
+  const activePowerUps = useMemo(() => {
+    if (!useMetaUpgrades) return [];
+    return buildMetaPowerUps(purchasedUpgrades, type);
+  }, [useMetaUpgrades, purchasedUpgrades, type]);
+
   const Component = MINIGAME_COMPONENTS[type];
   return (
     <Component
       difficulty={difficulty}
       timeLimit={TRAINING_TIME_LIMIT}
-      activePowerUps={[]}
+      activePowerUps={activePowerUps}
       onComplete={onComplete}
     />
   );
@@ -538,11 +743,9 @@ function ActiveRound({
 function RoundResultFlash({
   success,
   round,
-  total,
 }: {
   success: boolean;
   round: number;
-  total: number;
 }) {
   return (
     <div className="text-center select-none">
@@ -554,7 +757,7 @@ function RoundResultFlash({
         {success ? "SUCCESS" : "FAILED"}
       </h2>
       <p className="mt-4 text-white/30 text-sm uppercase tracking-widest">
-        {round < total ? `ROUND ${round} COMPLETE — NEXT ROUND` : "FINAL ROUND COMPLETE"}
+        ROUND {round} COMPLETE — NEXT ROUND
       </p>
     </div>
   );
@@ -587,7 +790,7 @@ function CompletePhase({
       </h2>
 
       {/* Round results */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-8 flex-wrap justify-center">
         {results.map((success, i) => (
           <div key={i} className="flex flex-col items-center gap-1">
             <span
@@ -603,13 +806,16 @@ function CompletePhase({
       </div>
 
       {/* Score line */}
+      <p className="text-white/50 text-sm uppercase tracking-widest mb-1">
+        ROUNDS PLAYED: {total}
+      </p>
       <p className="text-white/50 text-sm uppercase tracking-widest mb-2">
-        {wins}/{total} ROUNDS COMPLETED
+        WINS: {wins}
       </p>
       <p className="text-white/25 text-xs uppercase tracking-wider mb-10">
-        {wins === total
+        {total > 0 && wins === total
           ? "PERFECT SCORE — PROTOCOL MASTERED"
-          : wins >= Math.ceil(total / 2)
+          : total > 0 && wins >= Math.ceil(total / 2)
             ? "SOLID PERFORMANCE — TRAINING RECORDED"
             : "KEEP PRACTICING — PROTOCOL NOW UNLOCKED"}
       </p>

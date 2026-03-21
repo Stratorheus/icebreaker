@@ -370,26 +370,10 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [250],
     effects: [{ type: "wire-preview-ms", value: 1500, minigame: "wire-cutting" }],
   },
-  {
-    id: "slash-echo",
-    name: "Slash Echo",
-    description: "A subtle audio cue plays 0.5 s before the ideal slash window opens.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "audio-cue-offset", value: 500, minigame: "slash-timing" }],
-  },
+  // (slash-echo removed — game has no audio system)
 
   // ── NEW MINIGAME MODULES ────────────────────────────────────────────────────
-  {
-    id: "defrag-safe-start",
-    name: "Safe Start",
-    description: "First click in Defrag is always safe (guaranteed non-mine).",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [200],
-    effects: [{ type: "minigame-specific", value: 1, minigame: "defrag" }],
-  },
+  // (defrag-safe-start removed — safe first click is now built-in default)
   {
     id: "network-trace-highlight",
     name: "Path Highlight",
