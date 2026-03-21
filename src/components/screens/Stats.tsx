@@ -1,7 +1,7 @@
 import { useGameStore } from "@/store/game-store";
 import { ACHIEVEMENT_POOL } from "@/data/achievements";
 import { getMinigameDisplayName } from "@/data/minigame-names";
-import type { MinigameType, PlayerStats } from "@/types/game";
+import type { PlayerStats } from "@/types/game";
 import type { Achievement } from "@/types/shop";
 import { Hexagon } from "lucide-react";
 
@@ -132,6 +132,7 @@ function AchievementCard({
 export function Stats({ onBack }: { onBack?: () => void } = {}) {
   const setStatus = useGameStore((s) => s.setStatus);
   const stats = useGameStore((s) => s.stats);
+  const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
   const earnedIds = useGameStore((s) => s.achievements);
   const handleBack = onBack ?? (() => setStatus("menu"));
 
@@ -182,25 +183,24 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
         </div>
       </section>
 
-      {/* Per-minigame win totals, if any recorded */}
-      {Object.keys(stats.minigameWinsTotal).length > 0 && (
-        <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
-          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
-            {">"}_&nbsp;PROTOCOL RECORD
-          </h2>
-          <div className="space-y-0">
-            {(Object.entries(stats.minigameWinsTotal) as [MinigameType, number][]).map(
-              ([type, wins]) => (
-                <StatRow
-                  key={type}
-                  label={getMinigameDisplayName(type).toUpperCase()}
-                  value={`${wins} win${wins !== 1 ? "s" : ""}`}
-                />
-              ),
-            )}
-          </div>
-        </section>
-      )}
+      {/* Per-minigame win totals — all unlocked minigames */}
+      <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
+          {">"}_&nbsp;PROTOCOL RECORD
+        </h2>
+        <div className="space-y-0">
+          {unlockedMinigames.map((type) => {
+            const wins = stats.minigameWinsTotal[type] ?? 0;
+            return (
+              <StatRow
+                key={type}
+                label={getMinigameDisplayName(type).toUpperCase()}
+                value={`${wins} win${wins !== 1 ? "s" : ""}`}
+              />
+            );
+          })}
+        </div>
+      </section>
 
       {/* Achievements */}
       <section className="w-full max-w-2xl">
