@@ -371,10 +371,8 @@ function buildMetaPowerUps(
       break;
 
     case "wire-cutting":
-      // wire-labels → hint (color labels)
+      // wire-labels → hint (dims non-target, highlights next)
       addIfOwned("wire-labels", "hint", [1], "wire-cutting");
-      // wire-schematic → preview (preview duration ms, encoded as value)
-      addIfOwned("wire-schematic", "preview", [1500], "wire-cutting");
       break;
 
     case "cipher-crack":

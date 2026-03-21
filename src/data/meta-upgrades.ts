@@ -309,8 +309,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   },
   {
     id: "wire-labels",
-    name: "Wire Labels",
-    description: "Wire colors are labeled with text in Wire Cutting.",
+    name: "Wire Guide",
+    description: "Dims non-target wires and highlights the next wire to cut.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -361,15 +361,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [150],
     effects: [{ type: "word-length-shown", value: 1, minigame: "type-backward" }],
   },
-  {
-    id: "wire-schematic",
-    name: "Wire Schematic",
-    description: "A faint wire diagram is shown for 1.5 s before Wire Cutting begins.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [250],
-    effects: [{ type: "wire-preview-ms", value: 1500, minigame: "wire-cutting" }],
-  },
+  // (wire-schematic removed — preview effect was never implemented)
   // (slash-echo removed — game has no audio system)
 
   // ── NEW MINIGAME MODULES ────────────────────────────────────────────────────

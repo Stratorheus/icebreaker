@@ -118,7 +118,6 @@ function buildMetaPowerUps(
       break;
     case "wire-cutting":
       addIfOwned("wire-labels", "hint", [1], "wire-cutting");
-      addIfOwned("wire-schematic", "preview", [1500], "wire-cutting");
       break;
     case "cipher-crack":
       addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
