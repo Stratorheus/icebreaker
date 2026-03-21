@@ -354,15 +354,15 @@ export function Training() {
           onClick={() => setShowQuitConfirm(true)}
           className="
             absolute top-3 right-3 z-40
-            py-1 px-2.5
-            text-[10px] uppercase tracking-widest font-mono
-            border border-white/15 text-white/30
-            hover:bg-white/5 hover:text-white/60 hover:border-white/30
+            py-1.5 px-3
+            text-xs uppercase tracking-widest font-mono
+            border border-cyber-magenta/40 text-cyber-magenta/70
+            hover:bg-cyber-magenta/10 hover:border-cyber-magenta/60
             transition-colors duration-150
             cursor-pointer select-none
           "
         >
-          ESC
+          <span className="desktop-only">ESC — </span>QUIT
         </button>
       )}
 
