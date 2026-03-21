@@ -23,7 +23,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     category: "stat",
     maxTier: 999,
     prices: [100], // dynamic pricing via getStackablePrice()
-    effects: [{ type: "global-time-bonus", value: 0.2 }],
+    effects: [{ type: "global-time-bonus", value: 0.03 }],
     stackable: true,
   },
   {

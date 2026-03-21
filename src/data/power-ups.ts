@@ -42,6 +42,15 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     effect: { type: "time-bonus", value: 0.5 },
     icon: "pause-circle",
   },
+  {
+    id: "buffer-extend",
+    name: "Buffer Extend",
+    description: "Adds +2.5 s to every protocol on the current floor.",
+    category: "time",
+    basePrice: 70,
+    effect: { type: "time-bonus", value: 2.5 },
+    icon: "clock",
+  },
   // Time Siphon: each consecutive win adds +0.2 s to the next protocol's timer.
   // Resets on fail. Floor-scoped (consumed at advanceFloor).
   {
@@ -153,15 +162,6 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   },
 
   // ── VISION ────────────────────────────────────────────────────────────────
-  {
-    id: "buffer-extend",
-    name: "Buffer Extend",
-    description: "Adds +2.5 s to every protocol on the current floor.",
-    category: "time",
-    basePrice: 70,
-    effect: { type: "time-bonus", value: 2.5 },
-    icon: "clock",
-  },
   {
     id: "hint-module",
     name: "Hint Module",

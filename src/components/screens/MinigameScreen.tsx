@@ -172,7 +172,7 @@ export function MinigameScreen() {
         const toConsume = currentInventory.filter(
           (p) =>
             (p.effect.minigame && p.effect.minigame === result.minigame) ||
-            p.effect.type === "deadline-override",
+            (p.effect.type === "deadline-override" && result.deadlineTriggered),
         );
         for (const pu of toConsume) {
           usePowerUp(pu.id);
@@ -386,8 +386,6 @@ function buildMetaPowerUps(
       break;
 
     case "defrag":
-      // defrag-safe-start → first click guaranteed safe
-      addIfOwned("defrag-safe-start", "minigame-specific", [1], "defrag");
       break;
 
     case "network-trace":

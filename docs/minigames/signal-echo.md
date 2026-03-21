@@ -65,7 +65,7 @@ Four colored directional panels are arranged in a cross layout resembling arrow 
 
 **20 seconds** (before scaling).
 
-Effective time: `round(20 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs`, then multiplied by `1.03^timerExtTier`.
+Effective time: `round(20 * (1 - difficulty * 0.4) * floorScale)`, then multiplied by `1.03^timerExtTier`.
 
 - At d=0: `round(20 * 1.0) = 20s` base.
 - At d=1: `round(20 * 0.6) = 12s` base.

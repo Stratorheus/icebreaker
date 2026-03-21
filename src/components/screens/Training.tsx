@@ -126,7 +126,6 @@ function buildMetaPowerUps(
       addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
       break;
     case "defrag":
-      addIfOwned("defrag-safe-start", "minigame-specific", [1], "defrag");
       break;
     case "network-trace":
       addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");

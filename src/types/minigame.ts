@@ -11,4 +11,6 @@ export interface MinigameResult {
   success: boolean;
   timeMs: number;
   minigame: MinigameType;
+  /** True if the deadline-override power-up was triggered during this minigame. */
+  deadlineTriggered?: boolean;
 }

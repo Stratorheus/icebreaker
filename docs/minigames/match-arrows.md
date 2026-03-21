@@ -55,7 +55,7 @@ Note: There is no speed scaling within this minigame. Difficulty only affects th
 
 **8 seconds** (before scaling).
 
-Effective time: `round(8 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs`, then multiplied by `1.03^timerExtTier`.
+Effective time: `round(8 * (1 - difficulty * 0.4) * floorScale)`, then multiplied by `1.03^timerExtTier`.
 
 - At d=0: `round(8 * 1.0) = 8s` base.
 - At d=1: `round(8 * 0.6) = 5s` base.

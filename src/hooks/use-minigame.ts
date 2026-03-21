@@ -45,6 +45,7 @@ export function useMinigame(
       success: false,
       timeMs: Date.now() - startTimeRef.current,
       minigame: minigameType,
+      deadlineTriggered: deadlineTriggeredRef.current,
     };
     onCompleteRef.current(result);
   }, [minigameType]);
@@ -68,7 +69,7 @@ export function useMinigame(
     if (!dlOverride) return;
     deadlineTriggeredRef.current = true;
     timer.addTime(dlOverride.effect.value * 1000);
-  }, [timer.progress, activePowerUps, timer]);
+  }, [timer.progress, activePowerUps]);
 
   // Apply time-bonus power-ups and auto-start — runs once on mount
   // Power-up values are in SECONDS but addTime() expects MILLISECONDS.
@@ -96,6 +97,7 @@ export function useMinigame(
         success,
         timeMs: Date.now() - startTimeRef.current,
         minigame: minigameType,
+        deadlineTriggered: deadlineTriggeredRef.current,
       };
       onCompleteRef.current(result);
     },

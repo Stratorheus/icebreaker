@@ -48,7 +48,7 @@ Key functions:
 Scaled by difficulty: `baseTime * (1 - difficulty * 0.4)`. At d=0 the player gets the full 15s; at d=1 they get 9s. After floor 15, an additional floor-based decay of 2% per floor applies (down to 40% of the difficulty-adjusted time).
 
 Additional modifiers:
-- `bonusTimeSecs` from run-shop time power-ups (additive, before meta multiplier)
+- **Time-bonus** power-ups (run shop, various): flat seconds added by `useMinigame` hook on mount
 - `timerExtensionTier` from meta upgrade (multiplicative: `* 1.03^tier`)
 - **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
 - **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).

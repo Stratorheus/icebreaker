@@ -55,7 +55,7 @@ Created in `src/store/game-store.ts` with `zustand/middleware/persist`.
 
 Owns all ephemeral per-run state. Reset on every `startRun()`.
 
-Key state: `hp`, `maxHp`, `floor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `runScore`, `status`, `bonusTimeSecs`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`, `timeSiphonBonus`, `cascadeClockPct`.
+Key state: `hp`, `maxHp`, `floor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `runScore`, `status`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`, `timeSiphonBonus`, `cascadeClockPct`.
 
 Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `pauseRun`, `resumeRun`, `quitRun`, `endRun`, `dismissMilestone`.
 
@@ -434,7 +434,6 @@ The `startRun()` function in run-slice.ts reads `purchasedUpgrades` from the met
 ```
 maxHp = 100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus
 startCredits = 25 + (50 if head-start)
-bonusTimeSecs = (removed — pre-loaded upgrade no longer exists)
 powerUpCount = 2 if dual-core, 1 if quick-boot, 0 otherwise
 ```
 

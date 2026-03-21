@@ -58,7 +58,7 @@ The game has two phases. In the **preview phase**, a grid is shown with "corrupt
 
 **15 seconds** (before scaling).
 
-Effective time: `round(15 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs`, then multiplied by `1.03^timerExtTier`.
+Effective time: `round(15 * (1 - difficulty * 0.4) * floorScale)`, then multiplied by `1.03^timerExtTier`.
 
 - At d=0: `round(15 * 1.0) = 15s` base.
 - At d=1: `round(15 * 0.6) = 9s` base.
