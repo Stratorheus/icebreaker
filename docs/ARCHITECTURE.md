@@ -57,7 +57,7 @@ Owns all ephemeral per-run state. Reset on every `startRun()`.
 
 Key state: `hp`, `maxHp`, `floor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `runScore`, `status`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`, `timeSiphonBonus`, `cascadeClockPct`.
 
-Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `pauseRun`, `resumeRun`, `quitRun`, `endRun`, `dismissMilestone`.
+Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `skipRemainingFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `pauseRun`, `resumeRun`, `quitRun`, `endRun`, `dismissMilestone`.
 
 ### MetaSlice (`src/store/meta-slice.ts`)
 
@@ -111,7 +111,7 @@ Slices access each other through `get()` since all three are composed into a sin
 
 Each minigame goes through three phases (`Phase = "countdown" | "active" | "result"`):
 
-1. **Countdown**: Displays minigame name, floor/protocol number, counts 3-2-1-GO (~666 ms per tick). If a Hint Module power-up is in inventory, it is consumed and countdown extends to 4-3-2-1-GO with a hint line shown. Before transitioning to "active", `checkSkip(inventory)` runs; if a skip power-up is found, the minigame auto-completes as success without playing.
+1. **Countdown**: Displays minigame name, floor/protocol number, counts 3-2-1-GO (~666 ms per tick). If a Hint Module power-up is in inventory, it is consumed and countdown extends to 4-3-2-1-GO with a hint line shown. Before transitioning to "active", `checkSkip(inventory)` runs. Priority: Warp Gate (skip-floor, 15% rewards for all remaining) > Null Route (skip-silent, full rewards) > Backdoor (skip, 0 rewards). All count as success. Warp Gate calls `skipRemainingFloor(0.15)` to batch-complete remaining protocols and go straight to vendor/milestone.
 
 2. **Active**: The `MinigameRouter` renders the correct minigame component. It computes effective difficulty (with `difficulty-reducer` meta upgrade), time limit (with `delay-injector` meta upgrade), and merges run inventory power-ups with synthetic meta-upgrade power-ups into `activePowerUps`. The minigame component calls `onComplete(result)` when the player wins or the timer expires.
 
@@ -177,6 +177,7 @@ interface MinigameResult {
   success: boolean;
   timeMs: number;
   minigame: MinigameType;
+  rewardFraction?: number;  // 0 = no rewards, 1 = full, 0.15 = 15% etc.
 }
 ```
 
@@ -236,7 +237,7 @@ This allows minigame components to consume all bonuses through a single uniform 
 - **Heal-on-success** power-ups persist through the entire floor (consumed in `advanceFloor`).
 - **HP-leech** power-ups persist through the entire floor (consumed in `advanceFloor`). They trigger after every protocol (win or fail), applying HP recovery before the next protocol begins.
 - **Shield** power-ups are consumed on fail trigger (in `failMinigame` via `applyShield()`).
-- **Skip** power-ups are consumed before the active phase begins (in countdown logic via `checkSkip()`).
+- **Skip** power-ups (Backdoor, Null Route) are consumed before the active phase begins (in countdown logic via `checkSkip()`). Warp Gate (`skip-floor`) also triggers at countdown and calls `skipRemainingFloor()` to skip all remaining protocols on the floor at 15% rewards.
 - **Heal** (immediate) items are consumed on purchase in the shop (never added to inventory).
 - **Hint Module** is consumed at the start of the countdown phase.
 
@@ -475,9 +476,9 @@ Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 **Skip** (3 items):
 | Item | Effect | Base Price |
 |---|---|---|
-| Backdoor | `skip` (skip 1 protocol) | 55 |
-| Emergency Exit | `skip` (skip 1 protocol) | 80 |
-| Null Route | `skip-silent` (auto-pass, 0 credits) | 50 |
+| Backdoor | `skip` (skip 1 protocol, 0 rewards) | 45 |
+| Null Route | `skip-silent` (auto-pass, full rewards) | 55 |
+| Warp Gate | `skip-floor` (skip remaining floor, 15% rewards) | 150 |
 
 **Healing** (5 items):
 | Item | Effect | Base Price |
@@ -532,7 +533,7 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 | Per-minigame | After each game if `effect.minigame` matches | Slash Calibration, Arrow Compass, Sector Scanner |
 | Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon`, `hp-leech` |
 | On-trigger | On fail event | `shield`, `damage-reduction`, `damage-reduction-stacked` |
-| On-trigger | Before active phase starts | `skip`, `skip-silent` |
+| On-trigger | Before active phase starts | `skip`, `skip-silent`, `skip-floor` |
 | On-trigger | At countdown start | `hint` (Hint Module) |
 | Per-minigame | After each game | `deadline-override` (single use, consumed after first minigame) |
 

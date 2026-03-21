@@ -79,14 +79,14 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | Nano Repair (+5 HP/win) | 45 CR | healing |
 | Bracket Auto-Close | 45 CR | assist |
 | Repair Kit (+25 HP) | 65 CR | healing |
-| Null Route (skip, no CR) | 50 CR | skip |
+| Backdoor (skip, no rewards) | 45 CR | skip |
 | Repair Drone (+15 HP) | 50 CR | healing |
+| Null Route (skip, full rewards) | 55 CR | skip |
 | Clock Boost (+2 s) | 55 CR | time |
-| Backdoor (skip) | 55 CR | skip |
 | Firewall Patch (shield) | 60 CR | defense |
 | System Restore (+35 HP) | 80 CR | healing |
 | Redundancy Layer (2× 50%) | 75 CR | defense |
-| Emergency Exit (skip) | 80 CR | skip |
+| Warp Gate (skip floor, 15% rewards) | 150 CR | skip |
 | Slash Calibration | 40 CR | assist |
 | Arrow Compass | 40 CR | assist |
 | Sector Scanner | 45 CR | assist |

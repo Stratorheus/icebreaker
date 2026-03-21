@@ -45,6 +45,7 @@ export function MinigameScreen() {
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
   const isTouch = useTouchDevice();
   const recordMinigameResult = useGameStore((s) => s.recordMinigameResult);
+  const skipRemainingFloor = useGameStore((s) => s.skipRemainingFloor);
 
   const currentMinigame = floorMinigames[currentMinigameIndex];
 
@@ -103,7 +104,16 @@ export function MinigameScreen() {
       if (skipResult.skip && skipResult.consumeId) {
         // Consume the power-up
         usePowerUp(skipResult.consumeId);
-        // Auto-complete the minigame as a success (skip = no penalty)
+
+        if (skipResult.skipFloor) {
+          // Warp Gate: skip entire remaining floor
+          skipRemainingFloor(skipResult.rewardFraction);
+          setLastResult(true);
+          setPhase("result");
+          return;
+        }
+
+        // Single protocol skip (Backdoor or Null Route)
         setLastResult(true);
         setPhase("result");
         setTimeout(() => {
@@ -111,6 +121,7 @@ export function MinigameScreen() {
             success: true,
             timeMs: 0,
             minigame: currentMinigame,
+            rewardFraction: skipResult.rewardFraction,
           });
         }, 1000);
         return;
@@ -125,7 +136,7 @@ export function MinigameScreen() {
     }, 666); // ~2 seconds for 3-2-1
 
     return () => clearTimeout(timer);
-  }, [phase, countdownValue, inventory, usePowerUp, completeMinigame, currentMinigame]);
+  }, [phase, countdownValue, inventory, usePowerUp, completeMinigame, currentMinigame, skipRemainingFloor]);
 
   // Handle minigame completion
   const handleComplete = useCallback(
