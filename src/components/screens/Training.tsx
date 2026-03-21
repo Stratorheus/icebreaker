@@ -641,20 +641,27 @@ function BriefingPhase({
           </ul>
         </section>
 
-        {/* Active meta upgrades */}
+        {/* Active meta upgrades — card grid */}
         {useMetaUpgrades && metaPowerUps.length > 0 && (
-          <section className="border border-cyber-green/20 bg-cyber-green/[0.03] p-4">
+          <section>
             <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
-              {">"}_&nbsp;ACTIVE META UPGRADES ({metaPowerUps.length})
+              {">"}_&nbsp;ACTIVE META UPGRADES
             </h2>
-            <ul className="space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {metaPowerUps.map((pu, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-cyber-green/70 leading-relaxed">
-                  <span className="text-cyber-green/40 shrink-0 select-none">+</span>
-                  <span>{pu.name}</span>
-                </li>
+                <div
+                  key={i}
+                  className="border border-cyber-green/20 bg-cyber-green/[0.04] px-3 py-2.5"
+                >
+                  <p className="text-xs font-bold text-cyber-green uppercase tracking-wider mb-0.5">
+                    {pu.name}
+                  </p>
+                  <p className="text-[10px] text-white/40 leading-relaxed">
+                    {pu.description}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
           </section>
         )}
         {useMetaUpgrades && metaPowerUps.length === 0 && (

@@ -318,7 +318,7 @@ export function WireCutting(props: MinigameProps) {
                 className={`
                   flex flex-col items-center gap-2 cursor-pointer group
                   transition-opacity duration-200
-                  ${isDimmed ? "opacity-25" : "opacity-100"}
+                  ${isDimmed ? "opacity-40" : "opacity-100"}
                 `}
                 onClick={() => handleNumberPress(i + 1)}
               >
