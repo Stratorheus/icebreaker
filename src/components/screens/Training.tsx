@@ -267,7 +267,7 @@ function PickerPhase({
         <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;TRAINING MODE
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
+        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
           SELECT PROTOCOL
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
@@ -323,7 +323,7 @@ function PickerPhase({
             >
               <div className="flex items-center gap-3">
                 <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-                <span className="text-cyber-cyan text-sm font-bold uppercase tracking-wider">
+                <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider">
                   {getMinigameDisplayName(type).toUpperCase()}
                 </span>
               </div>
@@ -384,7 +384,7 @@ function BriefingPhase({
         <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;TRAINING PROTOCOL
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
+        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
           {getMinigameDisplayName(type).toUpperCase()}
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
@@ -497,7 +497,7 @@ function CountdownPhase({
       <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
         TRAINING — ROUND {round}/{total}
       </p>
-      <h2 className="text-2xl sm:text-3xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
+      <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {getMinigameDisplayName(type).toUpperCase()}
       </h2>
       <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
@@ -547,7 +547,7 @@ function RoundResultFlash({
   return (
     <div className="text-center select-none">
       <h2
-        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider ${
+        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider ${
           success ? "text-cyber-cyan" : "text-cyber-magenta"
         }`}
       >
@@ -582,7 +582,7 @@ function CompletePhase({
       <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2 glitch-flicker">
         {">"}_&nbsp;TRAINING PROTOCOL COMPLETE
       </p>
-      <h2 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
+      <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {getMinigameDisplayName(type).toUpperCase()}
       </h2>
 

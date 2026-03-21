@@ -249,7 +249,7 @@ function CountdownPhase({
       <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
         FLOOR {floor} // PROTOCOL {index + 1} OF {total}
       </p>
-      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
+      <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}
       </h2>
       {hint && (
@@ -483,7 +483,7 @@ function ResultFlash({
   return (
     <div className="text-center select-none">
       <h2
-        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider glitch-text ${
+        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider glitch-text ${
           success ? "text-cyber-cyan" : "text-cyber-magenta"
         }`}
       >

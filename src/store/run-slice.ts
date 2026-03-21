@@ -311,13 +311,20 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const armorReduction = armorTier > 0 ? [0.1, 0.2, 0.3][armorTier - 1] : 0;
     const baseDamage = Math.round(rawDamage * (1 - armorReduction));
 
-    // Apply any shield / damage-reduction power-up from inventory
-    const { damage, consumed } = applyShield(state.inventory, baseDamage);
+    // Apply the strongest shield / damage-reduction power-up
+    const { damage, consumed, decremented } = applyShield(state.inventory, baseDamage);
 
-    // Remove consumed power-up from inventory
-    const inventory = consumed
+    // Update inventory: remove consumed, decrement uses for multi-use
+    let inventory = consumed
       ? state.inventory.filter((p) => p.id !== consumed)
       : state.inventory;
+    if (decremented) {
+      inventory = inventory.map((p) =>
+        p.id === decremented
+          ? { ...p, remainingUses: (p.remainingUses ?? 1) - 1 }
+          : p,
+      );
+    }
 
     const newHp = Math.max(0, state.hp - damage);
 

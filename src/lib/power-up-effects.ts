@@ -7,53 +7,58 @@ import type { PowerUpInstance } from "@/types/game";
 export interface ShieldResult {
   /** Final damage to apply (0 if fully blocked). */
   damage: number;
-  /** ID of the consumed power-up, or null if no shield was active. */
+  /** ID of the consumed power-up, or null if not fully consumed yet. */
   consumed: string | null;
+  /** ID of a power-up whose remainingUses should be decremented (not removed). */
+  decremented: string | null;
 }
 
 /**
  * Check the inventory for the strongest shield-type power-up and apply it.
  *
  * Priority (highest protection first):
- *   1. "shield"            — full block (damage = 0)
- *   2. "damage-reduction-stacked" — partial reduction, consumed like a shield
- *   3. "damage-reduction"  — partial reduction, consumed on trigger
+ *   1. "shield"                    — full block (damage = 0), consumed
+ *   2. "damage-reduction-stacked"  — partial reduction, uses-tracked
+ *   3. "damage-reduction"          — partial reduction, consumed on trigger
  *
- * Only ONE power-up is consumed per call (the best one wins).
+ * Only ONE power-up is applied per call (the strongest wins).
+ * Damage is clamped to a minimum of 0.
  */
 export function applyShield(
   inventory: PowerUpInstance[],
   baseDamage: number,
 ): ShieldResult {
-  // Full shield (firewall-patch)
+  // Full shield (firewall-patch) — highest priority
   const fullShield = inventory.find((p) => p.effect.type === "shield");
   if (fullShield) {
-    return { damage: 0, consumed: fullShield.id };
+    return { damage: 0, consumed: fullShield.id, decremented: null };
   }
 
-  // Stacked damage-reduction-stacked (redundancy-layer)
+  // Stacked damage-reduction (redundancy-layer) — has multiple uses
   const stackedReducer = inventory.find(
     (p) => p.effect.type === "damage-reduction-stacked",
   );
   if (stackedReducer) {
-    const factor = stackedReducer.effect.value; // e.g. 0.25 → take 25% damage
-    return {
-      damage: Math.round(baseDamage * factor),
-      consumed: stackedReducer.id,
-    };
+    const factor = stackedReducer.effect.value;
+    const dmg = Math.max(0, Math.round(baseDamage * factor));
+    const uses = stackedReducer.remainingUses ?? 1;
+    if (uses <= 1) {
+      // Last use — consume entirely
+      return { damage: dmg, consumed: stackedReducer.id, decremented: null };
+    }
+    // Decrement remaining uses
+    return { damage: dmg, consumed: null, decremented: stackedReducer.id };
   }
 
-  // Simple damage-reduction (damage-reducer)
+  // Simple damage-reduction (damage-reducer) — single use
   const reducer = inventory.find((p) => p.effect.type === "damage-reduction");
   if (reducer) {
-    const factor = reducer.effect.value; // e.g. 0.5 → take 50% damage
-    return {
-      damage: Math.round(baseDamage * factor),
-      consumed: reducer.id,
-    };
+    const factor = reducer.effect.value;
+    const dmg = Math.max(0, Math.round(baseDamage * factor));
+    return { damage: dmg, consumed: reducer.id, decremented: null };
   }
 
-  return { damage: baseDamage, consumed: null };
+  return { damage: baseDamage, consumed: null, decremented: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -99,19 +104,6 @@ export function checkSkip(inventory: PowerUpInstance[]): SkipResult {
 // Meta upgrade bonuses — lookup helpers for game-specific upgrades
 // ---------------------------------------------------------------------------
 
-/**
- * Return the *numeric value* of the currently purchased tier for `upgradeId`,
- * or `defaultValue` if the upgrade was never purchased.
- *
- * The `effects` array on each MetaUpgrade is indexed by tier (1-based):
- *   tier 1 → effects[0], tier 2 → effects[1], …
- *
- * This function mirrors that lookup without importing META_UPGRADE_POOL so
- * that callers can pass the pre-looked-up effects array.
- *
- * For simple one-shot lookups where you only need "do I have tier N",
- * prefer `getUpgradeTier` from the store directly.
- */
 export function getMetaBonus(
   purchasedUpgrades: Record<string, number>,
   upgradeId: string,

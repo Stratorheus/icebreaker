@@ -87,12 +87,13 @@ export function SignalEcho(props: MinigameProps) {
 
   // ── Difficulty parameters (stable on mount) ────────────────────────
   const params = useMemo(() => {
-    const startLength = Math.round(3 + difficulty * 2);
-    let displayMs = Math.round(800 - difficulty * 500);
+    // Start from 1 signal always. Trivial: 1→3 (3 rounds). Insane: 1→8+ (8 rounds).
+    const startLength = 1;
+    let displayMs = Math.round(600 - difficulty * 350); // 600ms→250ms per signal
     if (hasSlowReplay) {
-      displayMs = Math.round(displayMs * 1.3); // 30% slower
+      displayMs = Math.round(displayMs * 1.3);
     }
-    const totalRounds = Math.round(3 + difficulty * 2);
+    const totalRounds = Math.round(3 + difficulty * 5); // 3→8 rounds
     return { startLength, displayMs, totalRounds };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -310,7 +311,7 @@ export function SignalEcho(props: MinigameProps) {
         `}
         style={
           isLit
-            ? { boxShadow: `0 0 24px ${panel.glowColor}, 0 0 48px ${panel.glowColor}` }
+            ? { boxShadow: `0 0 12px ${panel.glowColor}` }
             : undefined
         }
       >
@@ -380,20 +381,17 @@ export function SignalEcho(props: MinigameProps) {
           </div>
         )}
 
-        {/* Diamond/cross panel layout */}
+        {/* Keyboard-style panel layout */}
         <div className="flex flex-col items-center gap-2 sm:gap-3 mt-2">
-          {/* Top: Up */}
+          {/* Top row: Up (centered) */}
           <div className="flex justify-center">
             {renderPanel(upPanel)}
           </div>
-          {/* Middle row: Left + Right */}
-          <div className="flex items-center gap-16 sm:gap-20">
+          {/* Bottom row: Left + Down + Right (like arrow keys) */}
+          <div className="flex items-center gap-2 sm:gap-3">
             {renderPanel(leftPanel)}
-            {renderPanel(rightPanel)}
-          </div>
-          {/* Bottom: Down */}
-          <div className="flex justify-center">
             {renderPanel(downPanel)}
+            {renderPanel(rightPanel)}
           </div>
         </div>
       </div>

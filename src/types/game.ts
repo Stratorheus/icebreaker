@@ -45,6 +45,8 @@ export interface PowerUpInstance {
   name: string;
   description: string;
   effect: PowerUpEffect;
+  /** Remaining uses before auto-consumed. Undefined = single-use (consumed on first trigger). */
+  remainingUses?: number;
 }
 
 export interface PowerUpEffect {

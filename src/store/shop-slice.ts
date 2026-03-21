@@ -107,6 +107,8 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
         value: offer.effect.value,
         minigame: offer.effect.minigame,
       },
+      // Multi-use power-ups: stacked damage reduction gets 2 uses
+      ...(offer.effect.type === "damage-reduction-stacked" ? { remainingUses: 2 } : {}),
     };
 
     // Deduct credits
