@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
+import { STARTING_MINIGAMES } from "@/types/game";
 import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
 import { getMinigameDisplayName } from "@/data/minigame-names";
 import { getMinigameHint } from "@/data/minigame-descriptions";
@@ -119,7 +120,7 @@ export function MinigameScreen() {
         setTimeout(() => {
           completeMinigame({
             success: true,
-            timeMs: 0,
+            timeMs: Infinity, // skips don't get speed bonus
             minigame: currentMinigame,
             rewardFraction: skipResult.rewardFraction,
           });
@@ -149,7 +150,7 @@ export function MinigameScreen() {
       if (result.success) {
         const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
         const unlockedCount = useGameStore.getState().unlockedMinigames.length;
-        const unlockBonus = Math.max(0, unlockedCount - 5) * 0.05; // STARTING_MINIGAMES = 5
+        const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
         earnedCredits = getEffectiveCredits(
           result.timeMs,
           diff,

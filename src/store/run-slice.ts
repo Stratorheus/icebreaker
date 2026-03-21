@@ -485,10 +485,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
 
-    // Use timeMs: 0 for max speed bonus, then apply rewardFraction
+    // Skips don't get speed bonus — use Infinity to neutralize it
     const creditsPerGame = Math.round(
       getEffectiveCredits(
-        0,
+        Infinity,
         difficulty,
         state.purchasedUpgrades["credit-multiplier"] ?? 0,
         state.purchasedUpgrades["speed-tax"] ?? 0,
