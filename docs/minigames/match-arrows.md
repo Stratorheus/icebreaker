@@ -55,10 +55,16 @@ Note: There is no speed scaling within this minigame. Difficulty only affects th
 
 **8 seconds** (before scaling).
 
-Effective time: `round(8 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs`, then multiplied by `1.03^timerExtTier`.
+Effective time: `round(8 * (1 - difficulty * 0.4) * floorScale)`, then multiplied by `1.03^timerExtTier`.
 
 - At d=0: `round(8 * 1.0) = 8s` base.
 - At d=1: `round(8 * 0.6) = 5s` base.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 

@@ -17,13 +17,13 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     stackable: true,
   },
   {
-    id: "timer-extension",
-    name: "Timer Extension",
+    id: "delay-injector",
+    name: "Delay Injector",
     description: "Increases all timers by 3% per purchase (multiplicative).",
     category: "stat",
     maxTier: 999,
     prices: [100], // dynamic pricing via getStackablePrice()
-    effects: [{ type: "global-time-bonus", value: 0.2 }],
+    effects: [{ type: "global-time-bonus", value: 0.03 }],
     stackable: true,
   },
   {
@@ -35,6 +35,24 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [150], // dynamic pricing via getStackablePrice()
     effects: [{ type: "difficulty-reduction", value: 0.02 }],
     stackable: true,
+  },
+
+  // Cascade Clock: each consecutive win adds +2% of base timer. Resets on fail.
+  // Does NOT reset on floor advance. Cap per tier: 10%/20%/30%/40%/50%.
+  {
+    id: "cascade-clock",
+    name: "Cascade Clock",
+    description: "Each consecutive win adds +2% base timer. Resets on fail. Cap: 10% per tier (up to 50% at tier 5).",
+    category: "stat",
+    maxTier: 5,
+    prices: [150, 300, 500, 750, 1000],
+    effects: [
+      { type: "cascade-clock", value: 0.10 },
+      { type: "cascade-clock", value: 0.20 },
+      { type: "cascade-clock", value: 0.30 },
+      { type: "cascade-clock", value: 0.40 },
+      { type: "cascade-clock", value: 0.50 },
+    ],
   },
 
   // ── STAT — tiered ─────────────────────────────────────────────────────────
@@ -131,15 +149,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [150],
     effects: [{ type: "start-credits", value: 50 }],
   },
-  {
-    id: "pre-loaded",
-    name: "Pre-Loaded",
-    description: "+1 s on every timer during the first floor only.",
-    category: "starting-bonus",
-    maxTier: 1,
-    prices: [120],
-    effects: [{ type: "floor1-time-bonus", value: 1 }],
-  },
+  // (pre-loaded removed — floor 1 is trivial, upgrade was wasted investment)
   {
     id: "cache-primed",
     name: "Cache Primed",

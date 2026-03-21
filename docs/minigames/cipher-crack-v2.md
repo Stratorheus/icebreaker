@@ -36,7 +36,7 @@ Note: The rotation amount does NOT scale with difficulty -- it is always `Math.f
 |---|---|---|---|---|
 | Cipher Hint (V2-specific) | (no dedicated meta upgrade) | `hint` | If any power-up has `effect.type === "hint"` and `effect.minigame === "cipher-crack-v2"`, shows the first letter of the answer: `Hint: starts with "X"` | `CipherCrackV2.tsx` lines 134-139 (detection), lines 247-251 (render) |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Timer Extension (meta) | `timer-extension` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially using shorter word pool | `MinigameScreen.tsx` line 438-439 |
 
 Note: There is currently **no dedicated meta upgrade** for cipher-crack-v2 in `meta-upgrades.ts`. The `cipher-hint` upgrade targets only `"cipher-crack"` (V1). A hint for V2 would need a new upgrade entry or a generic hint power-up that targets `"cipher-crack-v2"`.
@@ -53,6 +53,12 @@ Note: There is currently **no dedicated meta upgrade** for cipher-crack-v2 in `m
 **15 seconds** (`BASE_TIME_LIMITS["cipher-crack-v2"] = 15`).
 
 At d=0: full 15s. At d=1: `15 * 0.6 = 9s`. After floor 15, additional 2%-per-floor decay. The 3 extra seconds compared to V1 (12s) compensate for the alphabet chart lookup overhead.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 - Component: `src/components/minigames/CipherCrackV2.tsx`

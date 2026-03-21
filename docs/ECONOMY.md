@@ -72,16 +72,16 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 |---|---|---|
 | Lag Spike (+0.5 s) | 20 CR | time |
 | Time Freeze (+1 s) | 30 CR | time |
-| Scan Module (+3 s) | 35 CR | time |
+| Buffer Extend (+2.5 s) | 70 CR | time |
 | Hint Module | 40 CR | vision |
-| Chrono Surge (+1.5 s) | 45 CR | time |
+| Chrono Surge (+1.5 s) | 40 CR | time |
 | Damage Reducer (50%) | 40 CR | defense |
 | Nano Repair (+10 HP/win) | 45 CR | healing |
 | Bracket Auto-Close | 45 CR | assist |
 | Repair Kit (+20 HP) | 50 CR | healing |
 | Null Route (skip, no CR) | 50 CR | skip |
 | Repair Drone (+15 HP) | 50 CR | healing |
-| Quick Hack (+2 s) | 55 CR | time |
+| Clock Boost (+2 s) | 55 CR | time |
 | Backdoor (skip) | 55 CR | skip |
 | Firewall Patch (shield) | 60 CR | defense |
 | System Restore (+35 HP) | 75 CR | healing |
@@ -90,6 +90,8 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | Slash Calibration | 40 CR | assist |
 | Arrow Compass | 40 CR | assist |
 | Sector Scanner | 45 CR | assist |
+| Time Siphon (+0.2 s per win) | 35 CR | time |
+| Deadline Override (1 s pause at 5%) | 50 CR | time |
 
 Healing items (Repair Kit, System Restore, Repair Drone) apply immediately on purchase and do not occupy an inventory slot. All other items enter the inventory.
 
@@ -175,7 +177,7 @@ Achievement rewards range from 10 ◆ (First Breach) to 5000 ◆ (Singularity �
 
 Three pricing models exist in `src/components/screens/MetaShop.tsx`:
 
-**Stackable upgrades** (HP Boost, Credit Multiplier, Data Siphon, Timer Extension, Difficulty Reducer):
+**Stackable upgrades** (HP Boost, Credit Multiplier, Data Siphon, Delay Injector, Difficulty Reducer):
 
 ```
 price = round(basePrice * (1 + timesPurchased * 0.5))
@@ -257,16 +259,17 @@ Then run-shop defensive power-ups apply:
 | HP Boost | 100 ◆ | +5 max HP |
 | Credit Multiplier | 100 ◆ | +3% credits (multiplicative) |
 | Data Siphon | 100 ◆ | +3% data reward (multiplicative) |
-| Timer Extension | 100 ◆ | +3% all timers (multiplicative) |
+| Delay Injector | 100 ◆ | +3% all timers (multiplicative) |
 | Difficulty Reducer | 150 ◆ | ×0.95 effective difficulty |
 
 ### Tiered Stat Upgrades (fixed tiers, global scalar applies)
 
-| Upgrade | Tier 1 | Tier 2 | Tier 3 | Effect |
-|---|---|---|---|---|
-| Thicker Armor | 100 ◆ | 250 ◆ | 500 ◆ | Damage -10/20/30% |
-| Speed Tax | 100 ◆ | 250 ◆ | 500 ◆ | Speed bonus +15/25/40% |
-| Data Recovery | 150 ◆ | 300 ◆ | 500 ◆ | Death penalty 20/15/10% |
+| Upgrade | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 | Effect |
+|---|---|---|---|---|---|---|
+| Thicker Armor | 100 ◆ | 250 ◆ | 500 ◆ | — | — | Damage -10/20/30% |
+| Speed Tax | 100 ◆ | 250 ◆ | 500 ◆ | — | — | Speed bonus +15/25/40% |
+| Data Recovery | 150 ◆ | 300 ◆ | 500 ◆ | — | — | Death penalty 20/15/10% |
+| Cascade Clock | 150 ◆ | 300 ◆ | 500 ◆ | 750 ◆ | 1000 ◆ | +2% base timer per win, cap 10/20/30/40/50% |
 
 ### Starting Bonuses (one-time, global scalar applies)
 
@@ -275,7 +278,7 @@ Then run-shop defensive power-ups apply:
 | Quick Boot | 200 ◆ | Start with 1 random power-up |
 | Dual Core | 350 ◆ | Start with 2 random power-ups (requires Quick Boot) |
 | Head Start | 150 ◆ | +50 starting credits |
-| Pre-Loaded | 120 ◆ | +1 s on all floor 1 timers |
+| ~~Pre-Loaded~~ | ~~120 ◆~~ | Removed |
 | Cache Primed | 175 ◆ | Floor 1 shop always has a heal item |
 | Overclocked | 150 / 300 / 500 ◆ | +10/15/20 max and starting HP |
 

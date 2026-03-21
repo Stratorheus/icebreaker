@@ -45,7 +45,7 @@ The 20% mine cap prevents degenerate boards at any difficulty. At d=1, raw mines
 |---|---|---|---|---|
 | (defrag-safe-start removed) | `defrag-safe-start` | `minigame-specific` | Was: guaranteed safe first click. Now: this is built-in default behavior. The meta upgrade entry is registered in `buildMetaPowerUps` but the upgrade itself was removed from `META_UPGRADE_POOL`. | `MinigameScreen.tsx` line 389-391 (still referenced but no-op) |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Timer Extension (meta) | `timer-extension` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in smaller grid and fewer mines | `MinigameScreen.tsx` line 438-439 |
 
 Note: Defrag currently has **no active game-specific power-ups**. The `defrag-safe-start` upgrade was removed because safe first click became the default behavior. There are no run-shop items that specifically target defrag.
@@ -67,6 +67,12 @@ Note: Defrag currently has **no active game-specific power-ups**. The `defrag-sa
 **40 seconds** (`BASE_TIME_LIMITS["defrag"] = 40`).
 
 This is the longest base time of any minigame, reflecting the strategic depth of minesweeper. At d=0: full 40s. At d=1: `40 * 0.6 = 24s`. After floor 15, additional 2%-per-floor decay applies.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 - Component: `src/components/minigames/Defrag.tsx`

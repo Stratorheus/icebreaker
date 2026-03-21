@@ -4,8 +4,8 @@ import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
 import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
-import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
+import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import type { PowerUpEffect } from "@/types/game";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
@@ -32,8 +32,6 @@ export interface RunSlice {
   minigamesPlayedThisRun: number;
   powerUpsUsedThisFloor: boolean;
   trainingMinigame: MinigameType | null;
-  /** Extra seconds added to every minigame timer on floor 1 (from Pre-Loaded meta upgrade). */
-  bonusTimeSecs: number;
   /** Set to a milestone floor number (every 5th floor) to trigger the overlay; 0 = no milestone. */
   milestoneFloor: number;
   /** Tracks the status before entering pause, so we can resume to the correct screen. */
@@ -48,6 +46,10 @@ export interface RunSlice {
   milestoneDataThisRun: number;
   /** Per-minigame data drip accumulated during the run (awarded on death/quit). */
   dataDripThisRun: number;
+  /** Time Siphon bonus: accumulated +0.2 s per consecutive win. Resets on fail and advanceFloor. */
+  timeSiphonBonus: number;
+  /** Cascade Clock: accumulated % of base timer from consecutive wins. Resets on fail only. */
+  cascadeClockPct: number;
 
   // Actions
   startRun: () => void;
@@ -116,7 +118,6 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   minigamesPlayedThisRun: 0,
   powerUpsUsedThisFloor: false,
   trainingMinigame: null,
-  bonusTimeSecs: 0,
   milestoneFloor: 0,
   previousStatus: null,
   itemsBoughtThisRun: 0,
@@ -124,6 +125,8 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   dataAtRunStart: 0,
   milestoneDataThisRun: 0,
   dataDripThisRun: 0,
+  timeSiphonBonus: 0,
+  cascadeClockPct: 0,
 };
 
 // Helper type: extract only action keys
@@ -174,12 +177,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // head-start: +50 bonus credits on top of base
     const startCredits = 25 + (tier("head-start") > 0 ? 50 : 0);
 
-    // pre-loaded: +1 s on every timer during floor 1
-    const preLoadedUpgrade = META_UPGRADE_POOL.find((u) => u.id === "pre-loaded");
-    const bonusTimeSecs = tier("pre-loaded") > 0 && preLoadedUpgrade
-      ? (preLoadedUpgrade.effects[0]?.value ?? 1)
-      : 0;
-
     // quick-boot / dual-core: start with 1 or 2 random power-ups
     // dual-core overrides quick-boot (requires it, gives 2)
     const powerUpCount = tier("dual-core") > 0 ? 2 : tier("quick-boot") > 0 ? 1 : 0;
@@ -218,13 +215,14 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       minigamesWonThisRun: 0,
       minigamesPlayedThisRun: 0,
       powerUpsUsedThisFloor: false,
-      bonusTimeSecs,
       milestoneFloor: 0,
       itemsBoughtThisRun: 0,
       quitVoluntarily: false,
       dataAtRunStart: get().data,
       milestoneDataThisRun: 0,
       dataDripThisRun: 0,
+      timeSiphonBonus: 0,
+      cascadeClockPct: 0,
     });
   },
 
@@ -286,6 +284,22 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       }
     }
 
+    // Time Siphon: each win adds +0.2 s bonus to the next protocol timer (floor-scoped)
+    let timeSiphonBonus = state.timeSiphonBonus;
+    const siphonPu = state.inventory.find((p) => p.effect.type === "time-siphon");
+    if (siphonPu) {
+      timeSiphonBonus += siphonPu.effect.value;
+    }
+
+    // Cascade Clock (meta upgrade): each consecutive win adds +2% of base timer, capped per tier
+    let cascadeClockPct = state.cascadeClockPct;
+    const cascadeTier = state.purchasedUpgrades["cascade-clock"] ?? 0;
+    if (cascadeTier > 0) {
+      const cascadeUpgrade = META_UPGRADE_POOL.find((u) => u.id === "cascade-clock");
+      const tierCap = cascadeUpgrade?.effects[cascadeTier - 1]?.value ?? 0.10;
+      cascadeClockPct = Math.min(tierCap, cascadeClockPct + 0.02);
+    }
+
     set({
       hp: newHp,
       credits: state.credits + earned,
@@ -299,6 +313,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       milestoneFloor,
       milestoneDataThisRun,
       dataDripThisRun: state.dataDripThisRun + minigameDataDrip,
+      timeSiphonBonus,
+      cascadeClockPct,
     });
   },
 
@@ -339,6 +355,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         runDamageTaken: tookDamage ? true : state.runDamageTaken,
         minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
         status: "dead",
+        // Time Siphon resets on fail; Cascade Clock resets on fail
+        timeSiphonBonus: 0,
+        cascadeClockPct: 0,
       });
       return;
     }
@@ -360,6 +379,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       runDamageTaken: tookDamage ? true : state.runDamageTaken,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
       floorMinigames: newFloorMinigames,
+      // Time Siphon resets on fail; Cascade Clock resets on fail
+      timeSiphonBonus: 0,
+      cascadeClockPct: 0,
     });
   },
 
@@ -405,9 +427,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
-    // Consume floor-scoped power-ups (heal-on-success, time-bonus)
+    // Consume floor-scoped power-ups (heal-on-success, time-bonus, time-siphon)
     const inventory = state.inventory.filter(
-      (p) => p.effect.type !== "heal-on-success" && p.effect.type !== "time-bonus",
+      (p) =>
+        p.effect.type !== "heal-on-success" &&
+        p.effect.type !== "time-bonus" &&
+        p.effect.type !== "time-siphon",
     );
 
     set({
@@ -420,6 +445,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       status: "playing",
       milestoneFloor: 0,
       runShopOffers: [], // clear so next shop generates fresh
+      // Time Siphon resets at floor advance (floor-scoped).
+      // Cascade Clock does NOT reset here — it persists across floors.
+      timeSiphonBonus: 0,
     });
   },
 

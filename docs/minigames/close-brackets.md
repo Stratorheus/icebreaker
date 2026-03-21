@@ -42,7 +42,7 @@ Note: The bracket type pool does NOT change with difficulty -- all 6 types are a
 | Bracket Reducer (meta) | `bracket-reducer` | `bracket-type-removal` / `minigame-specific` | Removes `\` and `|` from the opener pool, leaving only `( [ { <` | `CloseBrackets.tsx` lines 54-65 (`availableOpeners` memo) |
 | Bracket Mirror (meta) | `bracket-mirror` | `auto-close` (repurposed) | Enables the "Next char hint" display showing the next expected closer | `CloseBrackets.tsx` lines 45-51 (`hasNextCharHint` memo), lines 216-235 (render) |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Timer Extension (meta) | `timer-extension` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in shorter bracket sequences | `MinigameScreen.tsx` line 438-439 |
 
 ## Controls
@@ -58,6 +58,12 @@ Note: The bracket type pool does NOT change with difficulty -- all 6 types are a
 **8 seconds** (`BASE_TIME_LIMITS["close-brackets"] = 8`).
 
 At d=0: full 8s. At d=1: `8 * 0.6 = 4.8s` (rounds to 5s). After floor 15, additional 2%-per-floor decay applies. The short base time reflects the simple input mechanic -- the challenge is speed and accuracy under pressure.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 - Component: `src/components/minigames/CloseBrackets.tsx`

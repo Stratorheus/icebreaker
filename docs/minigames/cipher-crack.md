@@ -36,7 +36,7 @@ Word pool thresholds (0.35, 0.65) are independent of cipher method thresholds (0
 | Cipher Hint | `cipher-hint` | `hint` | Shows the first letter of the answer word below the cipher box: `Hint: starts with "X"` | `CipherCrack.tsx` lines 149-153 (detection), lines 263-267 (render) |
 | Hint Module (run-shop) | `hint-module` | `hint` | Generic hint; the cipher-crack component checks for `effect.minigame === "cipher-crack"` specifically, so only the meta upgrade `cipher-hint` provides the first-letter hint | `CipherCrack.tsx` line 151 |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer (applied in MinigameRouter) | `MinigameScreen.tsx` line 443 |
-| Timer Extension (meta) | `timer-extension` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially shifting to an easier cipher method and shorter words | `MinigameScreen.tsx` line 438-439 |
 
 ## Controls
@@ -51,7 +51,12 @@ Word pool thresholds (0.35, 0.65) are independent of cipher method thresholds (0
 ## Base Time Limit
 **12 seconds** (`BASE_TIME_LIMITS["cipher-crack"] = 12`).
 
-At d=0: full 12s. At d=1: `12 * 0.6 = 7.2s` (rounds to 7s). After floor 15, additional 2%-per-floor decay applies. Run-shop time bonuses and meta Timer Extension stack on top.
+At d=0: full 12s. At d=1: `12 * 0.6 = 7.2s` (rounds to 7s). After floor 15, additional 2%-per-floor decay applies. Run-shop time bonuses and meta Delay Injector stack on top.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
 
 ## Code Reference
 - Component: `src/components/minigames/CipherCrack.tsx`

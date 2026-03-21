@@ -26,8 +26,8 @@ Key functions:
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
 | Calculator | `checksum-calculator` | `minigame-specific` | Shows an intermediate result hint next to the expression: the sign (if negative) plus the first digit of the answer, followed by `...`. E.g. for answer `42` shows `= 4...` | `ChecksumVerify.tsx` line 97-101 (`hasCalculator` memo), line 300-304 (render) |
-| Time Freeze / Quick Hack / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` line 443-444 |
-| Timer Extension (meta) | `timer-extension` | `global-time-bonus` | Multiplies total time by `1.03^tier` | `MinigameScreen.tsx` line 442-444 |
+| Time Freeze / Clock Boost / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` line 443-444 |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies total time by `1.03^tier` | `MinigameScreen.tsx` line 442-444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Multiplies difficulty by `0.95^tier`, reducing expression complexity and count | `MinigameScreen.tsx` line 438-439 |
 
 ## Controls
@@ -48,8 +48,11 @@ Key functions:
 Scaled by difficulty: `baseTime * (1 - difficulty * 0.4)`. At d=0 the player gets the full 15s; at d=1 they get 9s. After floor 15, an additional floor-based decay of 2% per floor applies (down to 40% of the difficulty-adjusted time).
 
 Additional modifiers:
-- `bonusTimeSecs` from run-shop time power-ups (additive, before meta multiplier)
+- **Time-bonus** power-ups (run shop, various): flat seconds added by `useMinigame` hook on mount
 - `timerExtensionTier` from meta upgrade (multiplicative: `* 1.03^tier`)
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
 
 ## Code Reference
 - Component: `src/components/minigames/ChecksumVerify.tsx`

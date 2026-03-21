@@ -53,9 +53,15 @@ A grid of two-character hex codes is displayed alongside a target sequence at th
 
 **12 seconds** (before scaling).
 
-Effective time: `round(12 * (1 - difficulty * 0.4) * floorScale) + bonusTimeSecs`, then multiplied by `1.03^timerExtTier` for the Timer Extension meta upgrade.
+Effective time: `round(12 * (1 - difficulty * 0.4) * floorScale)`, then multiplied by `1.03^timerExtTier` for the Delay Injector meta upgrade.
 
 - `floorScale = 1.0` for floors 1-15; `max(0.4, 1 - (floor - 15) * 0.02)` for floors 16+.
+
+Additional timing modifiers that affect the effective timer:
+- **Time Siphon** (run shop): +0.2 s per consecutive win (floor-scoped, resets on fail).
+- **Cascade Clock** (meta upgrade): +2% of base timer per consecutive win (cap per tier, resets on fail, persists across floors).
+- **Deadline Override** (run shop): injects +1 s when timer drops below 5% (single use).
+- **Time-bonus** power-ups: flat seconds added by `useMinigame` hook on mount.
 
 ## Code Reference
 
