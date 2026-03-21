@@ -204,7 +204,7 @@ export function RunShop() {
         {">"}_&nbsp;FLOOR {floor} CLEARED
       </p>
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
-        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getDifficulty(floor + 1) * 100)}%
+        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getDifficulty(floor + 1) * Math.pow(0.95, purchasedUpgrades["difficulty-reducer"] ?? 0) * 100)}%
       </p>
 
       {/* Status bar: HP + Credits + Data earned this run */}
