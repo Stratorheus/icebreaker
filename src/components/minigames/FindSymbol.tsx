@@ -288,25 +288,9 @@ export function FindSymbol(props: MinigameProps) {
             const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
             const isSelected = selectedCells.has(cell.id);
 
-            // 3b. Proximity hint: check if cell is adjacent to a cell containing the current target
-            const isAdjacentToTarget = hasProximityHint && targetIndex < targets.length && (() => {
-              const currentTarget = targets[targetIndex];
-              if (cell.code === currentTarget) return false; // target itself, not adjacent
-              for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                  if (dr === 0 && dc === 0) continue;
-                  const nr = cellRow + dr;
-                  const nc = cellCol + dc;
-                  if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                    const ni = nr * cols + nc;
-                    if (grid[ni].code === currentTarget && !selectedCells.has(grid[ni].id)) {
-                      return true;
-                    }
-                  }
-                }
-              }
-              return false;
-            })();
+            // 3b. Symbol Scanner: subtly blink the target cell itself (not neighbors)
+            const isTargetHinted = hasProximityHint && !isSelected
+              && targetIndex < targets.length && cell.code === targets[targetIndex];
 
             // 3b. Target scale: if this cell is the current target, make it larger
             const isCurrentTarget = !isSelected && targetIndex < targets.length && cell.code === targets[targetIndex];
@@ -329,12 +313,11 @@ export function FindSymbol(props: MinigameProps) {
                   ${
                     isSelected
                       ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
-                      : isAdjacentToTarget
-                        ? "border-cyber-cyan/30 bg-cyber-cyan/5 text-white/70 hover:border-white/30 hover:bg-white/10 animate-pulse"
-                        : isCursor
-                          ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
+                      : isCursor
+                        ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
+                        : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
                   }
+                  ${isTargetHinted && !isCursor ? "animate-pulse" : ""}
                 `}
                 style={scaleFactor > 1 ? { fontSize: `${scaleFactor}em` } : undefined}
               >

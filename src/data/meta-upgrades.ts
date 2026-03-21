@@ -279,7 +279,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "symbol-scanner",
     name: "Symbol Scanner",
-    description: "The target symbol blinks when the cursor is nearby in Address Lookup.",
+    description: "The target hex code subtly pulses in the grid in Address Lookup.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
