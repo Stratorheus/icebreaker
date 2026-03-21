@@ -532,6 +532,8 @@ function formatEffect(effect: { type: string; value: number }): string {
       return `-${Math.round(effect.value * 100)}% death penalty`;
     case "cascade-clock":
       return `+2% base timer per win (cap ${Math.round(effect.value * 100)}%)`;
+    case "floor-regen":
+      return "+2% max HP regen per floor (stackable)";
     default:
       return effect.type.replace(/-/g, " ");
   }

@@ -49,10 +49,10 @@ export function DeathScreen() {
   const prePenaltyData = baseDataEarned + dataDripThisRun + creditsSaved + milestoneData;
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
-  // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
+  // upgrade (6 tiers: -2.5% each -> 22.5/20/17.5/15/12.5/10% penalty)
   // Voluntary quit = NO penalty
   const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
-  const penaltyPct = quitVoluntarily ? 0 : Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
+  const penaltyPct = quitVoluntarily ? 0 : Math.max(0.10, 0.25 - dataRecoveryTier * 0.025);
   const penaltyAmount = Math.floor(prePenaltyData * penaltyPct);
   const dataAfterPenalty = prePenaltyData - penaltyAmount;
 

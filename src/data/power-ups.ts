@@ -87,19 +87,19 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "damage-reducer",
     name: "Damage Reducer",
-    description: "Next failure deals 50 % less damage.",
+    description: "Next failure deals only 25% damage. Consumed on trigger.",
     category: "defense",
     basePrice: 40,
-    effect: { type: "damage-reduction", value: 0.5 },
+    effect: { type: "damage-reduction", value: 0.25 },
     icon: "shield-half",
   },
   {
     id: "redundancy-layer",
     name: "Redundancy Layer",
-    description: "Absorbs the next 2 failures at 25 % damage each.",
+    description: "Absorbs the next 2 failures at 50% damage each. Consumed after both uses.",
     category: "defense",
     basePrice: 75,
-    effect: { type: "damage-reduction-stacked", value: 0.25 },
+    effect: { type: "damage-reduction-stacked", value: 0.50 },
     icon: "layers",
   },
 
@@ -136,10 +136,10 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   {
     id: "repair-kit",
     name: "Repair Kit",
-    description: "Restore +20 HP immediately.",
+    description: "Restore +25 HP immediately.",
     category: "healing",
-    basePrice: 50,
-    effect: { type: "heal", value: 20 },
+    basePrice: 65,
+    effect: { type: "heal", value: 25 },
     icon: "heart-pulse",
   },
   {
@@ -147,18 +147,29 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     name: "System Restore",
     description: "Restore +35 HP immediately.",
     category: "healing",
-    basePrice: 75,
+    basePrice: 80,
     effect: { type: "heal", value: 35 },
     icon: "refresh-cw",
   },
   {
     id: "nano-repair",
     name: "Nano Repair",
-    description: "Restore +10 HP after each successful protocol this floor.",
+    description: "Restore +5 HP after each successful protocol this floor.",
     category: "healing",
     basePrice: 45,
-    effect: { type: "heal-on-success", value: 10 },
+    effect: { type: "heal-on-success", value: 5 },
     icon: "activity",
+  },
+
+  // HP Leech: gain +2 HP after every protocol this floor, win or fail. Floor-scoped.
+  {
+    id: "hp-leech",
+    name: "HP Leech",
+    description: "Gain +2 HP after every protocol this floor, win or fail.",
+    category: "healing",
+    basePrice: 40,
+    effect: { type: "hp-leech", value: 2 },
+    icon: "heart-pulse",
   },
 
   // ── VISION ────────────────────────────────────────────────────────────────

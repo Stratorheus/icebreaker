@@ -37,6 +37,19 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     stackable: true,
   },
 
+  // Emergency Patch: regenerate 2% of max HP at the start of each floor. Stackable.
+  // Applied in advanceFloor. Stacks additively with tier count.
+  {
+    id: "emergency-patch",
+    name: "Emergency Patch",
+    description: "Regenerate 2% of max HP at the start of each floor. Stackable.",
+    category: "stat",
+    maxTier: 999,
+    prices: [120], // dynamic pricing via getStackablePrice()
+    effects: [{ type: "floor-regen", value: 0.02 }],
+    stackable: true,
+  },
+
   // Cascade Clock: each consecutive win adds +2% of base timer. Resets on fail.
   // Does NOT reset on floor advance. Cap per tier: 10%/20%/30%/40%/50%.
   {
@@ -59,14 +72,16 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "thicker-armor",
     name: "Thicker Armor",
-    description: "Permanently reduces incoming damage by 10 / 20 / 30 %.",
+    description: "Permanently reduces incoming damage by 5/10/15/20/25%.",
     category: "stat",
-    maxTier: 3,
-    prices: [100, 250, 500],
+    maxTier: 5,
+    prices: [100, 200, 350, 500, 750],
     effects: [
-      { type: "damage-reduction", value: 0.1 },
-      { type: "damage-reduction", value: 0.2 },
-      { type: "damage-reduction", value: 0.3 },
+      { type: "damage-reduction", value: 0.05 },
+      { type: "damage-reduction", value: 0.10 },
+      { type: "damage-reduction", value: 0.15 },
+      { type: "damage-reduction", value: 0.20 },
+      { type: "damage-reduction", value: 0.25 },
     ],
   },
   {
@@ -106,13 +121,16 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "data-recovery",
     name: "Data Recovery",
-    description: "Reduces death penalty from 25% to 20 / 15 / 10 %.",
+    description: "Reduces death penalty from 25% to 22.5/20/17.5/15/12.5/10%.",
     category: "stat",
-    maxTier: 3,
-    prices: [150, 300, 500],
+    maxTier: 6,
+    prices: [100, 200, 300, 400, 550, 750],
     effects: [
+      { type: "death-penalty-reduction", value: 0.025 },
       { type: "death-penalty-reduction", value: 0.05 },
+      { type: "death-penalty-reduction", value: 0.075 },
       { type: "death-penalty-reduction", value: 0.10 },
+      { type: "death-penalty-reduction", value: 0.125 },
       { type: "death-penalty-reduction", value: 0.15 },
     ],
   },
@@ -130,14 +148,16 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "overclocked",
     name: "Overclocked",
-    description: "Start every run with +10 / +15 / +20 bonus HP above base.",
+    description: "Start every run with +5/+10/+15/+20/+25 bonus HP above base.",
     category: "starting-bonus",
-    maxTier: 3,
-    prices: [150, 300, 500],
+    maxTier: 5,
+    prices: [100, 200, 350, 500, 750],
     effects: [
+      { type: "start-hp", value: 5 },
       { type: "start-hp", value: 10 },
       { type: "start-hp", value: 15 },
       { type: "start-hp", value: 20 },
+      { type: "start-hp", value: 25 },
     ],
   },
   {
