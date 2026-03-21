@@ -7,6 +7,7 @@ import { getMinigameDisplayName } from "@/data/minigame-names";
 import { getMinigameHint } from "@/data/minigame-descriptions";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { checkSkip } from "@/lib/power-up-effects";
+import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
 import { CloseBrackets } from "@/components/minigames/CloseBrackets";
@@ -327,11 +328,12 @@ function buildMetaPowerUps(
     const tier = purchasedUpgrades[upgradeId] ?? 0;
     if (tier <= 0) return;
     const value = valueByTier[tier - 1] ?? valueByTier[valueByTier.length - 1];
+    const upgradeDef = META_UPGRADE_POOL.find((u) => u.id === upgradeId);
     synth.push({
       id: `meta-${upgradeId}`,
       type: `meta-${upgradeId}`,
-      name: upgradeId,
-      description: "",
+      name: upgradeDef?.name ?? upgradeId,
+      description: upgradeDef?.description ?? "",
       effect: { type: effectType, value, minigame },
     });
   }
