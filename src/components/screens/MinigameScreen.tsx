@@ -107,14 +107,46 @@ export function MinigameScreen() {
         usePowerUp(skipResult.consumeId);
 
         if (skipResult.skipFloor) {
-          // Warp Gate: skip entire remaining floor
-          skipRemainingFloor(skipResult.rewardFraction);
+          // Fix 2: Record minigame results for each remaining protocol
+          const remaining = floorMinigames.slice(currentMinigameIndex);
+          for (const mg of remaining) {
+            recordMinigameResult(mg, true);
+          }
+
+          // Fix 5: Calculate earned credits for Warp Gate flash display
+          if (skipResult.rewardFraction > 0) {
+            const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+            const unlockedCount = useGameStore.getState().unlockedMinigames.length;
+            const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
+            const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+            setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction * remaining.length));
+          } else {
+            setLastEarnedCredits(0);
+          }
+          setLastHadSpeedBonus(false);
+
+          // Fix 4: Show result flash first, then skip after 1 s (same pattern as single-skip)
           setLastResult(true);
           setPhase("result");
+          setTimeout(() => {
+            skipRemainingFloor(skipResult.rewardFraction);
+            awardNewAchievements();
+          }, 1000);
           return;
         }
 
         // Single protocol skip (Backdoor or Null Route)
+        // Fix 5: Calculate earned credits for single-skip flash display
+        if (skipResult.rewardFraction > 0) {
+          const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+          const unlockedCount = useGameStore.getState().unlockedMinigames.length;
+          const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
+          const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+          setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction));
+        } else {
+          setLastEarnedCredits(0);
+        }
+        setLastHadSpeedBonus(false);
         setLastResult(true);
         setPhase("result");
         setTimeout(() => {
@@ -137,7 +169,7 @@ export function MinigameScreen() {
     }, 666); // ~2 seconds for 3-2-1
 
     return () => clearTimeout(timer);
-  }, [phase, countdownValue, inventory, usePowerUp, completeMinigame, currentMinigame, skipRemainingFloor]);
+  }, [phase, countdownValue, inventory, usePowerUp, completeMinigame, currentMinigame, skipRemainingFloor, recordMinigameResult, floorMinigames, currentMinigameIndex, floor, purchasedUpgrades]);
 
   // Handle minigame completion
   const handleComplete = useCallback(

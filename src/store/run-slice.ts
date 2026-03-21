@@ -501,6 +501,24 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const dripPerGame = Math.round(getDataDrip(state.floor) * rewardFraction);
     const totalDrip = dripPerGame * remaining;
 
+    // Fix 3: Apply heal-on-success and hp-leech for skipped protocols
+    let healPerGame = 0;
+    for (const pu of state.inventory) {
+      if (pu.effect.type === "heal-on-success") healPerGame += pu.effect.value;
+      if (pu.effect.type === "hp-leech") healPerGame += pu.effect.value;
+    }
+    const totalHeal = healPerGame * remaining;
+    const newHp = Math.min(state.maxHp, state.hp + totalHeal);
+
+    // Fix 1: Clean up floor-scoped power-ups (same as advanceFloor)
+    const inventory = state.inventory.filter(
+      (p) =>
+        p.effect.type !== "heal-on-success" &&
+        p.effect.type !== "time-bonus" &&
+        p.effect.type !== "time-siphon" &&
+        p.effect.type !== "hp-leech",
+    );
+
     // Check for milestone (floor completion)
     const rawMilestone = getMilestoneBonus(state.floor);
     let milestoneFloor = 0;
@@ -515,15 +533,19 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     }
 
     set({
+      hp: newHp,
       credits: state.credits + totalCredits,
       runScore: state.runScore + totalCredits,
       minigamesWonThisRun: state.minigamesWonThisRun + remaining,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + remaining,
       currentMinigameIndex: state.floorMinigames.length - 1, // mark all as done
+      inventory,
       dataDripThisRun: state.dataDripThisRun + totalDrip,
       status: nextStatus,
       milestoneFloor,
       milestoneDataThisRun,
+      // Fix 6: Reset Time Siphon bonus (floor-scoped)
+      timeSiphonBonus: 0,
     });
   },
 

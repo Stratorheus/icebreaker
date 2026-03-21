@@ -125,7 +125,7 @@ export function checkSkip(inventory: PowerUpInstance[]): SkipResult {
     };
   }
 
-  return { skip: false, consumeId: null, asSilentSuccess: true, skipFloor: false, rewardFraction: 1 };
+  return { skip: false, consumeId: null, asSilentSuccess: false, skipFloor: false, rewardFraction: 1 };
 }
 
 // ---------------------------------------------------------------------------

@@ -120,7 +120,7 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     category: "skip",
     basePrice: 150,
     effect: { type: "skip-floor", value: 0.15 },
-    icon: "zap",
+    icon: "fast-forward",
   },
   {
     id: "null-route",
