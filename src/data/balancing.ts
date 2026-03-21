@@ -4,12 +4,12 @@
  */
 
 /** Returns difficulty scalar 0–1 based on current floor. Starts at 0.1, reaches max ~floor 13. */
-export function getDifficulty(floor: number): number {
+function getDifficulty(floor: number): number {
   return Math.min(0.1 + floor / 15, 1.0);
 }
 
 /** Returns damage dealt to player on a failed minigame. */
-export function getDamage(floor: number): number {
+function getDamage(floor: number): number {
   return 20 + floor * 4;
 }
 
@@ -18,7 +18,7 @@ export function getDamage(floor: number): number {
  * Base 20 × (1 + difficulty) × speed bonus.
  * Speed bonus: completing under 10 s earns up to +50%.
  */
-export function getCredits(timeMs: number, difficulty: number): number {
+function getCredits(timeMs: number, difficulty: number): number {
   const base = 20 * (1 + difficulty);
   const speedBonus = 1 + Math.max(0, 1 - timeMs / 10_000) * 0.5;
   return Math.round(base * speedBonus);
@@ -103,6 +103,27 @@ export function getEffectiveDamage(floor: number, armorTier: number): number {
   const armorReductions = [0, 0.05, 0.10, 0.15, 0.20, 0.25]; // index 0 = no armor
   const reduction = armorReductions[Math.min(armorTier, armorReductions.length - 1)] ?? 0;
   return Math.round(raw * (1 - reduction));
+}
+
+/** Per-minigame data drip reward. Scales with floor depth. */
+export function getDataDrip(floor: number): number {
+  return Math.round(1 + floor * 0.8);
+}
+
+/** Credits-to-data conversion rate (8% of leftover credits). */
+export function getCreditsSaved(credits: number): number {
+  return Math.floor(credits * 0.08);
+}
+
+/** Data reward with Data Siphon meta applied. */
+export function getEffectiveDataReward(floor: number, dataSiphonTier: number): number {
+  return Math.round(getDataReward(floor) * Math.pow(1.03, dataSiphonTier));
+}
+
+/** Death penalty percentage (reduced by Data Recovery meta). Voluntary quit = 0. */
+export function getDeathPenaltyPct(dataRecoveryTier: number, quitVoluntarily: boolean): number {
+  if (quitVoluntarily) return 0;
+  return Math.max(0.10, 0.25 - dataRecoveryTier * 0.025);
 }
 
 /**

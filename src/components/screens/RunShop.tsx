@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
-import { getDataReward, getEffectiveDifficulty } from "@/data/balancing";
+import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import {
   Clock,
@@ -181,9 +181,8 @@ export function RunShop() {
 
   // Compute data reward preview for quit button (total projected: base + drip + milestones + credits)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = Math.pow(1.03, dataTier);
-  const baseDataReward = Math.round(getDataReward(floor) * dataMultiplier);
-  const creditsSavedPreview = Math.floor(credits * 0.08);
+  const baseDataReward = getEffectiveDataReward(floor, dataTier);
+  const creditsSavedPreview = getCreditsSaved(credits);
   const dataReward = baseDataReward + dataDripThisRun + milestoneDataThisRun + creditsSavedPreview;
 
   // Sub-views: Codex and Stats with back button returning to shop

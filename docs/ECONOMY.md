@@ -34,7 +34,7 @@ The speed bonus applies when the player completes the minigame in under 10 secon
 |---|---|
 | Credit Multiplier (stackable) | `×1.03^tier` multiplicative |
 | Minigame unlocks (beyond 5 starting) | `+5%` per extra unlock, multiplicative with Credit Multiplier |
-| Speed Tax (tiered 1-3) | Flat `+round(base * tier * 0.05)` added after multipliers |
+| Speed Tax (tiered 1-3) | Flat `+round(base * tier * 0.05)` added to base before percentage multipliers are applied |
 
 **Starting credits:**
 - Base: 25 CR at run start (guaranteed minimum so floor 1 shop is usable).

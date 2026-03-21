@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
@@ -245,7 +245,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     // Per-minigame data drip: reward per win, scales with floor
     // Accumulated locally (not added to persistent store until run ends)
-    const minigameDataDrip = Math.round(1 + state.floor * 0.8);
+    const minigameDataDrip = getDataDrip(state.floor);
 
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;

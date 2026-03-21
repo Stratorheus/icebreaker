@@ -288,7 +288,7 @@ Base time limits per minigame (seconds, before difficulty/floor scaling):
 
 ## 5. Economy
 
-All economy formulas live in `src/data/balancing.ts`.
+All economy formulas live in `src/data/balancing.ts`. All stacking calculations are centralized as `getEffective*` functions: `getEffectiveDifficulty`, `getEffectiveTimeLimit`, `getEffectiveDamage`, `getEffectiveCredits`. Callers should always use these instead of invoking the base functions directly.
 
 ### Difficulty
 
@@ -316,7 +316,9 @@ With `cascade-clock` meta upgrade: `baseTime * (1 + cascadeClockPct)` where `cas
 
 With `time-siphon` run-shop item: adds flat `timeSiphonBonus` seconds (grows +0.2 s per win, floor-scoped, resets on fail/advanceFloor).
 
-With `delay-injector` meta upgrade: `final = Math.round((baseTime * (1 + cascadeClockPct) + timeSiphonBonus) * Math.pow(1.03, tier))`.
+With `delay-injector` meta upgrade: `final = Math.round((baseTime + timeSiphonBonus) * (1 + cascadeClockPct) * Math.pow(1.03, delayInjectorTier))`.
+
+> All time limit calculations are centralized in `getEffectiveTimeLimit()` in `balancing.ts`.
 
 With `time-bonus` power-ups: added by `useMinigame` hook on mount.
 
@@ -347,7 +349,7 @@ Speed bonus: completing under 10 seconds earns up to +50% extra credits.
 Applied multipliers in `completeMinigame()`:
 - `credit-multiplier` meta: `Math.pow(1.03, tier)`.
 - Minigame unlock bonus: `+5%` per unlocked minigame beyond the starting 5.
-- `speed-tax` meta: `Math.round(baseCredits * tier * 0.05)` flat bonus on top.
+- `speed-tax` meta: `Math.round(baseCredits * tier * 0.05)` flat bonus added to base credits before percentage multipliers (Credit Multiplier, unlock bonus).
 
 ### Minigames Per Floor
 
