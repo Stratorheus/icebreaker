@@ -195,6 +195,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
             value: item.effect.value,
             minigame: item.effect.minigame,
           },
+          // Multi-use power-ups: stacked damage reduction gets 2 uses
+          ...(item.effect.type === "damage-reduction-stacked" ? { remainingUses: 2 } : {}),
         });
       }
     }

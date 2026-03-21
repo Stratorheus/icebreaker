@@ -144,7 +144,7 @@ Each minigame goes through three phases (`Phase = "countdown" | "active" | "resu
 3. **Consumes floor-scoped power-ups**: `heal-on-success`, `time-bonus`, `time-siphon`, and `hp-leech` are removed from inventory.
 4. **Emergency Patch**: if `purchasedUpgrades["emergency-patch"] > 0`, heals `Math.round(maxHp * 0.02 * tier)` HP before the next floor starts (capped at maxHp).
 5. Resets `floorDamageTaken`, `powerUpsUsedThisFloor`.
-5. Clears `runShopOffers` so next shop generates fresh.
+6. Clears `runShopOffers` so next shop generates fresh.
 
 ### Death / End of Run
 

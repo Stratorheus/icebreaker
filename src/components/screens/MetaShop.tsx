@@ -529,7 +529,7 @@ function formatEffect(effect: { type: string; value: number }): string {
     case "unlock-minigame":
       return "Unlocks protocol (+5 max HP, +5% credits)";
     case "death-penalty-reduction":
-      return `-${Math.round(effect.value * 100)}% death penalty`;
+      return `-${(effect.value * 100).toFixed(1).replace(/\.0$/, "")}% death penalty`;
     case "cascade-clock":
       return `+2% base timer per win (cap ${Math.round(effect.value * 100)}%)`;
     case "floor-regen":

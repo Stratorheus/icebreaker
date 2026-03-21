@@ -2,7 +2,7 @@ import type { RunShopItem } from "@/types/shop";
 
 /**
  * Run-shop item pool — purchased with credits during a run.
- * All 18 items are spread across every category defined in RunShopItem.
+ * All 23 items are spread across every category defined in RunShopItem.
  */
 export const RUN_SHOP_POOL: RunShopItem[] = [
   // ── TIME ──────────────────────────────────────────────────────────────────
@@ -161,15 +161,24 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     icon: "activity",
   },
 
-  // HP Leech: gain +2 HP after every protocol this floor, win or fail. Floor-scoped.
+  // HP Leech: gain +2 HP after every protocol this floor (if you survive). Floor-scoped.
   {
     id: "hp-leech",
     name: "HP Leech",
-    description: "Gain +2 HP after every protocol this floor, win or fail.",
+    description: "Gain +2 HP after every protocol this floor (if you survive).",
     category: "healing",
     basePrice: 40,
     effect: { type: "hp-leech", value: 2 },
-    icon: "heart-pulse",
+    icon: "droplets",
+  },
+  {
+    id: "repair-drone",
+    name: "Repair Drone",
+    description: "Restore +15 HP immediately.",
+    category: "healing",
+    basePrice: 50,
+    effect: { type: "heal", value: 15 },
+    icon: "cpu",
   },
 
   // ── VISION ────────────────────────────────────────────────────────────────
@@ -181,15 +190,6 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     basePrice: 40,
     effect: { type: "hint", value: 1 },
     icon: "lightbulb",
-  },
-  {
-    id: "repair-drone",
-    name: "Repair Drone",
-    description: "Restore +15 HP immediately.",
-    category: "healing",
-    basePrice: 50,
-    effect: { type: "heal", value: 15 },
-    icon: "heart-pulse",
   },
 
   // ── ASSIST ────────────────────────────────────────────────────────────────
