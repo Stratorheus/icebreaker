@@ -70,34 +70,62 @@ export interface SkipResult {
   skip: boolean;
   /** ID of the power-up to consume, or null if no skip is active. */
   consumeId: string | null;
-  /**
-   * Whether the skip counts as a success (null-route / skip-silent)
-   * or simply advances without credit (plain skip / backdoor).
-   */
+  /** All skip types count as a silent success (streak-safe). */
   asSilentSuccess: boolean;
+  /** True only for Warp Gate (skip-floor) — skips all remaining protocols on the floor. */
+  skipFloor: boolean;
+  /** Reward fraction: 0 = no rewards (Backdoor), 1 = full (Null Route), 0.15 = 15% (Warp Gate). */
+  rewardFraction: number;
 }
 
 /**
  * Check the inventory for a skip-type power-up.
  *
- * Priority:
- *   1. "skip-silent" (null-route) — auto-passes, counts as success but 0 credits
- *   2. "skip"        (backdoor)   — skips without penalty, counts as success
- *   3. "skip-floor"  (emergency-exit) — NOT handled here; it skips the whole
- *      floor and needs special logic in MinigameScreen / store.
+ * Priority (highest value first):
+ *   1. "skip-floor"  (Warp Gate)   — skips all remaining protocols, 15% rewards
+ *   2. "skip-silent" (Null Route)  — auto-passes, full rewards
+ *   3. "skip"        (Backdoor)    — skips without playing, 0 rewards
+ *
+ * All three count as a success (asSilentSuccess: true).
  */
 export function checkSkip(inventory: PowerUpInstance[]): SkipResult {
+  // Warp Gate: skip entire remaining floor at 15% rewards
+  const floorSkip = inventory.find((p) => p.effect.type === "skip-floor");
+  if (floorSkip) {
+    return {
+      skip: true,
+      consumeId: floorSkip.id,
+      asSilentSuccess: true,
+      skipFloor: true,
+      rewardFraction: floorSkip.effect.value, // 0.15
+    };
+  }
+
+  // Null Route: auto-pass with full rewards
   const silentSkip = inventory.find((p) => p.effect.type === "skip-silent");
   if (silentSkip) {
-    return { skip: true, consumeId: silentSkip.id, asSilentSuccess: true };
+    return {
+      skip: true,
+      consumeId: silentSkip.id,
+      asSilentSuccess: true,
+      skipFloor: false,
+      rewardFraction: 1,
+    };
   }
 
+  // Backdoor: skip with no rewards
   const plainSkip = inventory.find((p) => p.effect.type === "skip");
   if (plainSkip) {
-    return { skip: true, consumeId: plainSkip.id, asSilentSuccess: false };
+    return {
+      skip: true,
+      consumeId: plainSkip.id,
+      asSilentSuccess: true,
+      skipFloor: false,
+      rewardFraction: 0,
+    };
   }
 
-  return { skip: false, consumeId: null, asSilentSuccess: false };
+  return { skip: false, consumeId: null, asSilentSuccess: false, skipFloor: false, rewardFraction: 1 };
 }
 
 // ---------------------------------------------------------------------------

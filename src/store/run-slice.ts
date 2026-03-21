@@ -66,6 +66,7 @@ export interface RunSlice {
   pauseRun: () => void;
   resumeRun: () => void;
   setStatus: (status: GameStatus) => void;
+  skipRemainingFloor: (rewardFraction: number) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
   endRun: () => void;
 }
@@ -235,17 +236,20 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
 
-    const earned = getEffectiveCredits(
+    const rewardFraction = result.rewardFraction ?? 1;
+
+    const rawEarned = getEffectiveCredits(
       result.timeMs,
       difficulty,
       state.purchasedUpgrades["credit-multiplier"] ?? 0,
       state.purchasedUpgrades["speed-tax"] ?? 0,
       unlockBonus,
     );
+    const earned = Math.round(rawEarned * rewardFraction);
 
     // Per-minigame data drip: reward per win, scales with floor
     // Accumulated locally (not added to persistent store until run ends)
-    const minigameDataDrip = getDataDrip(state.floor);
+    const minigameDataDrip = Math.round(getDataDrip(state.floor) * rewardFraction);
 
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
@@ -469,6 +473,78 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       runShopOffers: [], // clear so next shop generates fresh
       // Time Siphon resets at floor advance (floor-scoped).
       // Cascade Clock does NOT reset here — it persists across floors.
+      timeSiphonBonus: 0,
+    });
+  },
+
+  skipRemainingFloor: (rewardFraction: number) => {
+    const state = get();
+    const remaining = state.floorMinigames.length - state.currentMinigameIndex;
+
+    // Calculate rewards for each remaining minigame at the given fraction
+    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
+
+    // Skips don't get speed bonus — use Infinity to neutralize it
+    const creditsPerGame = Math.round(
+      getEffectiveCredits(
+        Infinity,
+        difficulty,
+        state.purchasedUpgrades["credit-multiplier"] ?? 0,
+        state.purchasedUpgrades["speed-tax"] ?? 0,
+        unlockBonus,
+      ) * rewardFraction,
+    );
+    const totalCredits = creditsPerGame * remaining;
+
+    // Data drip at fraction
+    const dripPerGame = Math.round(getDataDrip(state.floor) * rewardFraction);
+    const totalDrip = dripPerGame * remaining;
+
+    // Fix 3: Apply heal-on-success and hp-leech for skipped protocols
+    let healPerGame = 0;
+    for (const pu of state.inventory) {
+      if (pu.effect.type === "heal-on-success") healPerGame += pu.effect.value;
+      if (pu.effect.type === "hp-leech") healPerGame += pu.effect.value;
+    }
+    const totalHeal = healPerGame * remaining;
+    const newHp = Math.min(state.maxHp, state.hp + totalHeal);
+
+    // Fix 1: Clean up floor-scoped power-ups (same as advanceFloor)
+    const inventory = state.inventory.filter(
+      (p) =>
+        p.effect.type !== "heal-on-success" &&
+        p.effect.type !== "time-bonus" &&
+        p.effect.type !== "time-siphon" &&
+        p.effect.type !== "hp-leech",
+    );
+
+    // Check for milestone (floor completion)
+    const rawMilestone = getMilestoneBonus(state.floor);
+    let milestoneFloor = 0;
+    let milestoneDataThisRun = state.milestoneDataThisRun;
+    let nextStatus: GameStatus = "shop";
+
+    if (rawMilestone > 0) {
+      const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
+      milestoneDataThisRun += Math.round(rawMilestone * milestoneScale);
+      nextStatus = "milestone";
+      milestoneFloor = state.floor;
+    }
+
+    set({
+      hp: newHp,
+      credits: state.credits + totalCredits,
+      runScore: state.runScore + totalCredits,
+      minigamesWonThisRun: state.minigamesWonThisRun + remaining,
+      minigamesPlayedThisRun: state.minigamesPlayedThisRun + remaining,
+      currentMinigameIndex: state.floorMinigames.length - 1, // mark all as done
+      inventory,
+      dataDripThisRun: state.dataDripThisRun + totalDrip,
+      status: nextStatus,
+      milestoneFloor,
+      milestoneDataThisRun,
+      // Fix 6: Reset Time Siphon bonus (floor-scoped)
       timeSiphonBonus: 0,
     });
   },

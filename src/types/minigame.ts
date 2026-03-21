@@ -13,4 +13,6 @@ export interface MinigameResult {
   minigame: MinigameType;
   /** True if the deadline-override power-up was triggered during this minigame. */
   deadlineTriggered?: boolean;
+  /** Reward fraction for skip power-ups: 0 = no rewards, 1 = full, 0.15 = 15%, etc. Defaults to 1. */
+  rewardFraction?: number;
 }
