@@ -354,10 +354,12 @@ export function Training() {
           onClick={() => setShowQuitConfirm(true)}
           className="
             absolute top-3 right-3 z-40
-            py-1.5 px-3
-            text-xs uppercase tracking-widest font-mono
-            border border-cyber-magenta/40 text-cyber-magenta/70
-            hover:bg-cyber-magenta/10 hover:border-cyber-magenta/60
+            py-2 px-4
+            text-sm uppercase tracking-widest font-mono font-bold
+            border-2 border-cyber-magenta text-cyber-magenta
+            bg-cyber-magenta/10
+            hover:bg-cyber-magenta/20
+            active:bg-cyber-magenta/30
             transition-colors duration-150
             cursor-pointer select-none
           "
