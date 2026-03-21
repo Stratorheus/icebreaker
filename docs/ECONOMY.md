@@ -34,7 +34,7 @@ The speed bonus applies when the player completes the minigame in under 10 secon
 |---|---|
 | Credit Multiplier (stackable) | `×1.03^tier` multiplicative |
 | Minigame unlocks (beyond 5 starting) | `+5%` per extra unlock, multiplicative with Credit Multiplier |
-| Speed Tax (tiered 1-3) | Flat `+round(base * tier * 0.05)` added after multipliers |
+| Speed Tax (tiered 1-3) | Flat `+round(base * tier * 0.05)` added to base before percentage multipliers are applied |
 
 **Starting credits:**
 - Base: 25 CR at run start (guaranteed minimum so floor 1 shop is usable).
@@ -75,25 +75,26 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | Buffer Extend (+2.5 s) | 70 CR | time |
 | Hint Module | 40 CR | vision |
 | Chrono Surge (+1.5 s) | 40 CR | time |
-| Damage Reducer (50%) | 40 CR | defense |
-| Nano Repair (+10 HP/win) | 45 CR | healing |
+| Damage Reducer (75% reduction) | 40 CR | defense |
+| Nano Repair (+5 HP/win) | 45 CR | healing |
 | Bracket Auto-Close | 45 CR | assist |
-| Repair Kit (+20 HP) | 50 CR | healing |
+| Repair Kit (+25 HP) | 65 CR | healing |
 | Null Route (skip, no CR) | 50 CR | skip |
 | Repair Drone (+15 HP) | 50 CR | healing |
 | Clock Boost (+2 s) | 55 CR | time |
 | Backdoor (skip) | 55 CR | skip |
 | Firewall Patch (shield) | 60 CR | defense |
-| System Restore (+35 HP) | 75 CR | healing |
-| Redundancy Layer (2× 25%) | 75 CR | defense |
+| System Restore (+35 HP) | 80 CR | healing |
+| Redundancy Layer (2× 50%) | 75 CR | defense |
 | Emergency Exit (skip) | 80 CR | skip |
 | Slash Calibration | 40 CR | assist |
 | Arrow Compass | 40 CR | assist |
 | Sector Scanner | 45 CR | assist |
 | Time Siphon (+0.2 s per win) | 35 CR | time |
 | Deadline Override (1 s pause at 5%) | 50 CR | time |
+| HP Leech (+2 HP after every protocol) | 40 CR | healing |
 
-Healing items (Repair Kit, System Restore, Repair Drone) apply immediately on purchase and do not occupy an inventory slot. All other items enter the inventory.
+Healing items (Repair Kit, System Restore, Repair Drone) apply immediately on purchase and do not occupy an inventory slot. HP Leech enters the inventory and triggers after each protocol (win or fail), then is consumed at floor advance. All other items enter the inventory.
 
 **No-stacking rule:** You cannot hold two items of the same type simultaneously.
 
@@ -158,8 +159,8 @@ Milestone data is **not awarded immediately**. It accumulates in `milestoneDataT
 On death, 25% of the pre-penalty total is deducted. The Data Recovery meta upgrade reduces this:
 
 ```
-penaltyPct = max(0.10, 0.25 - dataRecoveryTier * 0.05)
-// Tier 0 = 25%, Tier 1 = 20%, Tier 2 = 15%, Tier 3 = 10%
+penaltyPct = max(0.10, 0.25 - dataRecoveryTier * 0.025)
+// Tier 0 = 25%, Tier 1 = 22.5%, Tier 2 = 20%, Tier 3 = 17.5%, Tier 4 = 15%, Tier 5 = 12.5%, Tier 6 = 10%
 
 penaltyAmount = floor(prePenaltyData * penaltyPct)
 dataAfterPenalty = prePenaltyData - penaltyAmount
@@ -218,9 +219,11 @@ price = round(base * (1 + totalPurchasesMade * 0.15))
 |---|---|
 | HP Boost (stackable) | +5 per purchase |
 | Minigame unlock (beyond 5 starting) | +5 per extra unlocked minigame |
-| Overclocked Tier 1 | +10 |
-| Overclocked Tier 2 | +15 |
-| Overclocked Tier 3 | +20 |
+| Overclocked Tier 1 | +5 |
+| Overclocked Tier 2 | +10 |
+| Overclocked Tier 3 | +15 |
+| Overclocked Tier 4 | +20 |
+| Overclocked Tier 5 | +25 |
 
 These stack additively:
 
@@ -240,13 +243,13 @@ rawDamage  = 20 + floor * 4
 
 ```
 baseDamage = round(rawDamage * (1 - armorReduction))
-// Tier 1: -10%, Tier 2: -20%, Tier 3: -30%
+// Tier 1: -5%, Tier 2: -10%, Tier 3: -15%, Tier 4: -20%, Tier 5: -25%
 ```
 
 Then run-shop defensive power-ups apply:
 - **Firewall Patch (shield):** next failure deals 0 damage, consumed on trigger.
-- **Damage Reducer:** next failure deals 50% less damage.
-- **Redundancy Layer:** next 2 failures deal 25% damage each (75% reduction per hit).
+- **Damage Reducer:** next failure deals only 25% damage (75% reduction), consumed on trigger.
+- **Redundancy Layer:** next 2 failures deal 50% damage each, consumed after both uses.
 
 ---
 
@@ -261,15 +264,16 @@ Then run-shop defensive power-ups apply:
 | Data Siphon | 100 ◆ | +3% data reward (multiplicative) |
 | Delay Injector | 100 ◆ | +3% all timers (multiplicative) |
 | Difficulty Reducer | 150 ◆ | ×0.95 effective difficulty |
+| Emergency Patch | 120 ◆ | +2% max HP regen at start of each floor (stackable) |
 
 ### Tiered Stat Upgrades (fixed tiers, global scalar applies)
 
-| Upgrade | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 | Effect |
-|---|---|---|---|---|---|---|
-| Thicker Armor | 100 ◆ | 250 ◆ | 500 ◆ | — | — | Damage -10/20/30% |
-| Speed Tax | 100 ◆ | 250 ◆ | 500 ◆ | — | — | Speed bonus +15/25/40% |
-| Data Recovery | 150 ◆ | 300 ◆ | 500 ◆ | — | — | Death penalty 20/15/10% |
-| Cascade Clock | 150 ◆ | 300 ◆ | 500 ◆ | 750 ◆ | 1000 ◆ | +2% base timer per win, cap 10/20/30/40/50% |
+| Upgrade | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 | Tier 6 | Effect |
+|---|---|---|---|---|---|---|---|
+| Thicker Armor | 100 ◆ | 200 ◆ | 350 ◆ | 500 ◆ | 750 ◆ | — | Damage -5/10/15/20/25% |
+| Speed Tax | 100 ◆ | 250 ◆ | 500 ◆ | — | — | — | Speed bonus +15/25/40% |
+| Data Recovery | 100 ◆ | 200 ◆ | 300 ◆ | 400 ◆ | 550 ◆ | 750 ◆ | Death penalty 22.5/20/17.5/15/12.5/10% |
+| Cascade Clock | 150 ◆ | 300 ◆ | 500 ◆ | 750 ◆ | 1000 ◆ | — | +2% base timer per win, cap 10/20/30/40/50% |
 
 ### Starting Bonuses (one-time, global scalar applies)
 
@@ -280,7 +284,7 @@ Then run-shop defensive power-ups apply:
 | Head Start | 150 ◆ | +50 starting credits |
 | ~~Pre-Loaded~~ | ~~120 ◆~~ | Removed |
 | Cache Primed | 175 ◆ | Floor 1 shop always has a heal item |
-| Overclocked | 150 / 300 / 500 ◆ | +10/15/20 max and starting HP |
+| Overclocked | 100 / 200 / 350 / 500 / 750 ◆ | +5/10/15/20/25 max and starting HP |
 
 ### Protocol Licenses (minigame unlocks)
 
@@ -418,7 +422,7 @@ All pure formulas are in `src/data/balancing.ts`. Edit constants there to adjust
 
 ### Death Penalty
 
-The base penalty is 25% (`0.25` in `DeathScreen.tsx`). The minimum with Data Recovery tier 3 is 10% (`0.10` in the `max(0.10, ...)` call). Change these to soften or harden the failure cost.
+The base penalty is 25% (`0.25` in `DeathScreen.tsx`). The minimum with Data Recovery tier 6 is 10% (`0.10` in the `max(0.10, ...)` call). Each tier reduces the penalty by 2.5%. Change these to soften or harden the failure cost.
 
 ### Minigame Count
 

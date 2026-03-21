@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
-import { getDataReward, getDifficulty } from "@/data/balancing";
+import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import {
   Clock,
@@ -181,9 +181,8 @@ export function RunShop() {
 
   // Compute data reward preview for quit button (total projected: base + drip + milestones + credits)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = Math.pow(1.03, dataTier);
-  const baseDataReward = Math.round(getDataReward(floor) * dataMultiplier);
-  const creditsSavedPreview = Math.floor(credits * 0.08);
+  const baseDataReward = getEffectiveDataReward(floor, dataTier);
+  const creditsSavedPreview = getCreditsSaved(credits);
   const dataReward = baseDataReward + dataDripThisRun + milestoneDataThisRun + creditsSavedPreview;
 
   // Sub-views: Codex and Stats with back button returning to shop
@@ -204,7 +203,7 @@ export function RunShop() {
         {">"}_&nbsp;FLOOR {floor} CLEARED
       </p>
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
-        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getDifficulty(floor + 1) * Math.pow(0.95, purchasedUpgrades["difficulty-reducer"] ?? 0) * 100)}%
+        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0) * 100)}%
       </p>
 
       {/* Status bar: HP + Credits + Data earned this run */}

@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getCredits, getDamage, getDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
@@ -163,11 +163,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Minigame unlock bonus: +5 max HP per unlocked minigame beyond starting set
     const unlockHpBonus = Math.max(0, unlockedMinigames.length - STARTING_MINIGAMES.length) * 5;
 
-    // overclocked: add +10/+15/+20 bonus HP (raises both max and starting HP)
+    // overclocked: add +5/+10/+15/+20/+25 bonus HP (raises both max and starting HP)
     const overclockedTier = tier("overclocked");
-    const overclockedBonusByTier = [10, 15, 20];
+    const overclockedBonusByTier = [5, 10, 15, 20, 25];
     const overclockedBonus = overclockedTier > 0
-      ? (overclockedBonusByTier[overclockedTier - 1] ?? 20)
+      ? (overclockedBonusByTier[overclockedTier - 1] ?? 25)
       : 0;
 
     const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
@@ -195,6 +195,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
             value: item.effect.value,
             minigame: item.effect.minigame,
           },
+          // Multi-use power-ups: stacked damage reduction gets 2 uses
+          ...(item.effect.type === "damage-reduction-stacked" ? { remainingUses: 2 } : {}),
         });
       }
     }
@@ -228,27 +230,22 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   completeMinigame: (result: MinigameResult) => {
     const state = get();
-    const difficulty = getDifficulty(state.floor);
-
-    // 1b. Credit Multiplier meta upgrade: +3% per purchase (multiplicative)
-    const creditTier = state.purchasedUpgrades["credit-multiplier"] ?? 0;
-    const creditMultiplier = Math.pow(1.03, creditTier);
+    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
 
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
-    const totalCreditMultiplier = creditMultiplier * (1 + unlockBonus);
 
-    const baseCredits = getCredits(result.timeMs, difficulty);
-
-    // 1e. Speed Tax meta upgrade: flat bonus per tier on top of credits
-    const speedTaxTier = state.purchasedUpgrades["speed-tax"] ?? 0;
-    const speedBonus = speedTaxTier > 0 ? Math.round(baseCredits * speedTaxTier * 0.05) : 0;
-
-    const earned = Math.round(baseCredits * totalCreditMultiplier) + speedBonus;
+    const earned = getEffectiveCredits(
+      result.timeMs,
+      difficulty,
+      state.purchasedUpgrades["credit-multiplier"] ?? 0,
+      state.purchasedUpgrades["speed-tax"] ?? 0,
+      unlockBonus,
+    );
 
     // Per-minigame data drip: reward per win, scales with floor
     // Accumulated locally (not added to persistent store until run ends)
-    const minigameDataDrip = Math.round(1 + state.floor * 0.8);
+    const minigameDataDrip = getDataDrip(state.floor);
 
     const isLastMinigame =
       state.currentMinigameIndex >= state.floorMinigames.length - 1;
@@ -260,8 +257,17 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         healAmount += pu.effect.value;
       }
     }
-    const newHp = healAmount > 0
-      ? Math.min(state.maxHp, state.hp + healAmount)
+
+    // Apply hp-leech power-ups (trigger on every completed protocol, win or fail)
+    let leechAmount = 0;
+    for (const pu of state.inventory) {
+      if (pu.effect.type === "hp-leech") {
+        leechAmount += pu.effect.value;
+      }
+    }
+
+    const newHp = (healAmount + leechAmount) > 0
+      ? Math.min(state.maxHp, state.hp + healAmount + leechAmount)
       : state.hp;
 
     // When floor is complete, check if it's a milestone floor
@@ -320,12 +326,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   failMinigame: () => {
     const state = get();
-    const rawDamage = getDamage(state.floor);
-
-    // 1a. Thicker Armor meta upgrade: reduce base damage by 10/20/30%
-    const armorTier = state.purchasedUpgrades["thicker-armor"] ?? 0;
-    const armorReduction = armorTier > 0 ? [0.1, 0.2, 0.3][armorTier - 1] : 0;
-    const baseDamage = Math.round(rawDamage * (1 - armorReduction));
+    const baseDamage = getEffectiveDamage(state.floor, state.purchasedUpgrades["thicker-armor"] ?? 0);
 
     // Apply the strongest shield / damage-reduction power-up
     const { damage, consumed, decremented } = applyShield(state.inventory, baseDamage);
@@ -342,12 +343,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       );
     }
 
-    const newHp = Math.max(0, state.hp - damage);
+    const newHpAfterDamage = Math.max(0, state.hp - damage);
 
     // Track whether any real damage was taken this floor/run
     const tookDamage = damage > 0;
 
-    if (newHp <= 0) {
+    if (newHpAfterDamage <= 0) {
       set({
         hp: 0,
         inventory,
@@ -361,6 +362,17 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       });
       return;
     }
+
+    // HP Leech: apply after damage computation, only if player survived
+    let leechAmount = 0;
+    for (const pu of inventory) {
+      if (pu.effect.type === "hp-leech") {
+        leechAmount += pu.effect.value;
+      }
+    }
+    const newHp = leechAmount > 0
+      ? Math.min(state.maxHp, newHpAfterDamage + leechAmount)
+      : newHpAfterDamage;
 
     // On fail: DON'T advance the index — re-roll the current slot with a new
     // random minigame so the player must still complete N total minigames.
@@ -427,15 +439,25 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
-    // Consume floor-scoped power-ups (heal-on-success, time-bonus, time-siphon)
+    // Consume floor-scoped power-ups (heal-on-success, time-bonus, time-siphon, hp-leech)
     const inventory = state.inventory.filter(
       (p) =>
         p.effect.type !== "heal-on-success" &&
         p.effect.type !== "time-bonus" &&
-        p.effect.type !== "time-siphon",
+        p.effect.type !== "time-siphon" &&
+        p.effect.type !== "hp-leech",
     );
 
+    // Emergency Patch (meta upgrade): regenerate 2% of maxHp per purchase tier at floor start
+    const emergencyPatchTier = state.purchasedUpgrades["emergency-patch"] ?? 0;
+    let newHp = state.hp;
+    if (emergencyPatchTier > 0) {
+      const regenAmount = Math.round(state.maxHp * 0.02 * emergencyPatchTier);
+      newHp = Math.min(state.maxHp, state.hp + regenAmount);
+    }
+
     set({
+      hp: newHp,
       floor: nextFloor,
       currentMinigameIndex: 0,
       floorMinigames,

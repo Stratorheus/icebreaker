@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType, PowerUpInstance } from "@/types/game";
-import { getCredits, getDifficulty, getTimeLimit } from "@/data/balancing";
+import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
 import { getMinigameDisplayName } from "@/data/minigame-names";
 import { getMinigameHint } from "@/data/minigame-descriptions";
 import { useTouchDevice } from "@/hooks/use-touch-device";
@@ -136,17 +136,16 @@ export function MinigameScreen() {
       // Calculate credits earned for success flash display
       let earnedCredits = 0;
       if (result.success) {
-        const diffReducerT = purchasedUpgrades["difficulty-reducer"] ?? 0;
-        const diff = getDifficulty(floor) * Math.pow(0.95, diffReducerT);
-        const creditTier = purchasedUpgrades["credit-multiplier"] ?? 0;
-        const creditMul = Math.pow(1.03, creditTier);
+        const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
         const unlockedCount = useGameStore.getState().unlockedMinigames.length;
         const unlockBonus = Math.max(0, unlockedCount - 5) * 0.05; // STARTING_MINIGAMES = 5
-        const totalMul = creditMul * (1 + unlockBonus);
-        const base = getCredits(result.timeMs, diff);
-        const speedTaxT = purchasedUpgrades["speed-tax"] ?? 0;
-        const speedBonus = speedTaxT > 0 ? Math.round(base * speedTaxT * 0.05) : 0;
-        earnedCredits = Math.round(base * totalMul) + speedBonus;
+        earnedCredits = getEffectiveCredits(
+          result.timeMs,
+          diff,
+          purchasedUpgrades["credit-multiplier"] ?? 0,
+          purchasedUpgrades["speed-tax"] ?? 0,
+          unlockBonus,
+        );
         // Speed bonus applies when completing under 10 s (timeMs < 10000)
         const hasSpeedBonus = result.timeMs < 10000;
         setLastHadSpeedBonus(hasSpeedBonus);
@@ -432,19 +431,15 @@ function MinigameRouter({
   const timeSiphonBonus = useGameStore((s) => s.timeSiphonBonus);
   const cascadeClockPct = useGameStore((s) => s.cascadeClockPct);
 
-  // Difficulty reducer (stackable): multiply by 0.95 per purchase (diminishing returns, never 0)
-  const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
-  const difficulty = getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
-
-  // Delay Injector (stackable): multiply by 1.03 per purchase (diminishing returns)
-  const timerExtTier = purchasedUpgrades["delay-injector"] ?? 0;
-  // Time calculation:
-  //   1. Get base time limit from difficulty/floor scaling
-  //   2. Apply Cascade Clock: multiply by (1 + cascadeClockPct) — stacks from consecutive wins
-  //   3. Add Time Siphon bonus (flat seconds from consecutive wins, floor-scoped)
-  //   4. Apply Delay Injector meta upgrade (multiplicative)
-  const baseTime = getTimeLimit(BASE_TIME_LIMITS[type], difficulty, floor);
-  const timeLimit = Math.round((baseTime * (1 + cascadeClockPct) + timeSiphonBonus) * Math.pow(1.03, timerExtTier));
+  const difficulty = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+  const timeLimit = getEffectiveTimeLimit(
+    BASE_TIME_LIMITS[type],
+    difficulty,
+    floor,
+    timeSiphonBonus,
+    cascadeClockPct,
+    purchasedUpgrades["delay-injector"] ?? 0,
+  );
   const Component = MINIGAME_COMPONENTS[type];
 
   // Merge run-time inventory power-ups with meta upgrade synthetics

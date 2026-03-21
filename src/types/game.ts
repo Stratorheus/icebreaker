@@ -73,7 +73,9 @@ export interface PowerUpEffect {
     | "minigame-specific"
     | "time-siphon"
     | "deadline-override"
-    | "cascade-clock";
+    | "cascade-clock"
+    | "hp-leech"
+    | "floor-regen";
   value: number;
   minigame?: MinigameType;
 }

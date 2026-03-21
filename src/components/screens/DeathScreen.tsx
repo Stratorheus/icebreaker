@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import { getDataReward } from "@/data/balancing";
+import { getCreditsSaved, getDeathPenaltyPct, getEffectiveDataReward } from "@/data/balancing";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { Hexagon } from "lucide-react";
 
@@ -33,14 +33,12 @@ export function DeathScreen() {
   const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
   const dataDripThisRun = useGameStore((s) => s.dataDripThisRun);
 
-  // Base run data reward
-  // Data Siphon meta upgrade: +3% per purchase (multiplicative)
+  // Base run data reward (Data Siphon meta upgrade applied inside getEffectiveDataReward)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
-  const dataMultiplier = Math.pow(1.03, dataTier);
-  const baseDataEarned = Math.round(getDataReward(floor) * dataMultiplier);
+  const baseDataEarned = getEffectiveDataReward(floor, dataTier);
 
   // Credits → Data conversion: leftover credits convert at 8% rate
-  const creditsSaved = Math.floor(credits * 0.08);
+  const creditsSaved = getCreditsSaved(credits);
 
   // Milestones earned this run (now subject to death penalty)
   const milestoneData = milestoneDataThisRun;
@@ -49,10 +47,10 @@ export function DeathScreen() {
   const prePenaltyData = baseDataEarned + dataDripThisRun + creditsSaved + milestoneData;
 
   // Death penalty: lose 25% of earned data, reducible via Data Recovery
-  // upgrade (3 tiers: -5%/-10%/-15% reduction -> 20%/15%/10% penalty)
+  // upgrade (6 tiers: -2.5% each -> 22.5/20/17.5/15/12.5/10% penalty)
   // Voluntary quit = NO penalty
   const dataRecoveryTier = purchasedUpgrades["data-recovery"] ?? 0;
-  const penaltyPct = quitVoluntarily ? 0 : Math.max(0.10, 0.25 - dataRecoveryTier * 0.05);
+  const penaltyPct = getDeathPenaltyPct(dataRecoveryTier, quitVoluntarily);
   const penaltyAmount = Math.floor(prePenaltyData * penaltyPct);
   const dataAfterPenalty = prePenaltyData - penaltyAmount;
 

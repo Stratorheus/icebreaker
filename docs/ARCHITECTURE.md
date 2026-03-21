@@ -125,14 +125,14 @@ Each minigame goes through three phases (`Phase = "countdown" | "active" | "resu
 
 1. Calculates credit reward with multipliers (credit-multiplier meta, unlock bonus, speed-tax meta).
 2. Calculates per-minigame data drip: `Math.round(1 + floor * 0.8)` added to `dataDripThisRun`.
-3. Applies `heal-on-success` power-ups (e.g., Nano Repair).
+3. Applies `heal-on-success` power-ups (e.g., Nano Repair) and `hp-leech` power-ups (triggers on every protocol, win or fail).
 4. If last minigame on floor: checks for milestone (every 5th floor). First-time milestone = full bonus; repeat = 25%. Sets status to `"milestone"` or `"shop"`.
 5. If not last: advances `currentMinigameIndex`.
 
 ### failMinigame
 
 1. Computes raw damage: `getDamage(floor)`.
-2. Applies `thicker-armor` meta reduction (10/20/30%).
+2. Applies `thicker-armor` meta reduction (5/10/15/20/25%).
 3. Applies shield power-ups via `applyShield()`: full shield > stacked reduction > simple reduction. One power-up consumed per fail.
 4. If HP reaches 0: status = `"dead"`.
 5. If alive: **re-rolls** the current minigame slot with a different random minigame from the pool. The index does NOT advance. The player must still complete N total minigames on the floor.
@@ -141,9 +141,10 @@ Each minigame goes through three phases (`Phase = "countdown" | "active" | "resu
 
 1. Increments floor number.
 2. Generates new floor minigames: `pickRandom(unlockedMinigames, getMinigamesPerFloor(nextFloor))`.
-3. **Consumes floor-scoped power-ups**: `heal-on-success` and `time-bonus` are removed from inventory.
-4. Resets `floorDamageTaken`, `powerUpsUsedThisFloor`.
-5. Clears `runShopOffers` so next shop generates fresh.
+3. **Consumes floor-scoped power-ups**: `heal-on-success`, `time-bonus`, `time-siphon`, and `hp-leech` are removed from inventory.
+4. **Emergency Patch**: if `purchasedUpgrades["emergency-patch"] > 0`, heals `Math.round(maxHp * 0.02 * tier)` HP before the next floor starts (capped at maxHp).
+5. Resets `floorDamageTaken`, `powerUpsUsedThisFloor`.
+6. Clears `runShopOffers` so next shop generates fresh.
 
 ### Death / End of Run
 
@@ -153,7 +154,7 @@ Each minigame goes through three phases (`Phase = "countdown" | "active" | "resu
 2. **Protocol win drip**: `dataDripThisRun` (accumulated across all minigame wins).
 3. **Credits saved**: `floor(credits * 0.08)` (8% conversion rate).
 4. **Milestone data**: `milestoneDataThisRun` (accumulated across all milestones hit).
-5. **Death penalty**: `25%` of pre-penalty total, reduced by Data Recovery (tiers: 20%/15%/10%). Voluntary quit = 0% penalty.
+5. **Death penalty**: `25%` of pre-penalty total, reduced by Data Recovery (6 tiers: 22.5%/20%/17.5%/15%/12.5%/10%). Voluntary quit = 0% penalty.
 6. **Achievement bonus**: computed after `awardNewAchievements()` runs.
 7. `addData(totalAfterPenalty)` banks to persistent store.
 8. `updateStats()` increments lifetime stats.
@@ -233,6 +234,7 @@ This allows minigame components to consume all bonuses through a single uniform 
 - **Minigame-specific** power-ups (those with `effect.minigame` matching the current game) are consumed after each minigame.
 - **Time-bonus** power-ups persist through the entire floor (consumed in `advanceFloor`).
 - **Heal-on-success** power-ups persist through the entire floor (consumed in `advanceFloor`).
+- **HP-leech** power-ups persist through the entire floor (consumed in `advanceFloor`). They trigger after every protocol (win or fail), applying HP recovery before the next protocol begins.
 - **Shield** power-ups are consumed on fail trigger (in `failMinigame` via `applyShield()`).
 - **Skip** power-ups are consumed before the active phase begins (in countdown logic via `checkSkip()`).
 - **Heal** (immediate) items are consumed on purchase in the shop (never added to inventory).
@@ -286,7 +288,7 @@ Base time limits per minigame (seconds, before difficulty/floor scaling):
 
 ## 5. Economy
 
-All economy formulas live in `src/data/balancing.ts`.
+All economy formulas live in `src/data/balancing.ts`. All stacking calculations are centralized as `getEffective*` functions: `getEffectiveDifficulty`, `getEffectiveTimeLimit`, `getEffectiveDamage`, `getEffectiveCredits`. Callers should always use these instead of invoking the base functions directly.
 
 ### Difficulty
 
@@ -314,7 +316,9 @@ With `cascade-clock` meta upgrade: `baseTime * (1 + cascadeClockPct)` where `cas
 
 With `time-siphon` run-shop item: adds flat `timeSiphonBonus` seconds (grows +0.2 s per win, floor-scoped, resets on fail/advanceFloor).
 
-With `delay-injector` meta upgrade: `final = Math.round((baseTime * (1 + cascadeClockPct) + timeSiphonBonus) * Math.pow(1.03, tier))`.
+With `delay-injector` meta upgrade: `final = Math.round((baseTime + timeSiphonBonus) * (1 + cascadeClockPct) * Math.pow(1.03, delayInjectorTier))`.
+
+> All time limit calculations are centralized in `getEffectiveTimeLimit()` in `balancing.ts`.
 
 With `time-bonus` power-ups: added by `useMinigame` hook on mount.
 
@@ -328,7 +332,7 @@ getDamage(floor) = 20 + floor * 4
 
 Floor 1 = 24 damage. Floor 10 = 60 damage. Floor 20 = 100 damage.
 
-With `thicker-armor` meta: `Math.round(rawDamage * (1 - [0.1, 0.2, 0.3][tier - 1]))`.
+With `thicker-armor` meta: `Math.round(rawDamage * (1 - [0.05, 0.10, 0.15, 0.20, 0.25][tier - 1]))`.
 
 ### Credits on Win
 
@@ -345,7 +349,7 @@ Speed bonus: completing under 10 seconds earns up to +50% extra credits.
 Applied multipliers in `completeMinigame()`:
 - `credit-multiplier` meta: `Math.pow(1.03, tier)`.
 - Minigame unlock bonus: `+5%` per unlocked minigame beyond the starting 5.
-- `speed-tax` meta: `Math.round(baseCredits * tier * 0.05)` flat bonus on top.
+- `speed-tax` meta: `Math.round(baseCredits * tier * 0.05)` flat bonus added to base credits before percentage multipliers (Credit Multiplier, unlock bonus).
 
 ### Minigames Per Floor
 
@@ -371,7 +375,7 @@ Floor 1 = 2, Floor 2 = 3, ..., Floor 7+ = 8 (cap).
 
 Base: 25% of all pre-penalty data earned in the run.
 
-With `data-recovery` meta upgrade: `Math.max(0.10, 0.25 - tier * 0.05)`. Tiers: 20% / 15% / 10%.
+With `data-recovery` meta upgrade: `Math.max(0.10, 0.25 - tier * 0.025)`. Tiers: 22.5% / 20% / 17.5% / 15% / 12.5% / 10%.
 
 Voluntary quit (`quitRun()`): 0% penalty.
 
@@ -401,19 +405,20 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 | `hp-boost` | HP Boost | Stackable (infinite) | +5 max HP per purchase |
 | `delay-injector` | Delay Injector | Stackable (infinite) | +3% all timers per purchase (multiplicative) |
 | `difficulty-reducer` | Difficulty Reducer | Stackable (infinite) | -5% effective difficulty per purchase (multiplicative) |
-| `thicker-armor` | Thicker Armor | 3 tiers | -10%/-20%/-30% incoming damage |
+| `thicker-armor` | Thicker Armor | 5 tiers | -5%/-10%/-15%/-20%/-25% incoming damage |
 | `credit-multiplier` | Credit Multiplier | Stackable (infinite) | +3% credits per purchase (multiplicative) |
 | `data-siphon` | Data Siphon | Stackable (infinite) | +3% data per purchase (multiplicative) |
 | `speed-tax` | Speed Tax | 3 tiers | Speed bonuses +15%/+25%/+40% more effective |
-| `data-recovery` | Data Recovery | 3 tiers | Death penalty reduced to 20%/15%/10% |
+| `data-recovery` | Data Recovery | 6 tiers | Death penalty reduced to 22.5%/20%/17.5%/15%/12.5%/10% |
 | `cascade-clock` | Cascade Clock | 5 tiers | +2% base timer per consecutive win; cap 10/20/30/40/50% per tier; resets on fail, persists across floors |
+| `emergency-patch` | Emergency Patch | Stackable (infinite) | +2% max HP regen at floor start per purchase; applied in `advanceFloor` |
 
 **Starting bonus upgrades** (single-tier or tiered):
 | ID | Name | Effect |
 |---|---|---|
 | `quick-boot` | Quick Boot | Start with 1 random power-up |
 | `dual-core` | Dual Core | Start with 2 random power-ups (requires quick-boot) |
-| `overclocked` | Overclocked | +10/+15/+20 bonus starting HP (3 tiers) |
+| `overclocked` | Overclocked | +5/+10/+15/+20/+25 bonus starting HP (5 tiers) |
 | `head-start` | Head Start | +50 bonus starting credits |
 | ~~`pre-loaded`~~ | ~~Pre-Loaded~~ | Removed |
 | `cache-primed` | Cache Primed | Run shop always offers a heal item |
@@ -445,7 +450,7 @@ Each unlocked minigame beyond the starting 5 grants +5 max HP and +5% global cre
 
 ## 7. Power-Up System
 
-### Run Shop Items (22 items in pool)
+### Run Shop Items (23 items in pool)
 
 Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 
@@ -464,8 +469,8 @@ Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 | Item | Effect | Base Price |
 |---|---|---|
 | Firewall Patch | `shield` (full block) | 60 |
-| Damage Reducer | `damage-reduction` 50% | 40 |
-| Redundancy Layer | `damage-reduction-stacked` 25% (2 charges) | 75 |
+| Damage Reducer | `damage-reduction` 25% (75% reduction) | 40 |
+| Redundancy Layer | `damage-reduction-stacked` 50% (2 charges) | 75 |
 
 **Skip** (3 items):
 | Item | Effect | Base Price |
@@ -474,13 +479,14 @@ Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 | Emergency Exit | `skip` (skip 1 protocol) | 80 |
 | Null Route | `skip-silent` (auto-pass, 0 credits) | 50 |
 
-**Healing** (4 items):
+**Healing** (5 items):
 | Item | Effect | Base Price |
 |---|---|---|
-| Repair Kit | `heal` +20 HP (immediate) | 50 |
-| System Restore | `heal` +35 HP (immediate) | 75 |
+| Repair Kit | `heal` +25 HP (immediate) | 65 |
+| System Restore | `heal` +35 HP (immediate) | 80 |
 | Repair Drone | `heal` +15 HP (immediate) | 50 |
-| Nano Repair | `heal-on-success` +10 HP per win (floor) | 45 |
+| Nano Repair | `heal-on-success` +5 HP per win (floor) | 45 |
+| HP Leech | `hp-leech` +2 HP after every protocol (floor) | 40 |
 
 **Vision** (1 item):
 | Item | Effect | Base Price |
@@ -507,7 +513,8 @@ interface PowerUpEffect {
     | "preview" | "hint" | "highlight-danger"
     | "window-extend" | "auto-close" | "reveal-first"
     | "peek-ahead" | "flag-mine" | "minigame-specific"
-    | "time-siphon" | "deadline-override" | "cascade-clock";
+    | "time-siphon" | "deadline-override" | "cascade-clock"
+    | "hp-leech" | "floor-regen";
   value: number;
   minigame?: MinigameType;
 }
@@ -523,7 +530,7 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 |---|---|---|
 | Immediate | On purchase (never enters inventory) | `heal` items |
 | Per-minigame | After each game if `effect.minigame` matches | Slash Calibration, Arrow Compass, Sector Scanner |
-| Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon` |
+| Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon`, `hp-leech` |
 | On-trigger | On fail event | `shield`, `damage-reduction`, `damage-reduction-stacked` |
 | On-trigger | Before active phase starts | `skip`, `skip-silent` |
 | On-trigger | At countdown start | `hint` (Hint Module) |
@@ -540,8 +547,8 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 
 When a fail occurs, the best shield power-up is consumed (one per fail):
 1. `shield` (Firewall Patch) -- full block, damage = 0.
-2. `damage-reduction-stacked` (Redundancy Layer) -- take 25% damage.
-3. `damage-reduction` (Damage Reducer) -- take 50% damage.
+2. `damage-reduction-stacked` (Redundancy Layer) -- take 50% damage per hit, 2 charges.
+3. `damage-reduction` (Damage Reducer) -- take 25% damage, consumed on trigger.
 
 ---
 
