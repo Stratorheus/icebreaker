@@ -279,7 +279,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "symbol-scanner",
     name: "Symbol Scanner",
-    description: "The target symbol blinks when the cursor is nearby in Address Lookup.",
+    description: "The target hex code subtly pulses in the grid in Address Lookup.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -309,8 +309,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   },
   {
     id: "wire-labels",
-    name: "Wire Labels",
-    description: "Wire colors are labeled with text in Wire Cutting.",
+    name: "Wire Guide",
+    description: "Dims non-target wires and highlights the next wire to cut.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -361,35 +361,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [150],
     effects: [{ type: "word-length-shown", value: 1, minigame: "type-backward" }],
   },
-  {
-    id: "wire-schematic",
-    name: "Wire Schematic",
-    description: "A faint wire diagram is shown for 1.5 s before Wire Cutting begins.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [250],
-    effects: [{ type: "wire-preview-ms", value: 1500, minigame: "wire-cutting" }],
-  },
-  {
-    id: "slash-echo",
-    name: "Slash Echo",
-    description: "A subtle audio cue plays 0.5 s before the ideal slash window opens.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "audio-cue-offset", value: 500, minigame: "slash-timing" }],
-  },
+  // (wire-schematic removed — preview effect was never implemented)
+  // (slash-echo removed — game has no audio system)
 
   // ── NEW MINIGAME MODULES ────────────────────────────────────────────────────
-  {
-    id: "defrag-safe-start",
-    name: "Safe Start",
-    description: "First click in Defrag is always safe (guaranteed non-mine).",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [200],
-    effects: [{ type: "minigame-specific", value: 1, minigame: "defrag" }],
-  },
+  // (defrag-safe-start removed — safe first click is now built-in default)
   {
     id: "network-trace-highlight",
     name: "Path Highlight",

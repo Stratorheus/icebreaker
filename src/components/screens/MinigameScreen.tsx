@@ -7,6 +7,7 @@ import { getMinigameDisplayName } from "@/data/minigame-names";
 import { getMinigameHint } from "@/data/minigame-descriptions";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { checkSkip } from "@/lib/power-up-effects";
+import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
 import { awardNewAchievements } from "@/hooks/use-achievement-check";
 import { SlashTiming } from "@/components/minigames/SlashTiming";
 import { CloseBrackets } from "@/components/minigames/CloseBrackets";
@@ -249,7 +250,7 @@ function CountdownPhase({
       <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
         FLOOR {floor} // PROTOCOL {index + 1} OF {total}
       </p>
-      <h2 className="text-3xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
+      <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
         {minigameName}
       </h2>
       {hint && (
@@ -327,11 +328,12 @@ function buildMetaPowerUps(
     const tier = purchasedUpgrades[upgradeId] ?? 0;
     if (tier <= 0) return;
     const value = valueByTier[tier - 1] ?? valueByTier[valueByTier.length - 1];
+    const upgradeDef = META_UPGRADE_POOL.find((u) => u.id === upgradeId);
     synth.push({
       id: `meta-${upgradeId}`,
       type: `meta-${upgradeId}`,
-      name: upgradeId,
-      description: "",
+      name: upgradeDef?.name ?? upgradeId,
+      description: upgradeDef?.description ?? "",
       effect: { type: effectType, value, minigame },
     });
   }
@@ -369,10 +371,8 @@ function buildMetaPowerUps(
       break;
 
     case "wire-cutting":
-      // wire-labels → hint (color labels)
+      // wire-labels → hint (dims non-target, highlights next)
       addIfOwned("wire-labels", "hint", [1], "wire-cutting");
-      // wire-schematic → preview (preview duration ms, encoded as value)
-      addIfOwned("wire-schematic", "preview", [1500], "wire-cutting");
       break;
 
     case "cipher-crack":
@@ -483,7 +483,7 @@ function ResultFlash({
   return (
     <div className="text-center select-none">
       <h2
-        className={`text-5xl sm:text-7xl font-bold uppercase tracking-wider glitch-text ${
+        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider glitch-text ${
           success ? "text-cyber-cyan" : "text-cyber-magenta"
         }`}
       >

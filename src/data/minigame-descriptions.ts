@@ -161,7 +161,7 @@ export const MINIGAME_BRIEFINGS: Record<MinigameType, MinigameBriefing> = {
   "cipher-crack": {
     rules: [
       "An encrypted word is shown — decode it by typing the plaintext",
-      "The cipher method (ROT-N or substitution) is hinted on screen",
+      "The cipher method (letter-swap, vowel-removal, or scramble) is hinted on screen",
       "Type the decrypted word letter by letter; any mistake = failure",
       "Decode all letters to complete the breach",
     ],
@@ -170,11 +170,11 @@ export const MINIGAME_BRIEFINGS: Record<MinigameType, MinigameBriefing> = {
       touch: "System keyboard — type the decoded letters",
     },
     tips: [
-      "ROT ciphers: shift each letter back by the stated amount",
-      "Substitution: map each letter using the shown key table",
+      "Letter-swap: two letters in the word have been swapped — find them",
+      "Vowel-removal: vowels are stripped — figure out the original word from consonants",
     ],
     hint: {
-      desktop: "Reverse the letter shift to find the original word.",
+      desktop: "Decode the cipher to find the original word.",
       touch: "Reverse the letter shift to find the original word.",
     },
   },

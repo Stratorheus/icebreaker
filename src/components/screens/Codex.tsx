@@ -56,7 +56,7 @@ function UnlockedEntry({
       >
         <div className="flex items-center gap-3">
           <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-          <span className="text-cyber-cyan text-sm font-bold uppercase tracking-wider glitch-text">
+          <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text">
             {getMinigameDisplayName(type).toUpperCase()}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest hidden sm:inline">
@@ -121,7 +121,7 @@ function LockedEntry({ type }: { type: MinigameType }) {
   return (
     <div className="border border-white/5 bg-white/[0.01] px-4 py-3 flex items-center gap-3 opacity-40">
       <span className="text-white/20 text-[10px] select-none">{">"}</span>
-      <span className="text-white/30 text-sm font-bold uppercase tracking-wider">???</span>
+      <span className="text-white/30 text-sm font-heading uppercase tracking-wider">???</span>
       <span className="text-white/15 text-[10px] uppercase tracking-widest ml-2">
         UNLOCK IN META SHOP
       </span>
@@ -170,7 +170,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
         <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
           {">"}_&nbsp;REFERENCE ARCHIVE
         </p>
-        <h1 className="text-3xl sm:text-4xl font-bold uppercase tracking-wider text-cyber-cyan glitch-text">
+        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
           OPERATION MANUAL
         </h1>
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">

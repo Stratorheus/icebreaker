@@ -56,7 +56,7 @@ export function PauseMenu() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Title */}
-      <h1 className="text-4xl sm:text-5xl font-bold uppercase tracking-wider text-cyber-cyan mb-2">
+      <h1 className="text-4xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-2">
         PAUSED
       </h1>
       <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8">
