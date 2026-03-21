@@ -2,7 +2,7 @@ import type { RunShopItem } from "@/types/shop";
 
 /**
  * Run-shop item pool — purchased with credits during a run.
- * All 23 items are spread across every category defined in RunShopItem.
+ * All 22 items are spread across every category defined in RunShopItem.
  */
 export const RUN_SHOP_POOL: RunShopItem[] = [
   // ── TIME ──────────────────────────────────────────────────────────────────
@@ -179,17 +179,6 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
     basePrice: 50,
     effect: { type: "heal", value: 15 },
     icon: "cpu",
-  },
-
-  // ── VISION ────────────────────────────────────────────────────────────────
-  {
-    id: "hint-module",
-    name: "Hint Module",
-    description: "Reveals a small contextual hint during the next protocol.",
-    category: "vision",
-    basePrice: 40,
-    effect: { type: "hint", value: 1 },
-    icon: "lightbulb",
   },
 
   // ── ASSIST ────────────────────────────────────────────────────────────────
