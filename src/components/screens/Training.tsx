@@ -297,6 +297,7 @@ export function Training() {
           type={type}
           briefing={briefing}
           difficulty={selectedDifficulty}
+          useMetaUpgrades={useMetaUpgrades}
           onBegin={() => {
             setPhase("countdown");
           }}
@@ -484,7 +485,7 @@ function PickerPhase({
           >
             <div
               className={`
-                absolute top-0.5 w-3 h-3 rounded-full transition-all duration-150
+                absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-all duration-150
                 ${useMetaUpgrades ? "left-4 bg-cyber-cyan" : "left-0.5 bg-white/30"}
               `}
             />
@@ -560,18 +561,27 @@ function BriefingPhase({
   type,
   briefing,
   difficulty,
+  useMetaUpgrades,
   onBegin,
   onBack,
 }: {
   type: MinigameType;
   briefing: MinigameBriefing;
   difficulty: number;
+  useMetaUpgrades: boolean;
   onBegin: () => void;
   onBack: () => void;
 }) {
   const onBeginRef = useRef(onBegin);
   onBeginRef.current = onBegin;
   const isTouch = useTouchDevice();
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+
+  // Build meta power-ups for display
+  const metaPowerUps = useMemo(() => {
+    if (!useMetaUpgrades) return [];
+    return buildMetaPowerUps(purchasedUpgrades, type);
+  }, [useMetaUpgrades, type, purchasedUpgrades]);
 
   const diffLabel = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty)?.label ?? "CUSTOM";
 
@@ -631,13 +641,38 @@ function BriefingPhase({
           </ul>
         </section>
 
+        {/* Active meta upgrades */}
+        {useMetaUpgrades && metaPowerUps.length > 0 && (
+          <section className="border border-cyber-green/20 bg-cyber-green/[0.03] p-4">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
+              {">"}_&nbsp;ACTIVE META UPGRADES ({metaPowerUps.length})
+            </h2>
+            <ul className="space-y-1.5">
+              {metaPowerUps.map((pu, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-cyber-green/70 leading-relaxed">
+                  <span className="text-cyber-green/40 shrink-0 select-none">+</span>
+                  <span>{pu.name}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {useMetaUpgrades && metaPowerUps.length === 0 && (
+          <p className="text-white/20 text-[10px] uppercase tracking-widest text-center">
+            NO META UPGRADES PURCHASED FOR THIS PROTOCOL
+          </p>
+        )}
+
         {/* Trial info */}
-        <div className="border border-dashed border-white/10 p-3 flex items-center gap-3">
+        <div className="border border-dashed border-white/10 p-3 flex items-center gap-3 flex-wrap">
           <span className="text-white/20 text-xs uppercase tracking-widest">
             UNLIMITED ROUNDS
           </span>
           <span className="text-white/60 text-xs font-mono tabular-nums">
             @ {diffLabel} DIFFICULTY
+          </span>
+          <span className="text-white/20 text-xs uppercase tracking-widest">
+            {useMetaUpgrades ? "META UPGRADES ON" : "META UPGRADES OFF"}
           </span>
           <span className="ml-auto text-white/20 text-xs uppercase tracking-widest">
             RESULTS NOT RECORDED

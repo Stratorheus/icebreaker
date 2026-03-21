@@ -308,19 +308,25 @@ export function WireCutting(props: MinigameProps) {
           {puzzle.wires.map((color, i) => {
             const isCut = cutWires.has(i);
             const isNext = hasWireOrderHint && i === nextWireIndex;
+            // When hint is active, dim non-target wires instead of highlighting target
+            const isDimmed = hasWireOrderHint && !isNext && !isCut;
             const wireColor = COLOR_CSS[color];
 
             return (
               <div
                 key={i}
-                className="flex flex-col items-center gap-2 cursor-pointer group"
+                className={`
+                  flex flex-col items-center gap-2 cursor-pointer group
+                  transition-opacity duration-200
+                  ${isDimmed ? "opacity-25" : "opacity-100"}
+                `}
                 onClick={() => handleNumberPress(i + 1)}
               >
                 {/* Wire number */}
                 <span
                   className={`
                     text-xs font-mono font-bold transition-colors duration-200
-                    ${isCut ? "text-white/20" : isNext ? "text-cyber-green" : "text-white/50 group-hover:text-white/80"}
+                    ${isCut ? "text-white/20" : "text-white/50 group-hover:text-white/80"}
                   `}
                 >
                   {i + 1}
@@ -336,7 +342,6 @@ export function WireCutting(props: MinigameProps) {
                     className={`
                       w-3 sm:w-4 h-full rounded-sm transition-all duration-200
                       ${!isCut ? "group-hover:shadow-[0_0_12px_var(--glow)]" : ""}
-                      ${isNext ? "shadow-[0_0_16px_var(--glow)]" : ""}
                     `}
                     style={
                       {
@@ -352,14 +357,6 @@ export function WireCutting(props: MinigameProps) {
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-full h-0.5 bg-white/30 rotate-12" />
                     </div>
-                  )}
-
-                  {/* Pulse ring for next wire -- ONLY with meta upgrade */}
-                  {isNext && !isCut && (
-                    <div
-                      className="absolute inset-0 rounded-sm border-2 animate-pulse"
-                      style={{ borderColor: wireColor }}
-                    />
                   )}
                 </div>
 
