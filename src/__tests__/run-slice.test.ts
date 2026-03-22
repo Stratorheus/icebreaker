@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import { createTestStore } from "./helpers/test-store";
 import { getStartingCredits, getEffectiveDamage } from "@/data/balancing";
 import type { PowerUpInstance } from "@/types/game";

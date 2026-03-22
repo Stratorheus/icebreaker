@@ -19,7 +19,7 @@ const gameSpecific = META_UPGRADE_POOL.filter((u) => u.category === "game-specif
 const tieredUpgrades = META_UPGRADE_POOL.filter((u) => u.maxTier > 1 && !u.stackable);
 
 // Dynamic-priced licenses
-const dynamicLicenses = licenses.filter((u) => u.dynamicPrice === true);
+const dynamicLicenses = licenses.filter((u) => (u as unknown as Record<string, unknown>).dynamicPrice === true);
 
 // ---------------------------------------------------------------------------
 // No duplicate IDs across the whole pool
