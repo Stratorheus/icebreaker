@@ -276,6 +276,22 @@ export function NetworkTrace(props: MinigameProps) {
           )}
         </div>
 
+        {/* Hidden test helper: maze wall data for E2E pathfinding */}
+        <span
+          data-testid="maze-data"
+          data-rows={rows}
+          data-cols={cols}
+          data-start={JSON.stringify(start)}
+          data-end={JSON.stringify(end)}
+          data-walls={JSON.stringify(cells.map(row => row.map(cell => ({
+            n: cell.north ? 1 : 0,
+            s: cell.south ? 1 : 0,
+            e: cell.east ? 1 : 0,
+            w: cell.west ? 1 : 0,
+          }))))}
+          className="hidden"
+        />
+
         {/* Legend */}
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest font-mono">
           <span className="flex items-center gap-1.5">
