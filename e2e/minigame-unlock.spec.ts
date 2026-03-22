@@ -66,18 +66,24 @@ test.describe("Minigame Unlock", () => {
     );
     expect(status).toBe("training");
 
-    // The training screen opens in briefing phase for the newly unlocked minigame
-    // Navigate to picker to see the full list
+    // The training screen opens in briefing phase for the newly unlocked minigame.
+    // Navigate back to menu, then re-enter Training so the component re-mounts
+    // in picker phase (trainingMinigame is now null after clearing it via back nav).
     await page.evaluate(() => {
       const store = (window as any).__GAME_STORE__;
       store.getState().setTrainingMinigame(null);
       store.getState().setTrainingOrigin(null);
-      store.getState().setStatus("training");
+      store.getState().setStatus("menu");
     });
+    await page.waitForTimeout(200);
+
+    // Re-enter Training — component mounts fresh with trainingMinigame=null → picker phase
+    await page.getByText("TRAINING").click();
     await page.waitForTimeout(300);
 
     // The picker should show the newly unlocked minigame
     const pickerItems = page.locator('[data-testid="minigame-picker-item"]');
+    await pickerItems.first().waitFor({ timeout: 5000 });
     const pickerCount = await pickerItems.count();
     // Should be more than the 5 starting minigames (at least 6 now)
     expect(pickerCount).toBeGreaterThan(5);
@@ -156,10 +162,13 @@ test.describe("Minigame Unlock", () => {
 
     // Navigate to Training
     await page.getByText("TRAINING").click();
+
+    // Wait for picker to render before counting items
+    const pickerItems = page.locator('[data-testid="minigame-picker-item"]');
+    await pickerItems.first().waitFor({ timeout: 5000 });
     await page.waitForTimeout(300);
 
     // Should see all 8 minigames (5 starting + 3 unlocked)
-    const pickerItems = page.locator('[data-testid="minigame-picker-item"]');
     const count = await pickerItems.count();
     expect(count).toBe(8);
 
@@ -189,6 +198,10 @@ test.describe("Minigame Unlock", () => {
       localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
     });
     await page.reload();
+
+    // Wait for the app to fully mount and the store to hydrate from localStorage
+    // before calling store actions (Zustand persist hydrates asynchronously)
+    await page.getByText("META SHOP").waitFor({ timeout: 5000 });
 
     // Start a run via store
     await page.evaluate(() => {

@@ -315,8 +315,8 @@ test.describe("Run Shop", () => {
     await page.waitForTimeout(300);
 
     // Should navigate to Codex view (verify some codex content appears)
-    // The Codex has a BACK button that returns to shop
-    const backButton = page.locator("button:has-text('BACK')");
+    // The Codex back button reads ">_ BACK TO VENDOR" when entered from vendor context
+    const backButton = page.getByRole("button", { name: /BACK TO VENDOR/i });
     await expect(backButton).toBeVisible({ timeout: 5000 });
 
     await backButton.click();

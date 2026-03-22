@@ -44,6 +44,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // -------------------------------------------------------------------------
   test("Thicker Armor tier 5 reduces fail damage by 25%", async ({ page }) => {
     // Inject thicker-armor tier 5 (25% damage reduction)
+    await page.goto("/");
     await setMetaUpgrades(page, { "thicker-armor": 5 });
 
     await startRunViaStore(page);
@@ -98,6 +99,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // 2. Credit Multiplier increases credit reward
   // -------------------------------------------------------------------------
   test("Credit Multiplier tier 5 increases credits earned", async ({ page }) => {
+    await page.goto("/");
     await setMetaUpgrades(page, { "credit-multiplier": 5 });
     await startRunViaStore(page);
 
@@ -177,6 +179,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // 3. Data Siphon increases data reward on quit
   // -------------------------------------------------------------------------
   test("Data Siphon tier 5 increases data reward on quit", async ({ page }) => {
+    await page.goto("/");
     await injectMeta(page, 0, { "data-siphon": 5 });
 
     await startRunViaStore(page);
@@ -212,6 +215,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // 4. Data Recovery reduces death penalty
   // -------------------------------------------------------------------------
   test("Data Recovery tier 6 reduces death penalty to 10%", async ({ page }) => {
+    await page.goto("/");
     await injectMeta(page, 0, { "data-recovery": 6 });
 
     await startRunViaStore(page);
@@ -264,6 +268,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // 5. Difficulty Reducer lowers effective difficulty
   // -------------------------------------------------------------------------
   test("Difficulty Reducer tier 5 lowers effective difficulty", async ({ page }) => {
+    await page.goto("/");
     await setMetaUpgrades(page, { "difficulty-reducer": 5 });
     await startRunViaStore(page);
 
