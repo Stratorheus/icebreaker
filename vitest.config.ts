@@ -12,5 +12,6 @@ export default defineConfig({
     globals: true,
     setupFiles: [],
     passWithNoTests: true,
+    exclude: ["e2e/**", "node_modules/**"],
   },
 });
