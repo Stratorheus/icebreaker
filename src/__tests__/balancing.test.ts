@@ -375,9 +375,7 @@ describe("getEffectiveCredits", () => {
     // getCredits(5000, 0.5) = Math.round(20*(1+0.5) * (1 + max(0, 1-5000/10000)*0.5))
     // = Math.round(30 * (1 + 0.5*0.5)) = Math.round(30 * 1.25) = 38
     const result = getEffectiveCredits(5000, 0.5, 0, 0, 0);
-    expect(result).toBe(result); // just check it's a number; exact value below
-    expect(typeof result).toBe("number");
-    expect(result).toBeGreaterThan(0);
+    expect(result).toBe(38);
   });
 
   it("creditTier compounds at 3% per tier", () => {
