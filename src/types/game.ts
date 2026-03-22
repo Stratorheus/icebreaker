@@ -46,14 +46,15 @@ export interface PowerUpEffect {
     | "highlight-danger"
     | "window-extend"
     | "peek-ahead"
-    | "flag-mine"
     | "minigame-specific"
     | "bracket-flash"
     | "time-siphon"
     | "deadline-override"
     | "cascade-clock"
     | "hp-leech"
-    | "floor-regen";
+    | "floor-regen"
+    | "extra-hint"
+    | "wire-color-labels";
   value: number;
   minigame?: MinigameType;
 }

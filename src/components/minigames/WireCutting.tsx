@@ -203,7 +203,7 @@ export function WireCutting(props: MinigameProps) {
   // Check if player has the "wire order hint" meta upgrade
   const hasWireOrderHint = useMemo(() => {
     return activePowerUps.some(
-      (p) => p.effect.type === "hint" && p.effect.minigame === "wire-cutting",
+      (p) => p.effect.type === "wire-color-labels" && p.effect.minigame === "wire-cutting",
     );
   }, [activePowerUps]);
 

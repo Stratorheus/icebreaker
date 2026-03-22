@@ -74,18 +74,7 @@ export function MineSweep(props: MinigameProps) {
   const resolvedRef = useRef(false);
   const isTouch = useTouchDevice();
 
-  // 2h. Sector Scanner (flag-mine): pre-reveal mines after preview ends
-  const flagMineCount = useMemo(() => {
-    let count = 0;
-    for (const pu of activePowerUps) {
-      if (pu.effect.type === "flag-mine" && (!pu.effect.minigame || pu.effect.minigame === "mine-sweep")) {
-        count += pu.effect.value;
-      }
-    }
-    return count;
-  }, [activePowerUps]);
-
-  // 3c. MineSweep minigame-specific (percentage of mines visible after preview)
+  // mine-echo meta upgrade: percentage of mines visible after preview
   const minesVisiblePct = useMemo(() => {
     let pct = 0;
     for (const pu of activePowerUps) {
@@ -105,25 +94,15 @@ export function MineSweep(props: MinigameProps) {
 
   const { cells, cols, rows, mineCount, previewMs } = grid;
 
-  // Pre-compute which mines to auto-flag and which to keep visible
-  const { autoFlaggedMines, visibleMines } = useMemo(() => {
+  // Pre-compute which mines to keep visible (mine-echo percentage)
+  const visibleMines = useMemo(() => {
+    if (minesVisiblePct <= 0) return new Set<number>();
     const mineIndices = cells
       .map((c, i) => (c.isMine ? i : -1))
       .filter((i) => i >= 0);
     const shuffled = [...mineIndices].sort(() => Math.random() - 0.5);
-
-    // Auto-flagged mines (from flag-mine power-up)
-    const flagCount = Math.min(flagMineCount, shuffled.length);
-    const autoFlagged = new Set(shuffled.slice(0, flagCount));
-
-    // Visible mines (from mine-echo meta upgrade, percentage-based) — pick from remaining
-    const remaining = shuffled.filter((i) => !autoFlagged.has(i));
-    const visCount = minesVisiblePct > 0
-      ? Math.min(Math.max(1, Math.round(mineCount * minesVisiblePct)), remaining.length)
-      : 0;
-    const visible = new Set(remaining.slice(0, visCount));
-
-    return { autoFlaggedMines: autoFlagged, visibleMines: visible };
+    const visCount = Math.min(Math.max(1, Math.round(mineCount * minesVisiblePct)), shuffled.length);
+    return new Set(shuffled.slice(0, visCount));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -180,7 +159,7 @@ export function MineSweep(props: MinigameProps) {
   }, [cursorCol]);
 
   // ── Marked cells (initialized with auto-flagged mines from flag-mine power-up)
-  const [markedCells, setMarkedCells] = useState<Set<number>>(() => new Set(autoFlaggedMines));
+  const [markedCells, setMarkedCells] = useState<Set<number>>(() => new Set());
   const markedCellsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -195,8 +174,8 @@ export function MineSweep(props: MinigameProps) {
 
       const cell = cells[cellIndex];
 
-      // Un-marking is allowed unless it was auto-flagged by Sector Scanner
-      if (markedCellsRef.current.has(cellIndex) && !autoFlaggedMines.has(cellIndex)) {
+      // Un-marking is allowed
+      if (markedCellsRef.current.has(cellIndex)) {
         setMarkedCells((prev) => {
           const next = new Set(prev);
           next.delete(cellIndex);
@@ -222,7 +201,7 @@ export function MineSweep(props: MinigameProps) {
         return next;
       });
     },
-    [isActive, mineCount, cells, fail, autoFlaggedMines],
+    [isActive, mineCount, cells, fail],
   );
 
   // Auto-complete when all mines are correctly marked

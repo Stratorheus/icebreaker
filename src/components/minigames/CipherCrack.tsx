@@ -148,7 +148,7 @@ export function CipherCrack(props: MinigameProps) {
   // Cipher Hint meta upgrade: show first letter of answer
   const extraHintLetter = useMemo(() => {
     const hint = activePowerUps.find(
-      (p) => p.effect.type === "hint" && p.effect.minigame === "cipher-crack",
+      (p) => p.effect.type === "extra-hint" && p.effect.minigame === "cipher-crack",
     );
     return hint ? hint.effect.value : 0;
   }, [activePowerUps]);

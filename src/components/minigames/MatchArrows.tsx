@@ -44,7 +44,7 @@ export function MatchArrows(props: MinigameProps) {
   const peekAhead = useMemo(() => {
     let count = 0;
     for (const pu of activePowerUps) {
-      if (pu.effect.type === "peek-ahead") {
+      if (pu.effect.type === "peek-ahead" && (!pu.effect.minigame || pu.effect.minigame === "match-arrows")) {
         const val = pu.effect.value;
         if (val < 1) {
           // Percentage-based (meta upgrade): use floor to avoid exceeding available slots
@@ -58,13 +58,6 @@ export function MatchArrows(props: MinigameProps) {
     // Cap at sequence length - 1 to prevent peeking beyond the last arrow
     return Math.min(count, rowLength - 1);
   }, [activePowerUps, rowLength]);
-
-  // Check if player has the "direction hint" meta upgrade
-  const hasDirectionHint = useMemo(() => {
-    return activePowerUps.some(
-      (p) => p.effect.type === "hint" && p.effect.minigame === "match-arrows",
-    );
-  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -183,27 +176,6 @@ export function MatchArrows(props: MinigameProps) {
           })}
         </div>
 
-        {/* Current arrow indicator -- ONLY if player has meta upgrade */}
-        {hasDirectionHint && currentIndex < sequence.length && (
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-white/40 text-xs uppercase tracking-widest">
-              Press
-            </p>
-            <div
-              className={`
-                flex items-center justify-center
-                w-20 h-20 sm:w-24 sm:h-24
-                rounded-xl border-2 border-cyber-green
-                shadow-[0_0_24px_rgba(0,255,65,0.3)]
-                bg-cyber-bg/80
-              `}
-            >
-              <span className="text-5xl sm:text-6xl font-mono font-bold text-cyber-green">
-                {getArrowChar(sequence[currentIndex])}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Arrow key hints (layout reference -- desktop) */}
