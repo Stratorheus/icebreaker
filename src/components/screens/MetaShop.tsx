@@ -518,14 +518,12 @@ function formatEffect(effect: { type: string; value: number; minigame?: string }
       return `+3% time limit (multiplicative)`;
     case "difficulty-reduction":
       return `-5% difficulty (multiplicative)`;
-    case "start-random-powerup":
-      return `${effect.value} random power-up(s)`;
+    // (start-random-powerup removed — quick-boot and dual-core were removed)
     case "start-hp":
       return `+${effect.value} bonus starting HP`;
     case "start-credits":
       return `+${effect.value} starting credits`;
-    case "guaranteed-heal-shop":
-      return "Guaranteed heal in floor 1 shop";
+    // (guaranteed-heal-shop removed — cache-primed was removed)
     case "unlock-minigame":
       return "Unlocks protocol (+5 max HP, +5% credits)";
     case "death-penalty-reduction":

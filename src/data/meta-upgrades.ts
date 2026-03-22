@@ -136,15 +136,8 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   },
 
   // ── STARTING BONUS ────────────────────────────────────────────────────────
-  {
-    id: "quick-boot",
-    name: "Quick Boot",
-    description: "Every run starts with a random power-up in your inventory.",
-    category: "starting-bonus",
-    maxTier: 1,
-    prices: [200],
-    effects: [{ type: "start-random-powerup", value: 1 }],
-  },
+  // (quick-boot removed — random starting power-ups were inconsistent value)
+  // (dual-core removed — depended on quick-boot, both removed together)
   {
     id: "overclocked",
     name: "Overclocked",
@@ -163,32 +156,20 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "head-start",
     name: "Head Start",
-    description: "Begin each run with 50 bonus credits already loaded.",
+    description: "Begin each run with bonus credits: +50/+125/+300/+600/+1000.",
     category: "starting-bonus",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "start-credits", value: 50 }],
+    maxTier: 5,
+    prices: [100, 250, 450, 700, 1000],
+    effects: [
+      { type: "start-credits", value: 50 },
+      { type: "start-credits", value: 125 },
+      { type: "start-credits", value: 300 },
+      { type: "start-credits", value: 600 },
+      { type: "start-credits", value: 1000 },
+    ],
   },
   // (pre-loaded removed — floor 1 is trivial, upgrade was wasted investment)
-  {
-    id: "cache-primed",
-    name: "Cache Primed",
-    description: "The run shop on floor 1 always offers a healing item.",
-    category: "starting-bonus",
-    maxTier: 1,
-    prices: [175],
-    effects: [{ type: "guaranteed-heal-shop", value: 1 }],
-  },
-  {
-    id: "dual-core",
-    name: "Dual Core",
-    description: "Start each run with 2 random power-ups (requires Quick Boot).",
-    category: "starting-bonus",
-    maxTier: 1,
-    prices: [350],
-    effects: [{ type: "start-random-powerup", value: 2 }],
-    requires: "quick-boot",
-  },
+  // (cache-primed removed — heal guarantee reduced shop variety and decision space)
 
   // ── PROTOCOL UNLOCK ──────────────────────────────────────────────────────
   {
