@@ -173,6 +173,8 @@ export function SlashTiming(props: MinigameProps) {
         onClick={handleSpace}
       >
         <div
+          data-testid="slash-phase"
+          data-phase={phase}
           className={`
             relative flex flex-col items-center justify-center
             w-56 h-56 sm:w-72 sm:h-72

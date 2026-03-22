@@ -499,6 +499,8 @@ export function SubnetScan(props: MinigameProps) {
             return (
               <button
                 key={idx}
+                data-testid="address"
+                data-correct={isCorrect}
                 type="button"
                 onClick={() => handleToggle(idx)}
                 disabled={!isActive || resolvedRef.current}

@@ -227,6 +227,9 @@ export function NetworkTrace(props: MinigameProps) {
                 bgClass = "bg-cyber-cyan/25";
                 content = (
                   <span
+                    data-testid="player"
+                    data-row={r}
+                    data-col={c}
                     className="text-cyber-cyan font-bold drop-shadow-[0_0_6px_rgba(0,255,255,0.8)]"
                     style={{ fontSize: cellPx * 0.5 }}
                   >
@@ -237,6 +240,9 @@ export function NetworkTrace(props: MinigameProps) {
                 bgClass = "bg-cyber-magenta/15 animate-pulse";
                 content = (
                   <span
+                    data-testid="end"
+                    data-row={r}
+                    data-col={c}
                     className="text-cyber-magenta font-bold drop-shadow-[0_0_6px_rgba(255,0,102,0.6)]"
                     style={{ fontSize: cellPx * 0.4 }}
                   >

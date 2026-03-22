@@ -599,6 +599,8 @@ function BriefingPhase({
                 return (
                   <div
                     key={upgrade.id}
+                    data-testid="upgrade-card"
+                    data-upgrade-id={upgrade.id}
                     className={`
                       border px-3 py-2.5 flex items-start gap-3 transition-colors duration-150
                       ${isActive
@@ -610,6 +612,8 @@ function BriefingPhase({
                     {/* Checkbox */}
                     <button
                       type="button"
+                      data-testid="upgrade-checkbox"
+                      data-checked={isActive}
                       onClick={() => handleToggleUpgrade(upgrade.id)}
                       className={`
                         mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center

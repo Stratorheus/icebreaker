@@ -441,6 +441,8 @@ export function PortScan(props: MinigameProps) {
             return (
               <button
                 key={idx}
+                data-testid="port-cell"
+                data-open={isOpen}
                 type="button"
                 onClick={() => handleToggle(idx)}
                 disabled={phase !== "select" || !isActive || resolvedRef.current}

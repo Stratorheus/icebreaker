@@ -315,6 +315,9 @@ export function WireCutting(props: MinigameProps) {
             return (
               <div
                 key={i}
+                data-testid="wire"
+                data-index={i}
+                data-next={i === nextWireIndex}
                 className={`
                   flex flex-col items-center gap-2 cursor-pointer group
                   transition-opacity duration-200

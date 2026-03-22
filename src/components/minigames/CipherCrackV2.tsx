@@ -362,6 +362,9 @@ export function CipherCrackV2(props: MinigameProps) {
         </p>
       </div>
 
+      {/* Hidden test helper: expected character */}
+      <span data-testid="expected-char" data-char={charIndex < puzzle.word.length ? puzzle.word[charIndex] : ""} className="hidden" />
+
       {/* Hidden input for mobile keyboard */}
       <input
         ref={hiddenInputRef}

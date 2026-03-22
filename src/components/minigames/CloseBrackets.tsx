@@ -253,6 +253,9 @@ export function CloseBrackets(props: MinigameProps) {
         </div>
       </div>
 
+      {/* Hidden test helper: expected closer key */}
+      <span data-testid="expected-closer" data-key={nextExpected ?? ""} className="hidden" />
+
       {/* Touch: bracket buttons + instruction */}
       <div className="touch-only mt-4 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">

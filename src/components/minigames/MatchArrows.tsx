@@ -176,6 +176,8 @@ export function MatchArrows(props: MinigameProps) {
           })}
         </div>
 
+        {/* Hidden test helper: expected arrow key */}
+        <span data-testid="expected-arrow" data-key={sequence[currentIndex]} className="hidden" />
       </div>
 
       {/* Arrow key hints (layout reference -- desktop) */}

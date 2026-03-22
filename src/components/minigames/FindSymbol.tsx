@@ -238,6 +238,7 @@ export function FindSymbol(props: MinigameProps) {
               return (
                 <div
                   key={i}
+                  {...(isCurrent ? { "data-testid": "target-symbol" } : {})}
                   className={`
                     flex items-center justify-center
                     w-12 h-10 sm:w-14 sm:h-12

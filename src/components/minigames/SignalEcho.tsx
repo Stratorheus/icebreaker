@@ -295,6 +295,7 @@ export function SignalEcho(props: MinigameProps) {
     return (
       <button
         key={panel.dir}
+        data-testid="echo-panel"
         type="button"
         onClick={() => handlePress(panel.dir)}
         disabled={!isActive || phase !== "input"}
@@ -395,6 +396,9 @@ export function SignalEcho(props: MinigameProps) {
           </div>
         </div>
       </div>
+
+      {/* Hidden test helper: echo sequence */}
+      <span data-testid="echo-sequence" data-sequence={JSON.stringify(sequence)} className="hidden" />
 
       {/* Arrow key hints — desktop */}
       <div className="desktop-only mt-4 text-center">

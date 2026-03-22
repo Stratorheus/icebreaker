@@ -310,6 +310,9 @@ export function MineSweep(props: MinigameProps) {
             return (
               <button
                 key={cell.id}
+                data-testid="cell"
+                data-mine={cell.isMine}
+                data-index={i}
                 type="button"
                 disabled={
                   !isActive || resolvedRef.current || phase === "preview"
