@@ -71,6 +71,7 @@ export interface PowerUpEffect {
     | "peek-ahead"
     | "flag-mine"
     | "minigame-specific"
+    | "bracket-flash"
     | "time-siphon"
     | "deadline-override"
     | "cascade-clock"

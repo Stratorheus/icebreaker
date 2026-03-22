@@ -424,7 +424,7 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 
 **Minigame unlocks**: 10 unlockable protocols (see section 4). Dynamic pricing: `200 + unlocksOwned * 100`. Some have prerequisites (e.g., cipher-crack-v2 requires cipher-crack-license).
 
-**Game-specific upgrades**: 17 upgrades that modify individual minigame behavior (bracket-reducer, mine-echo, symbol-scanner, arrow-preview, type-assist, wire-labels, cipher-hint, slash-window, bracket-mirror, symbol-magnifier, reverse-trainer, wire-schematic, slash-echo, defrag-safe-start, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper).
+**Game-specific upgrades**: 15 upgrades that modify individual minigame behavior (bracket-reducer, mine-echo, symbol-scanner, arrow-preview, wire-labels, cipher-hint, slash-window, bracket-mirror, reverse-trainer, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper). Removed: type-assist (weak), symbol-magnifier (ugly, scanner covers it), slash-calibration/bracket-auto-close/arrow-compass/mine-detector (run-shop assists, meta upgrades cover them).
 
 ### Stackable vs Tiered
 
@@ -449,7 +449,7 @@ Each unlocked minigame beyond the starting 5 grants +5 max HP and +5% global cre
 
 ## 7. Power-Up System
 
-### Run Shop Items (22 items in pool)
+### Run Shop Items (18 items in pool)
 
 Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 
@@ -487,13 +487,7 @@ Defined in `src/data/power-ups.ts` (`RUN_SHOP_POOL`). Categories:
 | Nano Repair | `heal-on-success` +5 HP per win (floor) | 45 |
 | HP Leech | `hp-leech` +2 HP after every protocol (floor) | 40 |
 
-**Assist** (4 items):
-| Item | Effect | Base Price |
-|---|---|---|
-| Slash Calibration | `window-extend` +20% for slash-timing | 40 |
-| Bracket Auto-Close | `auto-close` 1 bracket for close-brackets | 45 |
-| Arrow Compass | `peek-ahead` see 2 ahead for match-arrows | 40 |
-| Sector Scanner | `flag-mine` flag 1 mine for mine-sweep | 45 |
+**Assist**: All 4 run-shop assist items (Slash Calibration, Bracket Auto-Close, Arrow Compass, Sector Scanner) were removed -- their meta-upgrade counterparts (Slash Window, Bracket Reducer/Mirror, Arrow Preview, Mine Echo) provide better coverage.
 
 ### PowerUpEffect Type
 
@@ -507,6 +501,7 @@ interface PowerUpEffect {
     | "preview" | "hint" | "highlight-danger"
     | "window-extend" | "auto-close" | "reveal-first"
     | "peek-ahead" | "flag-mine" | "minigame-specific"
+    | "bracket-flash"
     | "time-siphon" | "deadline-override" | "cascade-clock"
     | "hp-leech" | "floor-regen";
   value: number;
@@ -523,7 +518,7 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 | Scope | Consumed When | Examples |
 |---|---|---|
 | Immediate | On purchase (never enters inventory) | `heal` items |
-| Per-minigame | After each game if `effect.minigame` matches | Slash Calibration, Arrow Compass, Sector Scanner |
+| Per-minigame | After each game if `effect.minigame` matches | (run-shop assists removed; meta upgrades are not consumed) |
 | Per-floor | On `advanceFloor()` | `time-bonus`, `heal-on-success`, `time-siphon`, `hp-leech` |
 | On-trigger | On fail event | `shield`, `damage-reduction`, `damage-reduction-stacked` |
 | On-trigger | Before active phase starts | `skip`, `skip-silent`, `skip-floor` |
@@ -663,8 +658,8 @@ Uses shadcn/ui dark theme (zinc base) with standard CSS custom properties (`--ba
 | `src/hooks/use-keyboard.ts` | Keyboard input registration (useKeyboard, useKeyPress) |
 | `src/hooks/use-touch-device.ts` | Touch device detection hook |
 | `src/data/balancing.ts` | All economy formulas: difficulty, damage, credits, time limits, prices |
-| `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 40+ persistent upgrades across 4 categories |
-| `src/data/power-ups.ts` | RUN_SHOP_POOL: 22 run-shop power-up items |
+| `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 39 persistent upgrades across 4 categories |
+| `src/data/power-ups.ts` | RUN_SHOP_POOL: 18 run-shop power-up items |
 | `src/data/achievements.ts` | ACHIEVEMENT_POOL: 30+ achievements with conditions and rewards |
 | `src/data/minigame-descriptions.ts` | MINIGAME_BRIEFINGS: rules, controls, tips, hints per minigame |
 | `src/data/minigame-names.ts` | MINIGAME_DISPLAY_NAMES: type ID to display name mapping |

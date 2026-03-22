@@ -71,11 +71,12 @@ export function NetworkTrace(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // Path Highlight module: briefly flash correct path
-  const hasPathHighlight = useMemo(() => {
-    return activePowerUps.some(
+  // Path Highlight module: show correct path for a fraction of the timer (tier value 0.25-1.0)
+  const pathHighlightFraction = useMemo(() => {
+    const pu = activePowerUps.find(
       (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "network-trace",
     );
+    return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
   // Generate maze on mount
@@ -89,17 +90,14 @@ export function NetworkTrace(props: MinigameProps) {
 
   // Solve the maze (for path highlight)
   const solutionPath = useMemo(() => {
-    if (!hasPathHighlight) return new Set<string>();
+    if (pathHighlightFraction <= 0) return new Set<string>();
     return solveMaze(maze);
-  }, [hasPathHighlight, maze]);
+  }, [pathHighlightFraction, maze]);
 
-  // Flash the path for 1s on mount
-  const [showPathHighlight, setShowPathHighlight] = useState(hasPathHighlight);
-  useEffect(() => {
-    if (!hasPathHighlight) return;
-    const timeout = setTimeout(() => setShowPathHighlight(false), 1000);
-    return () => clearTimeout(timeout);
-  }, [hasPathHighlight]);
+  // Show path while timer.progress > (1 - fraction).
+  // E.g. tier 1 (0.25): visible while progress > 0.75 (first 25% of time).
+  // Tier 4 (1.0): visible always (progress > 0).
+  const showPathHighlight = pathHighlightFraction > 0 && timer.progress > (1 - pathHighlightFraction);
 
   // ── Player position ────────────────────────────────────────────────
   const [playerRow, setPlayerRow] = useState(start[0]);

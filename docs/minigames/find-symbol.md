@@ -34,8 +34,7 @@ A grid of two-character hex codes is displayed alongside a target sequence at th
 
 | Power-Up | Source | Effect Type | Behavior |
 |----------|--------|-------------|----------|
-| **Symbol Scanner** | Meta upgrade (`symbol-scanner`) | `hint` + `find-symbol` | The current target hex code subtly pulses (`animate-pulse`) in the grid, making it easier to spot. |
-| **Symbol Magnifier** | Meta upgrade (`symbol-magnifier`) | `minigame-specific` + `find-symbol` | The target hex code in the grid is rendered at 1.3x font size (`scale = 1.3`). |
+| **Symbol Scanner** | Meta upgrade (`symbol-scanner`) | `hint` + `find-symbol` | The current target hex code is subtly highlighted (lighter text/border) in the grid, making it easier to spot. |
 | **Hint Module** | Run shop (`hint-module`) | `hint` | Shows a contextual hint during the countdown phase. |
 | **Time bonuses** | Run shop (various) | `time-bonus` | Adds seconds to the timer for this floor. |
 
@@ -79,7 +78,6 @@ Additional timing modifiers that affect the effective timer:
   - `puzzle` (memoized) -- contains `grid`, `targets`, `cols`, `rows`
 - **Power-up detection**:
   - `hasProximityHint` -- checks for `hint` effect on `find-symbol`
-  - `targetScale` -- checks for `minigame-specific` effect on `find-symbol`
 
 ## Tuning Guide
 
@@ -89,5 +87,5 @@ Additional timing modifiers that affect the effective timer:
 | Sequence length | `generatePuzzle`, line `const seqLen = Math.round(2 + difficulty * 3)` | Change `2` (min) or `3` (scale) |
 | Similar distractor threshold | `generatePuzzle`, condition `difficulty > 0.4` and probability `difficulty * 0.6` | Lower the threshold to introduce distractors earlier |
 | Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["find-symbol"]` | Currently `12` |
-| Magnifier scale | `FindSymbol.tsx`, `return magnifier ? 1.3 : 1` | Increase for a stronger visual boost |
+| Symbol Scanner hint | `FindSymbol.tsx`, `isTargetHinted` conditional styling | Adjust brightness values for stronger/weaker hint |
 | Hex alphabet | `HEX_CHARS` constant | Swap to a different character set for themed variants |

@@ -186,8 +186,7 @@ export function MinigameScreen() {
           failMinigame();
         }
 
-        // Consume minigame-specific power-ups (e.g. arrow-compass, mine-detector,
-        // slash-calibration, bracket-auto-close) — these should be one-use, not permanent.
+        // Consume minigame-specific run-shop power-ups (those with effect.minigame matching the current game).
         // Time-bonus power-ups persist through the entire floor (consumed in advanceFloor).
         // Deadline Override is single-use: consumed after the first minigame it's present for.
         const currentInventory = useGameStore.getState().inventory;
@@ -354,34 +353,30 @@ function buildMetaPowerUps(
 
   switch (type) {
     case "close-brackets":
-      // bracket-reducer → bracket-type-removal (1 bracket type removed)
-      addIfOwned("bracket-reducer", "minigame-specific", [1], "close-brackets");
-      // bracket-mirror → auto-close repurposed as flash signal (value = 0.3 s)
-      addIfOwned("bracket-mirror", "auto-close", [0.3], "close-brackets");
+      // bracket-reducer → minigame-specific (tier 1/2/3: removes slash/+pipe/+square bracket)
+      addIfOwned("bracket-reducer", "minigame-specific", [1, 2, 3], "close-brackets");
+      // bracket-mirror → bracket-flash (shows next expected closer briefly)
+      addIfOwned("bracket-mirror", "bracket-flash", [0.3], "close-brackets");
       break;
 
     case "mine-sweep":
-      // mine-echo → mines-visible (20% / 35% / 50% of mines shown during preview)
-      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.35, 0.50], "mine-sweep");
+      // mine-echo → mines-visible (20/30/40/50/60% of mines shown during preview)
+      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.30, 0.40, 0.50, 0.60], "mine-sweep");
       break;
 
     case "find-symbol":
       // symbol-scanner → hint (proximity blink)
       addIfOwned("symbol-scanner", "hint", [1], "find-symbol");
-      // symbol-magnifier → minigame-specific (scale value 1.3)
-      addIfOwned("symbol-magnifier", "minigame-specific", [1], "find-symbol");
       break;
 
     case "match-arrows":
-      // arrow-preview → peek-ahead (15% / 25% / 40% of sequence previewed)
-      addIfOwned("arrow-preview", "peek-ahead", [0.15, 0.25, 0.40], "match-arrows");
+      // arrow-preview → peek-ahead (20/30/40/50/60% of sequence previewed)
+      addIfOwned("arrow-preview", "peek-ahead", [0.20, 0.30, 0.40, 0.50, 0.60], "match-arrows");
       break;
 
     case "type-backward":
-      // type-assist → hint (first letter shown)
-      addIfOwned("type-assist", "hint", [1], "type-backward");
-      // reverse-trainer → minigame-specific (word length shown)
-      addIfOwned("reverse-trainer", "minigame-specific", [1], "type-backward");
+      // reverse-trainer (Autocorrect) → minigame-specific (fraction of words shown normally)
+      addIfOwned("reverse-trainer", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "type-backward");
       break;
 
     case "wire-cutting":
@@ -403,8 +398,8 @@ function buildMetaPowerUps(
       break;
 
     case "network-trace":
-      // network-trace-highlight → briefly flash correct path (1000ms)
-      addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");
+      // network-trace-highlight → path visible for 25/50/75/100% of timer
+      addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");
       break;
 
     case "signal-echo":

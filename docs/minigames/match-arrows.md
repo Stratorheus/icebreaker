@@ -16,11 +16,7 @@ A row of arrow slots is displayed. The first arrow is revealed; the rest are hid
    - Correct: `currentIndex` increments. If `currentIndex >= sequence.length`, `complete(true)` is called.
    - Wrong: immediate `fail()`.
 
-3. **Peek-ahead**: Some power-ups reveal arrows beyond the current one. The number of peeked arrows is determined by `peekAhead`:
-   - Percentage-based (meta upgrade): `count = round(rowLength * value)` where value is 0.15/0.25/0.40.
-   - Fixed count (run-shop): `count = value` (e.g. 2 for Arrow Compass).
-   - The higher value wins.
-   - Peeked arrows display with a yellow/amber styling instead of `?`.
+3. **Peek-ahead**: The Arrow Preview meta upgrade (5 tiers) reveals arrows beyond the current one. The number of peeked arrows is: `count = round(rowLength * value)` where value is 0.20/0.30/0.40/0.50/0.60. Peeked arrows display with a yellow/amber styling instead of `?`.
 
 4. **Direction hint**: If the player has the `hint` + `match-arrows` meta upgrade, a large "Press [arrow]" indicator is displayed below the sequence row, making the current arrow unmissable.
 
@@ -38,8 +34,7 @@ Note: There is no speed scaling within this minigame. Difficulty only affects th
 
 | Power-Up | Source | Effect Type | Behavior |
 |----------|--------|-------------|----------|
-| **Arrow Preview** (T1/T2/T3) | Meta upgrade (`arrow-preview`) | `peek-ahead` | Pre-reveals 15%/25%/40% of the sequence length ahead of the current arrow. Peeked arrows show in yellow. |
-| **Arrow Compass** | Run shop (`arrow-compass`) | `peek-ahead` | See 2 arrows ahead (fixed count, not percentage). |
+| **Arrow Preview** (5 tiers) | Meta upgrade (`arrow-preview`) | `peek-ahead` | Pre-reveals 20/30/40/50/60% of the sequence length ahead of the current arrow. Peeked arrows show in yellow. |
 | **Direction Hint** | Meta upgrade (via `hint` + `match-arrows`) | `hint` | Displays a large current-arrow indicator below the row (desktop: "Press [arrow]" with a large glow box). |
 | **Time bonuses** | Run shop (various) | `time-bonus` | Adds seconds to the timer for this floor. |
 
@@ -86,6 +81,6 @@ Additional timing modifiers that affect the effective timer:
 |----------------|-------|-------|
 | Row length range | Lines `rowMin = Math.round(3 + difficulty * 4)` and `rowMax = Math.round(5 + difficulty * 5)` | Adjust base and scale factors |
 | No-triple-repeat rule | Post-processing loop at line 74 | Remove or loosen for harder sequences |
-| Peek-ahead values | `meta-upgrades.ts` (`arrow-preview` effects: 0.15/0.25/0.40) and `power-ups.ts` (`arrow-compass` value: 2) | Increase values for more generous previews |
+| Peek-ahead values | `meta-upgrades.ts` (`arrow-preview` effects: 0.20/0.30/0.40/0.50/0.60) | Increase values for more generous previews |
 | Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["match-arrows"]` | Currently `8` |
 | Direction hint visibility | `hasDirectionHint` check | Always show by removing the power-up gate for an easier default |

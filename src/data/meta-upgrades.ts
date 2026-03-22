@@ -2,7 +2,7 @@ import type { MetaUpgrade } from "@/types/shop";
 
 /**
  * Persistent meta-upgrade pool — purchased with data (◆) between runs.
- * 28 upgrades across all four categories.
+ * 39 upgrades across all four categories.
  */
 export const META_UPGRADE_POOL: MetaUpgrade[] = [
   // ── STAT — stackable (infinite) ────────────────────────────────────────────
@@ -287,29 +287,35 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "bracket-reducer",
     name: "Bracket Reducer",
-    description: "Removes one bracket type from Code Inject, reducing complexity.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [200],
-    effects: [{ type: "bracket-type-removal", value: 1, minigame: "close-brackets" }],
-  },
-  {
-    id: "mine-echo",
-    name: "Memory Echo",
-    description: "20 / 35 / 50 % of corrupted sectors remain visible at the start of Memory Scan.",
+    description: "Removes bracket types from Code Inject. Tier 1: slash, Tier 2: +pipe, Tier 3: +square brackets. Remaining: ( { <",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 500],
     effects: [
-      { type: "mines-visible", value: 0.20, minigame: "mine-sweep" },
-      { type: "mines-visible", value: 0.35, minigame: "mine-sweep" },
-      { type: "mines-visible", value: 0.50, minigame: "mine-sweep" },
+      { type: "minigame-specific", value: 1, minigame: "close-brackets" },
+      { type: "minigame-specific", value: 2, minigame: "close-brackets" },
+      { type: "minigame-specific", value: 3, minigame: "close-brackets" },
+    ],
+  },
+  {
+    id: "mine-echo",
+    name: "Memory Echo",
+    description: "20/30/40/50/60% of corrupted sectors remain visible at the start of Memory Scan.",
+    category: "game-specific",
+    maxTier: 5,
+    prices: [150, 250, 400, 600, 850],
+    effects: [
+      { type: "minigame-specific", value: 0.20, minigame: "mine-sweep" },
+      { type: "minigame-specific", value: 0.30, minigame: "mine-sweep" },
+      { type: "minigame-specific", value: 0.40, minigame: "mine-sweep" },
+      { type: "minigame-specific", value: 0.50, minigame: "mine-sweep" },
+      { type: "minigame-specific", value: 0.60, minigame: "mine-sweep" },
     ],
   },
   {
     id: "symbol-scanner",
     name: "Symbol Scanner",
-    description: "The target hex code subtly pulses in the grid in Address Lookup.",
+    description: "The target hex code is subtly highlighted in the grid in Address Lookup.",
     category: "game-specific",
     maxTier: 1,
     prices: [200],
@@ -318,25 +324,19 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "arrow-preview",
     name: "Arrow Preview",
-    description: "15 / 25 / 40 % of the arrow sequence is pre-revealed in Packet Route.",
+    description: "20/30/40/50/60% of the arrow sequence is pre-revealed in Packet Route.",
     category: "game-specific",
-    maxTier: 3,
-    prices: [150, 300, 450],
+    maxTier: 5,
+    prices: [150, 250, 400, 600, 850],
     effects: [
-      { type: "arrows-revealed", value: 0.15, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 0.25, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.20, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.30, minigame: "match-arrows" },
       { type: "arrows-revealed", value: 0.40, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.50, minigame: "match-arrows" },
+      { type: "arrows-revealed", value: 0.60, minigame: "match-arrows" },
     ],
   },
-  {
-    id: "type-assist",
-    name: "Type Assist",
-    description: "The first letter of the word is shown in Decrypt Signal.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [175],
-    effects: [{ type: "first-letter-shown", value: 1, minigame: "type-backward" }],
-  },
+  // (type-assist removed — weak effect, reverse-trainer covers Decrypt Signal)
   {
     id: "wire-labels",
     name: "Wire Guide",
@@ -373,23 +373,20 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [150],
     effects: [{ type: "bracket-flash", value: 0.3, minigame: "close-brackets" }],
   },
-  {
-    id: "symbol-magnifier",
-    name: "Symbol Magnifier",
-    description: "The target symbol is displayed 30 % larger in Address Lookup.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "symbol-scale", value: 1.3, minigame: "find-symbol" }],
-  },
+  // (symbol-magnifier removed — ugly, symbol-scanner covers Address Lookup)
   {
     id: "reverse-trainer",
-    name: "Reverse Trainer",
-    description: "Words are shown in normal order (not reversed) in Decrypt Signal — just type them.",
+    name: "Autocorrect",
+    description: "Shows 25/50/75/100% of words in normal order in Decrypt Signal. Corrected words are marked.",
     category: "game-specific",
-    maxTier: 1,
-    prices: [150],
-    effects: [{ type: "word-length-shown", value: 1, minigame: "type-backward" }],
+    maxTier: 4,
+    prices: [150, 300, 500, 750],
+    effects: [
+      { type: "minigame-specific", value: 0.25, minigame: "type-backward" },
+      { type: "minigame-specific", value: 0.50, minigame: "type-backward" },
+      { type: "minigame-specific", value: 0.75, minigame: "type-backward" },
+      { type: "minigame-specific", value: 1.0, minigame: "type-backward" },
+    ],
   },
   // (wire-schematic removed — preview effect was never implemented)
   // (slash-echo removed — game has no audio system)
@@ -399,11 +396,16 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "network-trace-highlight",
     name: "Path Highlight",
-    description: "Briefly flashes the correct path at the start of Network Trace (1 s).",
+    description: "Shows the correct path for 25/50/75/100% of the timer in Network Trace.",
     category: "game-specific",
-    maxTier: 1,
-    prices: [200],
-    effects: [{ type: "minigame-specific", value: 1000, minigame: "network-trace" }],
+    maxTier: 4,
+    prices: [150, 300, 500, 750],
+    effects: [
+      { type: "minigame-specific", value: 0.25, minigame: "network-trace" },
+      { type: "minigame-specific", value: 0.50, minigame: "network-trace" },
+      { type: "minigame-specific", value: 0.75, minigame: "network-trace" },
+      { type: "minigame-specific", value: 1.0, minigame: "network-trace" },
+    ],
   },
   {
     id: "signal-echo-slow",

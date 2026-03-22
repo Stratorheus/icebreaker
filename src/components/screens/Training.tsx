@@ -99,22 +99,20 @@ function buildMetaPowerUps(
 
   switch (type) {
     case "close-brackets":
-      addIfOwned("bracket-reducer", "minigame-specific", [1], "close-brackets");
-      addIfOwned("bracket-mirror", "auto-close", [0.3], "close-brackets");
+      addIfOwned("bracket-reducer", "minigame-specific", [1, 2, 3], "close-brackets");
+      addIfOwned("bracket-mirror", "bracket-flash", [0.3], "close-brackets");
       break;
     case "mine-sweep":
-      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.35, 0.50], "mine-sweep");
+      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.30, 0.40, 0.50, 0.60], "mine-sweep");
       break;
     case "find-symbol":
       addIfOwned("symbol-scanner", "hint", [1], "find-symbol");
-      addIfOwned("symbol-magnifier", "minigame-specific", [1], "find-symbol");
       break;
     case "match-arrows":
-      addIfOwned("arrow-preview", "peek-ahead", [0.15, 0.25, 0.40], "match-arrows");
+      addIfOwned("arrow-preview", "peek-ahead", [0.20, 0.30, 0.40, 0.50, 0.60], "match-arrows");
       break;
     case "type-backward":
-      addIfOwned("type-assist", "hint", [1], "type-backward");
-      addIfOwned("reverse-trainer", "minigame-specific", [1], "type-backward");
+      addIfOwned("reverse-trainer", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "type-backward");
       break;
     case "wire-cutting":
       addIfOwned("wire-labels", "hint", [1], "wire-cutting");
@@ -128,7 +126,7 @@ function buildMetaPowerUps(
     case "defrag":
       break;
     case "network-trace":
-      addIfOwned("network-trace-highlight", "minigame-specific", [1000], "network-trace");
+      addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");
       break;
     case "signal-echo":
       addIfOwned("signal-echo-slow", "minigame-specific", [0.3], "signal-echo");
