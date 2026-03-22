@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import type { MinigameType } from "@/types/game";
+import type { MinigameType, PowerUpInstance, PowerUpEffect } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { MINIGAME_COMPONENTS, buildMetaPowerUps, getMinigameDisplayName, getMinigameBriefing } from "@/data/minigames/registry";
+import { MINIGAME_COMPONENTS, MINIGAME_REGISTRY, getMinigameDisplayName, getMinigameBriefing } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
@@ -23,6 +23,16 @@ const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Per-minigame training settings
+// ---------------------------------------------------------------------------
+
+type MinigameTrainingSettings = {
+  difficulty: number;
+  activeUpgradeIds: Set<string>;
+  upgradeTiers: Record<string, number>;
+};
+
+// ---------------------------------------------------------------------------
 // Training screen phases
 // ---------------------------------------------------------------------------
 
@@ -34,9 +44,11 @@ type TrainingPhase = "picker" | "briefing" | "countdown" | "active" | "round-res
 
 export function Training() {
   const trainingMinigame = useGameStore((s) => s.trainingMinigame);
+  const trainingOrigin = useGameStore((s) => s.trainingOrigin);
   const markBriefingSeen = useGameStore((s) => s.markBriefingSeen);
   const setStatus = useGameStore((s) => s.setStatus);
   const setTrainingMinigame = useGameStore((s) => s.setTrainingMinigame);
+  const setTrainingOrigin = useGameStore((s) => s.setTrainingOrigin);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
 
   // If trainingMinigame is already set (from unlock flow), skip picker
@@ -47,36 +59,83 @@ export function Training() {
   const [countdownValue, setCountdownValue] = useState(3);
   const [lastSuccess, setLastSuccess] = useState<boolean | null>(null);
   const [roundResults, setRoundResults] = useState<boolean[]>([]);
-  const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
-  const [useMetaUpgrades, setUseMetaUpgrades] = useState(false);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+
+  // Per-minigame settings — remembered across picker/briefing/result within the same Training session
+  const [perMinigameSettings, setPerMinigameSettings] = useState<
+    Partial<Record<MinigameType, MinigameTrainingSettings>>
+  >({});
 
   const type = trainingMinigame;
 
-  const handleBack = useCallback(() => {
-    setTrainingMinigame(null);
-    setStatus("menu");
-  }, [setTrainingMinigame, setStatus]);
+  // Current settings for the active minigame
+  const currentSettings: MinigameTrainingSettings = type
+    ? perMinigameSettings[type] ?? {
+        difficulty: 0.3,
+        activeUpgradeIds: new Set<string>(),
+        upgradeTiers: {},
+      }
+    : { difficulty: 0.3, activeUpgradeIds: new Set<string>(), upgradeTiers: {} };
 
-  const handleFinish = useCallback(() => {
+  const handleSettingsChange = useCallback((s: MinigameTrainingSettings) => {
+    if (!type) return;
+    setPerMinigameSettings(prev => ({ ...prev, [type]: s }));
+  }, [type]);
+
+  // Picker back: go to menu, reset origin
+  const handlePickerBack = useCallback(() => {
+    setTrainingMinigame(null);
+    setTrainingOrigin(null);
+    setStatus("menu");
+  }, [setTrainingMinigame, setTrainingOrigin, setStatus]);
+
+  // Briefing back: origin-aware
+  const handleBriefingBack = useCallback(() => {
+    if (trainingOrigin === "meta-shop") {
+      // Return to meta shop
+      setTrainingMinigame(null);
+      setTrainingOrigin(null);
+      setStatus("meta-shop");
+    } else {
+      // Return to picker
+      setTrainingMinigame(null);
+      setPhase("picker");
+    }
+  }, [trainingOrigin, setTrainingMinigame, setTrainingOrigin, setStatus]);
+
+  // Continue training: result -> briefing (preserves settings)
+  const handleContinue = useCallback(() => {
+    if (type) markBriefingSeen(type);
+    setPhase("briefing");
+    setRound(1);
+    setRoundResults([]);
+    setLastSuccess(null);
+  }, [type, markBriefingSeen]);
+
+  // Back to list: result -> picker
+  const handleBackToList = useCallback(() => {
     if (type) markBriefingSeen(type);
     setTrainingMinigame(null);
-    setStatus("menu");
-  }, [type, markBriefingSeen, setTrainingMinigame, setStatus]);
+    setTrainingOrigin(null);
+    setPhase("picker");
+  }, [type, markBriefingSeen, setTrainingMinigame, setTrainingOrigin]);
+
+  // Open meta shop from briefing
+  const handleOpenMetaShop = useCallback(() => {
+    // Go to meta shop but trainingMinigame stays set so we can return
+    setStatus("meta-shop");
+  }, [setStatus]);
 
   // When a game is picked from the picker phase
-  const handlePickGame = useCallback(
-    (pickedType: MinigameType, difficulty: number, metaUpgrades: boolean) => {
-      setTrainingMinigame(pickedType);
-      setSelectedDifficulty(difficulty);
-      setUseMetaUpgrades(metaUpgrades);
-      setPhase("briefing");
-      setRound(1);
-      setRoundResults([]);
-      setLastSuccess(null);
-    },
-    [setTrainingMinigame],
-  );
+  const handlePickGame = useCallback((pickedType: MinigameType) => {
+    setTrainingMinigame(pickedType);
+    const origin = useGameStore.getState().trainingOrigin;
+    if (!origin) useGameStore.getState().setTrainingOrigin("picker");
+    setPhase("briefing");
+    setRound(1);
+    setRoundResults([]);
+    setLastSuccess(null);
+  }, [setTrainingMinigame]);
 
   // Countdown effect
   useEffect(() => {
@@ -135,13 +194,13 @@ export function Training() {
     [],
   );
 
-  // Picker phase: show list of unlocked minigames with difficulty selection
+  // Picker phase: show list of unlocked minigames
   if (phase === "picker") {
     return (
       <PickerPhase
         unlockedMinigames={unlockedMinigames}
         onPick={handlePickGame}
-        onBack={handleBack}
+        onBack={handlePickerBack}
       />
     );
   }
@@ -154,7 +213,7 @@ export function Training() {
         </p>
         <button
           type="button"
-          onClick={handleBack}
+          onClick={handlePickerBack}
           className="py-2 px-6 text-sm uppercase tracking-widest font-mono border border-white/20 text-white/50 hover:bg-white/5 hover:text-white/80 transition-colors duration-150 cursor-pointer select-none"
         >
           {">"}_&nbsp;BACK
@@ -172,12 +231,13 @@ export function Training() {
         <BriefingPhase
           type={type}
           briefing={briefing}
-          difficulty={selectedDifficulty}
-          useMetaUpgrades={useMetaUpgrades}
+          settings={currentSettings}
+          onSettingsChange={handleSettingsChange}
           onBegin={() => {
             setPhase("countdown");
           }}
-          onBack={handleBack}
+          onBack={handleBriefingBack}
+          onOpenMetaShop={handleOpenMetaShop}
         />
       )}
 
@@ -195,8 +255,7 @@ export function Training() {
         <div className="flex-1 flex items-center justify-center px-4">
           <ActiveRound
             type={type}
-            difficulty={selectedDifficulty}
-            useMetaUpgrades={useMetaUpgrades}
+            settings={currentSettings}
             onComplete={handleRoundComplete}
           />
         </div>
@@ -216,7 +275,8 @@ export function Training() {
           <CompletePhase
             type={type}
             results={roundResults}
-            onFinish={handleFinish}
+            onContinue={handleContinue}
+            onBackToList={handleBackToList}
           />
         </div>
       )}
@@ -291,7 +351,7 @@ export function Training() {
 }
 
 // ---------------------------------------------------------------------------
-// Picker phase — choose minigame + difficulty
+// Picker phase — choose minigame (simplified: no global difficulty/toggle)
 // ---------------------------------------------------------------------------
 
 function PickerPhase({
@@ -300,12 +360,9 @@ function PickerPhase({
   onBack,
 }: {
   unlockedMinigames: MinigameType[];
-  onPick: (type: MinigameType, difficulty: number, metaUpgrades: boolean) => void;
+  onPick: (type: MinigameType) => void;
   onBack: () => void;
 }) {
-  const [selectedDifficulty, setSelectedDifficulty] = useState(0.3);
-  const [useMetaUpgrades, setUseMetaUpgrades] = useState(false);
-
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
       {/* Header */}
@@ -321,66 +378,6 @@ function PickerPhase({
         </p>
       </div>
 
-      {/* Difficulty selector */}
-      <div className="w-full max-w-2xl mb-6">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-3">
-          DIFFICULTY
-        </p>
-        <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
-          {DIFFICULTY_OPTIONS.map((opt) => (
-            <button
-              key={opt.label}
-              type="button"
-              onClick={() => setSelectedDifficulty(opt.value)}
-              className={`
-                py-1.5 px-2
-                text-[10px] uppercase tracking-widest font-mono
-                border transition-colors duration-150
-                cursor-pointer select-none
-                ${
-                  selectedDifficulty === opt.value
-                    ? "border-cyber-cyan/60 text-cyber-cyan bg-cyber-cyan/10"
-                    : "border-white/10 text-white/40 hover:bg-white/5 hover:text-white/60"
-                }
-              `}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Meta upgrades toggle */}
-      <div className="w-full max-w-2xl mb-6">
-        <label className="flex items-center gap-3 cursor-pointer select-none group">
-          <div
-            className={`
-              w-8 h-4 rounded-full relative transition-colors duration-150
-              ${useMetaUpgrades ? "bg-cyber-cyan/30 border-cyber-cyan/50" : "bg-white/5 border-white/15"}
-              border
-            `}
-            onClick={() => setUseMetaUpgrades((v) => !v)}
-          >
-            <div
-              className={`
-                absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-all duration-150
-                ${useMetaUpgrades ? "left-4 bg-cyber-cyan" : "left-0.5 bg-white/30"}
-              `}
-            />
-          </div>
-          <span
-            className={`
-              text-[10px] uppercase tracking-[0.3em] font-mono
-              ${useMetaUpgrades ? "text-cyber-cyan" : "text-white/30"}
-              group-hover:text-white/50 transition-colors duration-150
-            `}
-            onClick={() => setUseMetaUpgrades((v) => !v)}
-          >
-            APPLY META UPGRADES
-          </span>
-        </label>
-      </div>
-
       {/* Minigame list */}
       <div className="w-full max-w-2xl space-y-2 mb-8">
         {unlockedMinigames.map((type) => {
@@ -388,7 +385,7 @@ function PickerPhase({
             <button
               key={type}
               type="button"
-              onClick={() => onPick(type, selectedDifficulty, useMetaUpgrades)}
+              onClick={() => onPick(type)}
               className="
                 w-full flex items-center justify-between
                 px-4 py-3
@@ -432,36 +429,71 @@ function PickerPhase({
 }
 
 // ---------------------------------------------------------------------------
-// Briefing phase
+// Briefing phase — with per-minigame difficulty + upgrade checkboxes
 // ---------------------------------------------------------------------------
 
 function BriefingPhase({
   type,
   briefing,
-  difficulty,
-  useMetaUpgrades,
+  settings,
+  onSettingsChange,
   onBegin,
   onBack,
+  onOpenMetaShop,
 }: {
   type: MinigameType;
   briefing: MinigameBriefing;
-  difficulty: number;
-  useMetaUpgrades: boolean;
+  settings: MinigameTrainingSettings;
+  onSettingsChange: (s: MinigameTrainingSettings) => void;
   onBegin: () => void;
   onBack: () => void;
+  onOpenMetaShop: () => void;
 }) {
   const onBeginRef = useRef(onBegin);
   onBeginRef.current = onBegin;
   const isTouch = useTouchDevice();
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
 
-  // Build meta power-ups for display
-  const metaPowerUps = useMemo(() => {
-    if (!useMetaUpgrades) return [];
-    return buildMetaPowerUps(purchasedUpgrades, type);
-  }, [useMetaUpgrades, type, purchasedUpgrades]);
+  // Get game-specific upgrades from registry
+  const gameUpgrades = useMemo(() => {
+    const config = MINIGAME_REGISTRY[type];
+    return config.metaUpgrades.filter(u => (purchasedUpgrades[u.id] ?? 0) > 0);
+  }, [type, purchasedUpgrades]);
 
-  const diffLabel = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty)?.label ?? "CUSTOM";
+  const diffLabel = DIFFICULTY_OPTIONS.find((d) => d.value === settings.difficulty)?.label ?? "CUSTOM";
+  const activeCount = settings.activeUpgradeIds.size;
+
+  // Toggle upgrade checkbox
+  const handleToggleUpgrade = useCallback((upgradeId: string) => {
+    const newIds = new Set(settings.activeUpgradeIds);
+    if (newIds.has(upgradeId)) {
+      newIds.delete(upgradeId);
+    } else {
+      newIds.add(upgradeId);
+      // Initialize tier to max purchased if not set
+      if (settings.upgradeTiers[upgradeId] === undefined) {
+        const maxTier = purchasedUpgrades[upgradeId] ?? 1;
+        onSettingsChange({
+          ...settings,
+          activeUpgradeIds: newIds,
+          upgradeTiers: { ...settings.upgradeTiers, [upgradeId]: maxTier },
+        });
+        return;
+      }
+    }
+    onSettingsChange({ ...settings, activeUpgradeIds: newIds });
+  }, [settings, onSettingsChange, purchasedUpgrades]);
+
+  // Change upgrade tier
+  const handleTierChange = useCallback((upgradeId: string, delta: number) => {
+    const maxTier = purchasedUpgrades[upgradeId] ?? 1;
+    const current = settings.upgradeTiers[upgradeId] ?? maxTier;
+    const next = Math.max(1, Math.min(maxTier, current + delta));
+    onSettingsChange({
+      ...settings,
+      upgradeTiers: { ...settings.upgradeTiers, [upgradeId]: next },
+    });
+  }, [settings, onSettingsChange, purchasedUpgrades]);
 
   return (
     <div className="flex-1 flex flex-col items-center px-4 pb-12 overflow-y-auto">
@@ -479,6 +511,35 @@ function BriefingPhase({
       </div>
 
       <div className="w-full max-w-2xl space-y-6">
+        {/* Difficulty selector */}
+        <section>
+          <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-3">
+            DIFFICULTY
+          </p>
+          <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
+            {DIFFICULTY_OPTIONS.map((opt) => (
+              <button
+                key={opt.label}
+                type="button"
+                onClick={() => onSettingsChange({ ...settings, difficulty: opt.value })}
+                className={`
+                  py-1.5 px-2
+                  text-[10px] uppercase tracking-widest font-mono
+                  border transition-colors duration-150
+                  cursor-pointer select-none
+                  ${
+                    settings.difficulty === opt.value
+                      ? "border-cyber-cyan/60 text-cyber-cyan bg-cyber-cyan/10"
+                      : "border-white/10 text-white/40 hover:bg-white/5 hover:text-white/60"
+                  }
+                `}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
         {/* Rules */}
         <section className="border border-white/10 bg-white/[0.02] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-3">
@@ -519,44 +580,128 @@ function BriefingPhase({
           </ul>
         </section>
 
-        {/* Active meta upgrades — card grid */}
-        {useMetaUpgrades && metaPowerUps.length > 0 && (
-          <section>
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
-              {">"}_&nbsp;ACTIVE META UPGRADES
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {metaPowerUps.map((pu, i) => {
-                // Extract tier from purchasedUpgrades: pu.id is "meta-{upgradeId}"
-                const upgradeId = pu.id.replace(/^meta-/, "");
-                const tier = purchasedUpgrades[upgradeId] ?? 0;
+        {/* Per-upgrade checkboxes */}
+        <section>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
+            {">"}_&nbsp;META UPGRADES
+          </h2>
+          {gameUpgrades.length > 0 ? (
+            <div className="space-y-2">
+              {gameUpgrades.map((upgrade) => {
+                const isActive = settings.activeUpgradeIds.has(upgrade.id);
+                const maxTier = purchasedUpgrades[upgrade.id] ?? 1;
+                const selectedTier = settings.upgradeTiers[upgrade.id] ?? maxTier;
+                const effect = upgrade.effects[selectedTier - 1];
+                const effectDesc = effect
+                  ? `${upgrade.name}: ${formatUpgradeEffect(effect, selectedTier)}`
+                  : upgrade.description;
+
                 return (
                   <div
-                    key={i}
-                    className="border border-cyber-green/20 bg-cyber-green/[0.04] px-3 py-2.5"
+                    key={upgrade.id}
+                    className={`
+                      border px-3 py-2.5 flex items-start gap-3 transition-colors duration-150
+                      ${isActive
+                        ? "border-cyber-green/40 bg-cyber-green/[0.06]"
+                        : "border-white/10 bg-white/[0.02]"
+                      }
+                    `}
                   >
-                    <div className="flex items-center justify-between mb-0.5">
-                      <p className="text-xs font-bold text-cyber-green uppercase tracking-wider">
-                        {pu.name}
+                    {/* Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => handleToggleUpgrade(upgrade.id)}
+                      className={`
+                        mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center
+                        cursor-pointer select-none transition-colors duration-150
+                        ${isActive
+                          ? "border-cyber-green/60 bg-cyber-green/20 text-cyber-green"
+                          : "border-white/20 bg-white/[0.03] text-transparent hover:border-white/40"
+                        }
+                      `}
+                      aria-label={`Toggle ${upgrade.name}`}
+                    >
+                      {isActive && <span className="text-[10px] leading-none">&#10003;</span>}
+                    </button>
+
+                    {/* Name + Description */}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-cyber-green" : "text-white/40"}`}>
+                        {upgrade.name}
                       </p>
-                      <span className="text-[10px] font-mono text-cyber-green/60 uppercase tracking-wider">
-                        Lv.&nbsp;{tier}
-                      </span>
+                      <p className="text-[10px] text-white/40 leading-relaxed mt-0.5">
+                        {effectDesc}
+                      </p>
                     </div>
-                    <p className="text-[10px] text-white/40 leading-relaxed">
-                      {pu.description}
-                    </p>
+
+                    {/* Tier +/- control */}
+                    {maxTier > 1 && (
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => handleTierChange(upgrade.id, -1)}
+                          disabled={selectedTier <= 1}
+                          className={`
+                            w-5 h-5 flex items-center justify-center text-[10px] font-bold
+                            border cursor-pointer select-none transition-colors duration-150
+                            ${selectedTier <= 1
+                              ? "border-white/5 text-white/10 cursor-not-allowed"
+                              : "border-white/20 text-white/50 hover:bg-white/5 hover:text-white/70"
+                            }
+                          `}
+                        >
+                          -
+                        </button>
+                        <span className={`text-[10px] font-mono tabular-nums min-w-[32px] text-center ${isActive ? "text-cyber-green/80" : "text-white/30"}`}>
+                          Lv.{selectedTier}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleTierChange(upgrade.id, 1)}
+                          disabled={selectedTier >= maxTier}
+                          className={`
+                            w-5 h-5 flex items-center justify-center text-[10px] font-bold
+                            border cursor-pointer select-none transition-colors duration-150
+                            ${selectedTier >= maxTier
+                              ? "border-white/5 text-white/10 cursor-not-allowed"
+                              : "border-white/20 text-white/50 hover:bg-white/5 hover:text-white/70"
+                            }
+                          `}
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+                    {maxTier === 1 && (
+                      <span className={`text-[10px] font-mono ${isActive ? "text-cyber-green/60" : "text-white/20"} shrink-0`}>
+                        Lv.1
+                      </span>
+                    )}
                   </div>
                 );
               })}
             </div>
-          </section>
-        )}
-        {useMetaUpgrades && metaPowerUps.length === 0 && (
-          <p className="text-white/20 text-[10px] uppercase tracking-widest text-center">
-            NO META UPGRADES PURCHASED FOR THIS PROTOCOL
-          </p>
-        )}
+          ) : (
+            <p className="text-white/20 text-[10px] uppercase tracking-widest text-center py-2">
+              NO META UPGRADES PURCHASED FOR THIS PROTOCOL
+            </p>
+          )}
+
+          {/* Open Meta Shop link */}
+          <button
+            type="button"
+            onClick={onOpenMetaShop}
+            className="
+              mt-3 w-full py-2
+              text-[10px] uppercase tracking-[0.3em] font-mono
+              text-cyber-green/50 hover:text-cyber-green/80
+              transition-colors duration-150
+              cursor-pointer select-none
+            "
+          >
+            {">"}_&nbsp;OPEN META SHOP
+          </button>
+        </section>
 
         {/* Trial info */}
         <div className="border border-dashed border-white/10 p-3 flex items-center gap-3 flex-wrap">
@@ -567,7 +712,7 @@ function BriefingPhase({
             @ {diffLabel} DIFFICULTY
           </span>
           <span className="text-white/20 text-xs uppercase tracking-widest">
-            {useMetaUpgrades ? "META UPGRADES ON" : "META UPGRADES OFF"}
+            {activeCount > 0 ? `${activeCount} UPGRADE${activeCount > 1 ? "S" : ""} ACTIVE` : "NO UPGRADES"}
           </span>
           <span className="ml-auto text-white/20 text-xs uppercase tracking-widest">
             RESULTS NOT RECORDED
@@ -634,31 +779,42 @@ function CountdownPhase({
 }
 
 // ---------------------------------------------------------------------------
-// Active round — renders the minigame component
+// Active round — renders the minigame component with per-minigame settings
 // ---------------------------------------------------------------------------
 
 function ActiveRound({
   type,
-  difficulty,
-  useMetaUpgrades,
+  settings,
   onComplete,
 }: {
   type: MinigameType;
-  difficulty: number;
-  useMetaUpgrades: boolean;
+  settings: MinigameTrainingSettings;
   onComplete: (result: MinigameResult) => void;
 }) {
-  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+  const Component = MINIGAME_COMPONENTS[type];
 
   const activePowerUps = useMemo(() => {
-    if (!useMetaUpgrades) return [];
-    return buildMetaPowerUps(purchasedUpgrades, type);
-  }, [useMetaUpgrades, purchasedUpgrades, type]);
+    const config = MINIGAME_REGISTRY[type];
+    const synth: PowerUpInstance[] = [];
+    for (const upgrade of config.metaUpgrades) {
+      if (!settings.activeUpgradeIds.has(upgrade.id)) continue;
+      const tier = settings.upgradeTiers[upgrade.id] ?? 1;
+      const effect = upgrade.effects[tier - 1];
+      if (!effect) continue;
+      synth.push({
+        id: `meta-${upgrade.id}`,
+        type: `meta-${upgrade.id}`,
+        name: upgrade.name,
+        description: upgrade.description,
+        effect: { type: effect.type as PowerUpEffect["type"], value: effect.value, minigame: type },
+      });
+    }
+    return synth;
+  }, [type, settings]);
 
-  const Component = MINIGAME_COMPONENTS[type];
   return (
     <Component
-      difficulty={difficulty}
+      difficulty={settings.difficulty}
       timeLimit={TRAINING_TIME_LIMIT}
       activePowerUps={activePowerUps}
       onComplete={onComplete}
@@ -694,17 +850,19 @@ function RoundResultFlash({
 }
 
 // ---------------------------------------------------------------------------
-// Complete phase
+// Complete phase — continue training or back to list
 // ---------------------------------------------------------------------------
 
 function CompletePhase({
   type,
   results,
-  onFinish,
+  onContinue,
+  onBackToList,
 }: {
   type: MinigameType;
   results: boolean[];
-  onFinish: () => void;
+  onContinue: () => void;
+  onBackToList: () => void;
 }) {
   const wins = results.filter(Boolean).length;
   const total = results.length;
@@ -726,7 +884,7 @@ function CompletePhase({
             <span
               className={`text-2xl font-bold ${success ? "text-cyber-cyan" : "text-cyber-magenta"}`}
             >
-              {success ? "●" : "○"}
+              {success ? "\u25CF" : "\u25CB"}
             </span>
             <span className="text-[10px] uppercase tracking-widest text-white/30">
               R{i + 1}
@@ -755,21 +913,67 @@ function CompletePhase({
         BRIEFING MARKED AS SEEN — TRAINING RESULTS NOT RECORDED TO STATS
       </p>
 
-      <button
-        type="button"
-        onClick={onFinish}
-        className="
-          py-3 px-10
-          text-sm uppercase tracking-widest font-mono font-bold
-          border border-cyber-cyan/50 text-cyber-cyan
-          hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
-          active:bg-cyber-cyan/20
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
-      >
-        RETURN TO MENU
-      </button>
+      {/* Action buttons */}
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={onContinue}
+          className="
+            py-3 px-10
+            text-sm uppercase tracking-widest font-mono font-bold
+            border border-cyber-cyan/50 text-cyber-cyan
+            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
+            active:bg-cyber-cyan/20
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          CONTINUE TRAINING
+        </button>
+
+        <button
+          type="button"
+          onClick={onBackToList}
+          className="
+            py-3 px-8
+            text-sm uppercase tracking-widest font-mono
+            border border-white/15 text-white/40
+            hover:bg-white/5 hover:text-white/70 hover:border-white/30
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          BACK TO LIST
+        </button>
+      </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Utility: format upgrade effect for display in briefing
+// ---------------------------------------------------------------------------
+
+function formatUpgradeEffect(effect: { type: string; value: number; minigame?: MinigameType }, tier: number): string {
+  const pct = Math.round(effect.value * 100);
+  switch (effect.type) {
+    case "minigame-specific":
+      return `${pct}% (Lv.${tier})`;
+    case "hint":
+      return effect.value < 1 ? `${pct}% pre-filled (Lv.${tier})` : `active (Lv.${tier})`;
+    case "preview":
+      return `\u00b1${effect.value} range (Lv.${tier})`;
+    case "peek-ahead":
+      return `${pct}% pre-revealed (Lv.${tier})`;
+    case "window-extend":
+      return `+${pct}% wider (Lv.${tier})`;
+    case "bracket-flash":
+      return `shows next bracket (Lv.${tier})`;
+    case "highlight-danger":
+      return `highlights danger (Lv.${tier})`;
+    case "flag-mine":
+      return `flags mines (Lv.${tier})`;
+    default:
+      return `${effect.type.replace(/-/g, " ")} (Lv.${tier})`;
+  }
 }

@@ -130,8 +130,18 @@ export function MetaShop() {
   const purchaseUpgrade = useGameStore((s) => s.purchaseUpgrade);
   const unlockMinigame = useGameStore((s) => s.unlockMinigame);
   const setStatus = useGameStore((s) => s.setStatus);
+  const trainingMinigame = useGameStore((s) => s.trainingMinigame);
   const setTrainingMinigame = useGameStore((s) => s.setTrainingMinigame);
+  const setTrainingOrigin = useGameStore((s) => s.setTrainingOrigin);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
+
+  const handleBack = () => {
+    if (trainingMinigame) {
+      setStatus("training"); // return to training briefing
+    } else {
+      setStatus("menu");
+    }
+  };
 
   const grouped = useMemo(() => groupByCategory(META_UPGRADE_POOL), []);
 
@@ -191,6 +201,7 @@ export function MetaShop() {
       if (effect?.minigame) {
         unlockMinigame(effect.minigame);
         setTrainingMinigame(effect.minigame);
+        setTrainingOrigin("meta-shop");
         setStatus("training");
       }
     }
@@ -209,7 +220,7 @@ export function MetaShop() {
       {/* Back button — top nav */}
       <button
         type="button"
-        onClick={() => setStatus("menu")}
+        onClick={handleBack}
         className="
           mb-6 py-1.5 px-6
           text-xs uppercase tracking-widest font-mono
@@ -219,7 +230,7 @@ export function MetaShop() {
           cursor-pointer select-none
         "
       >
-        {">"}_&nbsp;BACK TO MENU
+        {">"}_&nbsp;{trainingMinigame ? "BACK TO TRAINING" : "BACK TO MENU"}
       </button>
 
       {/* Data balance + price multiplier */}

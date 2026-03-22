@@ -1,5 +1,5 @@
 import type { StateCreator } from "zustand";
-import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
+import type { GameStatus, MinigameType, PowerUpInstance, TrainingOrigin } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { MinigameResult } from "@/types/minigame";
 import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
@@ -30,6 +30,7 @@ export interface RunSlice {
   minigamesPlayedThisRun: number;
   powerUpsUsedThisFloor: boolean;
   trainingMinigame: MinigameType | null;
+  trainingOrigin: TrainingOrigin;
   /** Set to a milestone floor number (every 5th floor) to trigger the overlay; 0 = no milestone. */
   milestoneFloor: number;
   /** Tracks the status before entering pause, so we can resume to the correct screen. */
@@ -66,6 +67,7 @@ export interface RunSlice {
   setStatus: (status: GameStatus) => void;
   skipRemainingFloor: (rewardFraction: number) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
+  setTrainingOrigin: (origin: TrainingOrigin) => void;
   endRun: () => void;
 }
 
@@ -117,6 +119,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   minigamesPlayedThisRun: 0,
   powerUpsUsedThisFloor: false,
   trainingMinigame: null,
+  trainingOrigin: null,
   milestoneFloor: 0,
   previousStatus: null,
   itemsBoughtThisRun: 0,
@@ -548,6 +551,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   setTrainingMinigame: (type: MinigameType | null) => {
     set({ trainingMinigame: type });
+  },
+
+  setTrainingOrigin: (origin: TrainingOrigin) => {
+    set({ trainingOrigin: origin });
   },
 
   quitRun: () => {

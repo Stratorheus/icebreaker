@@ -58,6 +58,8 @@ export interface PowerUpEffect {
   minigame?: MinigameType;
 }
 
+export type TrainingOrigin = "picker" | "meta-shop" | null;
+
 export interface PlayerStats {
   totalRuns: number;
   bestFloor: number;
