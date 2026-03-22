@@ -12,7 +12,7 @@ test.describe("Port Scan", () => {
 
     // Wait for the select phase (after display/flash phase)
     await expect(
-      page.getByText("Select all open ports", { exact: false }),
+      page.locator('[data-testid="port-phase"][data-phase="select"]'),
     ).toBeVisible({ timeout: 15000 });
 
     // Click all port cells where data-open="true"
@@ -32,7 +32,7 @@ test.describe("Port Scan", () => {
 
     // Wait for the select phase
     await expect(
-      page.getByText("Select all open ports", { exact: false }),
+      page.locator('[data-testid="port-phase"][data-phase="select"]'),
     ).toBeVisible({ timeout: 15000 });
 
     // Click a closed port

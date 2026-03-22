@@ -77,7 +77,7 @@ test.describe("Meta Shop", () => {
 
     // After purchase, data balance should have decreased
     // Verify that data shown is less than 10,000
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(500); // Wait for purchase animation and store update to settle
 
     // The purchase either:
     // 1. Shows a tier indicator with at least 1 filled dot
@@ -104,7 +104,7 @@ test.describe("Meta Shop", () => {
     const purchaseButtons = page.locator("button:has-text('PURCHASE')");
     await expect(purchaseButtons.first()).toBeVisible({ timeout: 3000 });
     await purchaseButtons.first().click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(300); // Wait for price multiplier UI to update after purchase
 
     // After 1 purchase, price multiplier should be visible (1.2x for 1 purchase)
     await expect(page.getByText("PRICE MULTIPLIER")).toBeVisible({ timeout: 3000 });

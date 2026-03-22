@@ -20,9 +20,9 @@ test.describe("Signal Echo", () => {
     // SignalEcho has display + input phases across multiple rounds.
     // At trivial difficulty: starts with 1 signal, 3 rounds total.
     for (let round = 0; round < 10; round++) {
-      // Wait for input phase (green text "Your turn")
+      // Wait for input phase
       await expect(
-        page.getByText("Your turn", { exact: false }),
+        page.locator('[data-testid="echo-phase"][data-phase="input"]'),
       ).toBeVisible({ timeout: 10000 });
 
       // Read the sequence from the hidden helper
@@ -45,7 +45,7 @@ test.describe("Signal Echo", () => {
       const success = page.getByText("SUCCESS");
       if (await success.isVisible().catch(() => false)) break;
 
-      // Wait for next display phase to start
+      // Wait for display phase animation before next input round
       await page.waitForTimeout(500);
     }
 
@@ -57,7 +57,7 @@ test.describe("Signal Echo", () => {
 
     // Wait for input phase
     await expect(
-      page.getByText("Your turn", { exact: false }),
+      page.locator('[data-testid="echo-phase"][data-phase="input"]'),
     ).toBeVisible({ timeout: 10000 });
 
     // Read the sequence

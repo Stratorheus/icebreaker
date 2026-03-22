@@ -7,22 +7,22 @@ import type { Page } from "@playwright/test";
 export async function openTraining(page: Page, minigameDisplayName: string, difficulty = "NORMAL") {
   await page.goto("/");
   await page.getByText("TRAINING").click();
-  await page.getByText(minigameDisplayName.toUpperCase()).click();
-  await page.getByText(difficulty).click();
-  await page.getByText("BEGIN TRAINING").click();
+  await page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: minigameDisplayName }).click();
+  await page.locator(`[data-testid="difficulty-option"][data-value="${difficulty}"]`).click();
+  await page.locator('[data-testid="begin-training"]').click();
   // Countdown shows 3-2-1-GO then instantly transitions to active phase.
   // "GO" is only visible for one render frame — too fast for Playwright.
   // Instead, wait for the QUIT button which appears in active phase.
   await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(300); // Allow minigame component to mount and initialize after phase transition
 }
 
 /**
  * Quit training via the quit button + confirmation modal.
  */
 export async function quitTraining(page: Page) {
-  await page.getByText("QUIT").first().click();
-  await page.getByText("CONFIRM").click();
+  await page.locator('[data-testid="quit-training-button"]').click();
+  await page.locator('[data-testid="confirm-quit"]').click();
 }
 
 /**
@@ -66,13 +66,12 @@ export async function openTrainingWithUpgrades(
   await setMetaUpgrades(page, upgrades);
   await page.goto("/");
   await page.getByText("TRAINING").click();
-  await page.getByText(minigameDisplayName.toUpperCase()).click();
+  await page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: minigameDisplayName }).click();
   for (const name of upgradeNamesToEnable) {
-    const card = page.locator(`text=${name}`).locator("..");
-    await card.locator('[class*="border"]').first().click();
+    await page.locator(`[data-testid="upgrade-card"]`).filter({ hasText: name }).locator('[data-testid="upgrade-checkbox"]').click();
   }
-  await page.getByText(difficulty).click();
-  await page.getByText("BEGIN TRAINING").click();
+  await page.locator(`[data-testid="difficulty-option"][data-value="${difficulty}"]`).click();
+  await page.locator('[data-testid="begin-training"]').click();
   // Wait for active phase (QUIT button appears when minigame is running)
   await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
   await page.waitForTimeout(300);

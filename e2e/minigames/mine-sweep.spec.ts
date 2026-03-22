@@ -6,7 +6,7 @@ test.describe("Memory Scan (MineSweep)", () => {
     await openTraining(page, "Memory Scan", "TRIVIAL");
 
     // Wait for the mark phase (preview auto-transitions after a few seconds)
-    await expect(page.getByText("marked", { exact: false }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="mine-phase"][data-phase="mark"]')).toBeVisible({ timeout: 10000 });
 
     // Find all cells where data-mine="true" and click them
     const mineCells = page.locator('[data-testid="cell"][data-mine="true"]');
@@ -24,7 +24,7 @@ test.describe("Memory Scan (MineSweep)", () => {
     await openTraining(page, "Memory Scan", "TRIVIAL");
 
     // Wait for mark phase
-    await expect(page.getByText("marked", { exact: false }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="mine-phase"][data-phase="mark"]')).toBeVisible({ timeout: 10000 });
 
     // Click a safe (non-mine) cell — this should cause immediate fail
     const safeCells = page.locator('[data-testid="cell"][data-mine="false"]');

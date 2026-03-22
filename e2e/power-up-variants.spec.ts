@@ -30,7 +30,7 @@ async function goToBriefing(
   }
   await setMetaUpgrades(page, upgrades);
   await page.getByText("TRAINING").click();
-  await page.getByText(displayName.toUpperCase()).click();
+  await page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: displayName }).click();
 }
 
 // ---------------------------------------------------------------------------
@@ -187,7 +187,7 @@ test.describe("mine-echo — Memory Scan", () => {
 
     // Wait for the mark phase (after preview phase ends)
     // In mark phase, mine-echo keeps some mines visible
-    await expect(page.getByText("marked", { exact: false }).first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('[data-testid="mine-phase"][data-phase="mark"]')).toBeVisible({ timeout: 10000 });
 
     // Cells should still be visible — some with mine indicators due to echo
     const cells = page.locator('[data-testid="cell"]');
@@ -268,7 +268,7 @@ test.describe("port-logger — Port Scan", () => {
 
     // Wait for select phase
     await expect(
-      page.getByText("Select all open ports", { exact: false }),
+      page.locator('[data-testid="port-phase"][data-phase="select"]'),
     ).toBeVisible({ timeout: 15000 });
 
     // Port logger shows "Open: <port numbers>" during select phase
@@ -292,7 +292,7 @@ test.describe("port-scan-deep — Port Scan", () => {
 
     // Wait for select phase (display phase will flash twice with deep scan)
     await expect(
-      page.getByText("Select all open ports", { exact: false }),
+      page.locator('[data-testid="port-phase"][data-phase="select"]'),
     ).toBeVisible({ timeout: 20000 });
 
     // Game is running in select phase — deep scan worked (no crash)

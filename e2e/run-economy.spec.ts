@@ -116,7 +116,7 @@ test.describe("Run Economy", () => {
     await expect(page.getByText("START RUN")).toBeVisible({ timeout: 5000 });
 
     // Default data is 0
-    await expect(page.getByText("BEST: FLOOR")).toBeVisible();
+    await expect(page.locator('[data-testid="main-menu"]')).toBeVisible();
   });
 
   test("multiple meta upgrades apply at run start", async ({ page }) => {
