@@ -364,17 +364,19 @@ export function PortScan(props: MinigameProps) {
         </p>
 
         {/* Phase indicator */}
-        <div className="h-5 flex items-center justify-center">
-          {phase === "display" && (
-            <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
-              Memorize the open ports...
-            </p>
-          )}
-          {phase === "select" && (
-            <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
-              Select all open ports
-            </p>
-          )}
+        <div className="flex flex-col items-center gap-1">
+          <div className="h-5 flex items-center justify-center">
+            {phase === "display" && (
+              <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
+                Memorize the open ports...
+              </p>
+            )}
+            {phase === "select" && (
+              <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
+                Select all open ports
+              </p>
+            )}
+          </div>
           {/* Port Logger: text list of open ports during select phase */}
           {hasPortLogger && phase === "select" && (
             <p className="text-cyber-orange/60 text-[10px] font-mono tracking-wider">

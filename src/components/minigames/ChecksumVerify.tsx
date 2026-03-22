@@ -325,11 +325,17 @@ export function ChecksumVerify(props: MinigameProps) {
           </div>
 
           {/* Range Hint: show approximate answer range */}
-          {rangeHintPct > 0 && (
-            <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
-              Answer is between {Math.floor(expr.answer * (1 - rangeHintPct))} and {Math.ceil(expr.answer * (1 + rangeHintPct))}
-            </p>
-          )}
+          {rangeHintPct > 0 && (() => {
+            // Use absolute spread so range works correctly for negative answers and zero
+            const spread = Math.max(1, Math.abs(expr.answer) * rangeHintPct);
+            const lo = Math.floor(expr.answer - spread);
+            const hi = Math.ceil(expr.answer + spread);
+            return (
+              <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
+                Answer is between {lo} and {hi}
+              </p>
+            );
+          })()}
 
           {/* Error Margin indicator */}
           {errorTolerance > 0 && (

@@ -297,7 +297,7 @@ export function Defrag(props: MinigameProps) {
         return newStates;
       });
     },
-    [isActive, cells, floodFill, fail],
+    [isActive, cells, cols, rows, mineCount, mineRadarFraction, floodFill, fail],
   );
 
   // ── Toggle flag on a cell ─────────────────────────────────────────
