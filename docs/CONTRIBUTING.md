@@ -33,11 +33,19 @@ icebreaker/
 │   │   └── screens/         # Full-screen views (MainMenu, RunShop, DeathScreen, etc.)
 │   ├── data/
 │   │   ├── balancing.ts     # All game math (pure functions, no side effects)
-│   │   ├── meta-upgrades.ts # META_UPGRADE_POOL — persistent upgrades
-│   │   ├── minigame-descriptions.ts  # Rules, controls, hints for every minigame
-│   │   ├── minigame-names.ts         # Display name map
 │   │   ├── power-ups.ts     # RUN_SHOP_POOL — in-run shop items
-│   │   └── achievements.ts  # ACHIEVEMENT_POOL
+│   │   ├── achievements.ts  # ACHIEVEMENT_POOL
+│   │   ├── minigames/       # Per-minigame config files (SSOT)
+│   │   │   ├── types.ts     # MinigameConfig and MinigameBriefing interfaces
+│   │   │   ├── registry.ts  # MINIGAME_REGISTRY, derived data, buildMetaPowerUps
+│   │   │   ├── slash-timing.ts
+│   │   │   ├── close-brackets.ts
+│   │   │   └── ... (one file per minigame)
+│   │   └── upgrades/        # Meta upgrade data split by category
+│   │       ├── stat.ts      # Stackable/tiered stat upgrades
+│   │       ├── defense.ts   # Defense and healing upgrades
+│   │       ├── starting.ts  # Starting bonus upgrades
+│   │       └── registry.ts  # META_UPGRADE_POOL assembled from all sources
 │   ├── hooks/               # React hooks (timer, keyboard, touch detection, achievements)
 │   ├── lib/                 # Pure utilities (maze generator, power-up effects, etc.)
 │   ├── store/
@@ -85,26 +93,42 @@ The `npm run build` script runs `tsc -b && vite build`. Both must succeed; TypeS
 
 ## Adding a New Minigame
 
-Follow these steps in order. Every step is required; skipping any will cause a TypeScript error.
+The process is **2 files created + 2 small edits**. The minigame config file is the single source of truth — display name, time limit, briefing, and meta upgrades all live there.
+
+See `docs/ADDING-A-MINIGAME.md` for the full guide with templates.
 
 ### 1. Create the component
 
-Add `src/components/minigames/YourMinigame.tsx`. The component must implement `MinigameProps` from `src/types/minigame.ts`:
+Add `src/components/minigames/YourMinigame.tsx` implementing `MinigameProps` from `src/types/minigame.ts`.
+
+### 2. Create the config file
+
+Add `src/data/minigames/your-minigame-id.ts`. This is the SSOT for everything about the minigame:
 
 ```typescript
-import type { MinigameProps } from "@/types/minigame";
+import { YourMinigame } from "@/components/minigames/YourMinigame";
+import type { MinigameConfig } from "./types";
 
-export function YourMinigame({ difficulty, timeLimit, activePowerUps, onComplete }: MinigameProps) {
-  // ...
-  // Call onComplete({ success: true/false, timeMs: elapsed, minigame: "your-minigame-id" })
-}
+export const yourMinigameConfig: MinigameConfig = {
+  id: "your-minigame-id",
+  displayName: "Your Protocol",
+  component: YourMinigame,
+  baseTimeLimit: 15,
+  starting: false,
+  unlockPrice: "dynamic",
+  briefing: {
+    rules: ["Rule 1", "Rule 2"],
+    controls: { desktop: "Keyboard description", touch: "Touch description" },
+    tips: ["Tip 1", "Tip 2"],
+    hint: { desktop: "Short desktop hint.", touch: "Short touch hint." },
+  },
+  metaUpgrades: [],  // add game-specific MetaUpgrade objects here if needed
+};
 ```
 
-`timeLimit` is in seconds (already scaled by `getTimeLimit`). `difficulty` is 0–1. `activePowerUps` merges run-shop items and synthetic meta-upgrade effects.
+### 3. Add the type to the MinigameType union
 
-### 2. Add the type to the MinigameType union
-
-In `src/types/game.ts`, add your new identifier to the `MinigameType` union:
+In `src/types/game.ts`, add your identifier to `MinigameType`:
 
 ```typescript
 export type MinigameType =
@@ -113,84 +137,20 @@ export type MinigameType =
   | "your-minigame-id";   // add here
 ```
 
-Decide whether it is a starting minigame or unlockable. Starting minigames are in `STARTING_MINIGAMES`. Unlockable minigames go in `UNLOCKABLE_MINIGAMES`. Most new minigames should be unlockable.
+### 4. Add import + entry in the registry
 
-### 3. Register the component in the router
-
-In `src/components/screens/MinigameScreen.tsx`, import your component and add it to `MINIGAME_COMPONENTS`:
+In `src/data/minigames/registry.ts`, import the config and add it to `MINIGAME_REGISTRY`:
 
 ```typescript
-import { YourMinigame } from "@/components/minigames/YourMinigame";
+import { yourMinigameConfig } from "./your-minigame-id";
 
-const MINIGAME_COMPONENTS: Record<MinigameType, ...> = {
-  ...
-  "your-minigame-id": YourMinigame,
+export const MINIGAME_REGISTRY: Record<MinigameType, MinigameConfig> = {
+  // ... existing entries ...
+  "your-minigame-id": yourMinigameConfig,
 };
 ```
 
-### 4. Set the base time limit
-
-In the same file, add an entry to `BASE_TIME_LIMITS`:
-
-```typescript
-const BASE_TIME_LIMITS: Record<MinigameType, number> = {
-  ...
-  "your-minigame-id": 15,  // seconds; choose based on task complexity
-};
-```
-
-This is the time given at difficulty 0. `getTimeLimit` compresses it down to 60% at max difficulty, and further after floor 15.
-
-### 5. Add a display name
-
-In `src/data/minigame-names.ts`, add to `MINIGAME_DISPLAY_NAMES`:
-
-```typescript
-"your-minigame-id": "Protocol Name",
-```
-
-### 6. Add briefing and hint text
-
-In `src/data/minigame-descriptions.ts`, add a `MinigameBriefing` entry to `MINIGAME_BRIEFINGS`:
-
-```typescript
-"your-minigame-id": {
-  rules: ["Rule 1", "Rule 2"],
-  controls: {
-    desktop: "Keyboard controls description",
-    touch: "Touch controls description",
-  },
-  tips: ["Tip 1", "Tip 2"],
-  hint: {
-    desktop: "Short hint for countdown phase (desktop).",
-    touch: "Short hint for countdown phase (touch).",
-  },
-},
-```
-
-The `hint` text is shown during the countdown when the player has a Hint Module power-up active.
-
-### 7. Add a protocol license (if unlockable)
-
-If the minigame is unlockable (not in `STARTING_MINIGAMES`), add a license entry to `META_UPGRADE_POOL` in `src/data/meta-upgrades.ts`:
-
-```typescript
-{
-  id: "your-minigame-license",
-  name: "Your Protocol License",
-  description: "Unlocks the Your Protocol for future runs.",
-  category: "minigame-unlock",
-  maxTier: 1,
-  prices: [0],  // 0 = use dynamic pricing (200 + unlocksOwned * 100)
-  effects: [{ type: "unlock-minigame", value: 1, minigame: "your-minigame-id" }],
-},
-```
-
-Use `prices: [300]` instead of `[0]` only if you want a fixed price (as the first three unlocks have).
-
-### 8. (Optional) Add game-specific meta upgrades
-
-If you want meta upgrades that assist this minigame specifically, add them to `META_UPGRADE_POOL` with `category: "game-specific"` and handle the synthetic power-up construction in the `buildMetaPowerUps` switch in `MinigameScreen.tsx`.
+Everything else — `MINIGAME_COMPONENTS`, `BASE_TIME_LIMITS`, `STARTING_MINIGAMES`, `UNLOCKABLE_MINIGAMES`, unlock licenses, and `buildMetaPowerUps` — is derived automatically from the registry. No further edits are needed.
 
 ---
 
