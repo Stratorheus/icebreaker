@@ -115,6 +115,16 @@ export function getCreditsSaved(credits: number): number {
   return Math.floor(credits * 0.08);
 }
 
+/**
+ * Starting credits for a run, combining the base 25 CR floor with the
+ * Head Start meta upgrade bonus (5 tiers: +50/+125/+300/+600/+1000).
+ * Index 0 = no upgrade.
+ */
+export function getStartingCredits(headStartTier: number): number {
+  const bonuses = [0, 50, 125, 300, 600, 1000];
+  return 25 + (bonuses[Math.min(headStartTier, bonuses.length - 1)] ?? 0);
+}
+
 /** Data reward with Data Siphon meta applied. */
 export function getEffectiveDataReward(floor: number, dataSiphonTier: number): number {
   return Math.round(getDataReward(floor) * Math.pow(1.03, dataSiphonTier));

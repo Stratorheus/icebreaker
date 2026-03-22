@@ -38,7 +38,8 @@ The speed bonus applies when the player completes the minigame in under 10 secon
 
 **Starting credits:**
 - Base: 25 CR at run start (guaranteed minimum so floor 1 shop is usable).
-- Head Start meta upgrade: +50 CR bonus on top of base.
+- Head Start meta upgrade (5 tiers): +50/+125/+300/+600/+1000 CR bonus on top of base.
+- Formula centralized in `getStartingCredits(headStartTier)` in `src/data/balancing.ts`.
 
 ### Spending Credits — Run Shop
 
@@ -272,16 +273,16 @@ Then run-shop defensive power-ups apply:
 | Data Recovery | 100 ◆ | 200 ◆ | 300 ◆ | 400 ◆ | 550 ◆ | 750 ◆ | Death penalty 22.5/20/17.5/15/12.5/10% |
 | Cascade Clock | 150 ◆ | 300 ◆ | 500 ◆ | 750 ◆ | 1000 ◆ | — | +2% base timer per win, cap 10/20/30/40/50% |
 
-### Starting Bonuses (one-time, global scalar applies)
+### Starting Bonuses (tiered, global scalar applies)
 
-| Upgrade | Price | Effect |
+| Upgrade | Prices | Effect |
 |---|---|---|
-| Quick Boot | 200 ◆ | Start with 1 random power-up |
-| Dual Core | 350 ◆ | Start with 2 random power-ups (requires Quick Boot) |
-| Head Start | 150 ◆ | +50 starting credits |
+| ~~Quick Boot~~ | ~~200 ◆~~ | Removed |
+| ~~Dual Core~~ | ~~350 ◆~~ | Removed |
+| Head Start | 100 / 250 / 450 / 700 / 1000 ◆ | +50/+125/+300/+600/+1000 starting credits (5 tiers) |
 | ~~Pre-Loaded~~ | ~~120 ◆~~ | Removed |
-| Cache Primed | 175 ◆ | Floor 1 shop always has a heal item |
-| Overclocked | 100 / 200 / 350 / 500 / 750 ◆ | +5/10/15/20/25 max and starting HP |
+| ~~Cache Primed~~ | ~~175 ◆~~ | Removed |
+| Overclocked | 100 / 200 / 350 / 500 / 750 ◆ | +5/10/15/20/25 max and starting HP (5 tiers) |
 
 ### Protocol Licenses (minigame unlocks)
 

@@ -102,9 +102,9 @@ Slices access each other through `get()` since all three are composed into a sin
 
 1. **Floor minigames**: `pickRandom(unlockedMinigames, getMinigamesPerFloor(1))` — floor 1 gets 2 minigames.
 2. **HP**: `100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus`. Unlock HP bonus = `(unlockedMinigames.length - 5) * 5`.
-3. **Credits**: `25 + (50 if head-start purchased)`.
+3. **Credits**: `getStartingCredits(headStartTier)` — base 25 CR + tier bonus (5 tiers: +50/+125/+300/+600/+1000). Centralized in `balancing.ts`.
 4. **Bonus time**: removed (`pre-loaded` upgrade was removed).
-5. **Starting inventory**: 0, 1, or 2 random power-ups from `RUN_SHOP_POOL` (via `quick-boot` / `dual-core`).
+5. **Starting inventory**: always empty (quick-boot and dual-core were removed).
 6. **Snapshots**: `dataAtRunStart`, `milestoneDataThisRun = 0`, `dataDripThisRun = 0`.
 
 ### Minigame Lifecycle (MinigameScreen.tsx)
@@ -412,15 +412,15 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 | `cascade-clock` | Cascade Clock | 5 tiers | +2% base timer per consecutive win; cap 10/20/30/40/50% per tier; resets on fail, persists across floors |
 | `emergency-patch` | Emergency Patch | Stackable (infinite) | +2% max HP regen at floor start per purchase; applied in `advanceFloor` |
 
-**Starting bonus upgrades** (single-tier or tiered):
+**Starting bonus upgrades** (tiered):
 | ID | Name | Effect |
 |---|---|---|
-| `quick-boot` | Quick Boot | Start with 1 random power-up |
-| `dual-core` | Dual Core | Start with 2 random power-ups (requires quick-boot) |
+| ~~`quick-boot`~~ | ~~Quick Boot~~ | Removed |
+| ~~`dual-core`~~ | ~~Dual Core~~ | Removed |
 | `overclocked` | Overclocked | +5/+10/+15/+20/+25 bonus starting HP (5 tiers) |
-| `head-start` | Head Start | +50 bonus starting credits |
+| `head-start` | Head Start | +50/+125/+300/+600/+1000 bonus starting credits (5 tiers) |
 | ~~`pre-loaded`~~ | ~~Pre-Loaded~~ | Removed |
-| `cache-primed` | Cache Primed | Run shop always offers a heal item |
+| ~~`cache-primed`~~ | ~~Cache Primed~~ | Removed |
 
 **Minigame unlocks**: 10 unlockable protocols (see section 4). Dynamic pricing: `200 + unlocksOwned * 100`. Some have prerequisites (e.g., cipher-crack-v2 requires cipher-crack-license).
 
@@ -436,9 +436,10 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 The `startRun()` function in run-slice.ts reads `purchasedUpgrades` from the meta slice and computes:
 
 ```
-maxHp = 100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus
-startCredits = 25 + (50 if head-start)
-powerUpCount = 2 if dual-core, 1 if quick-boot, 0 otherwise
+maxHp        = 100 + (hp-boost tier * 5) + (unlockHpBonus) + overclockedBonus
+startCredits = getStartingCredits(headStartTier)
+             = 25 + [0, 50, 125, 300, 600, 1000][headStartTier]
+startInventory = [] (always empty — quick-boot and dual-core were removed)
 ```
 
 ### Minigame Unlock HP Bonus
@@ -528,8 +529,8 @@ A player cannot hold two power-ups of the same `type` (item ID) simultaneously. 
 
 `generateRunShop(floor)`:
 1. Picks 3-4 random items from `RUN_SHOP_POOL` (50% chance of 4th item).
-2. If `cache-primed` meta upgrade is active, guarantees at least one `heal`-type item.
-3. Prices scaled by floor: `getRunShopPrice(basePrice, floor) * (1 + itemsBoughtThisRun * 0.05)`.
+2. Prices scaled by floor: `getRunShopPrice(basePrice, floor) * (1 + itemsBoughtThisRun * 0.05)`.
+Note: cache-primed (guaranteed heal item) was removed — it reduced shop variety and decision space.
 
 ### Shield Priority (applyShield)
 

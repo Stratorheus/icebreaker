@@ -2,11 +2,9 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor } from "@/data/balancing";
+import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
-import { RUN_SHOP_POOL } from "@/data/power-ups";
 import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
-import type { PowerUpEffect } from "@/types/game";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
 
@@ -174,33 +172,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
     const startHp = actualMaxHp;
 
-    // Base starting credits: every player gets 25 CR so floor-1 vendor is usable
-    // head-start: +50 bonus credits on top of base
-    const startCredits = 25 + (tier("head-start") > 0 ? 50 : 0);
+    // Base starting credits (25 CR) + head-start meta upgrade bonus (5 tiers: +50/+125/+300/+600/+1000)
+    // Centralized in balancing.ts: getStartingCredits(tier)
+    const startCredits = getStartingCredits(tier("head-start"));
 
-    // quick-boot / dual-core: start with 1 or 2 random power-ups
-    // dual-core overrides quick-boot (requires it, gives 2)
-    const powerUpCount = tier("dual-core") > 0 ? 2 : tier("quick-boot") > 0 ? 1 : 0;
+    // Starting inventory is empty — quick-boot and dual-core were removed
     const startInventory: PowerUpInstance[] = [];
-    if (powerUpCount > 0) {
-      const shuffledPool = [...RUN_SHOP_POOL].sort(() => Math.random() - 0.5);
-      for (let i = 0; i < Math.min(powerUpCount, shuffledPool.length); i++) {
-        const item = shuffledPool[i];
-        startInventory.push({
-          id: `start-powerup-${item.id}-${Date.now()}-${i}`,
-          type: item.id,
-          name: item.name,
-          description: item.description,
-          effect: {
-            type: item.effect.type as PowerUpEffect["type"],
-            value: item.effect.value,
-            minigame: item.effect.minigame,
-          },
-          // Multi-use power-ups: stacked damage reduction gets 2 uses
-          ...(item.effect.type === "damage-reduction-stacked" ? { remainingUses: 2 } : {}),
-        });
-      }
-    }
 
     set({
       hp: Math.min(startHp, actualMaxHp),
