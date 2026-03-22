@@ -226,7 +226,7 @@ Uses `performance.now()` for precision. Segment-based: each start/resume begins 
 
 The `MinigameRouter` in `MinigameScreen.tsx` builds the `activePowerUps` array by merging:
 1. **Run inventory**: power-ups bought from the run shop.
-2. **Meta synthetics**: `buildMetaPowerUps()` creates synthetic `PowerUpInstance` objects from purchased meta upgrades (e.g., `slash-window` becomes a `window-extend` power-up for Slash Timing).
+2. **Meta synthetics**: `buildMetaPowerUps(purchasedUpgrades, type)` (imported from `src/data/minigames/registry.ts`) creates synthetic `PowerUpInstance` objects from purchased meta upgrades. It reads `MINIGAME_REGISTRY[type].metaUpgrades` and iterates them generically — there is no switch statement. The same function is used by both `MinigameScreen.tsx` and `Training.tsx`.
 
 This allows minigame components to consume all bonuses through a single uniform API.
 
@@ -644,7 +644,75 @@ Uses shadcn/ui dark theme (zinc base) with standard CSS custom properties (`--ba
 
 ---
 
-## 10. Key Files Reference
+## 10. Minigame Data Architecture
+
+### Registry Pattern
+
+Each minigame is a self-contained configuration file at `src/data/minigames/{id}.ts` that exports a single `MinigameConfig` object. This is the single source of truth (SSOT) for everything about that minigame.
+
+**`MinigameConfig` interface** (`src/data/minigames/types.ts`):
+
+```ts
+interface MinigameConfig {
+  id: MinigameType;
+  displayName: string;
+  component: React.ComponentType<MinigameProps>;
+  baseTimeLimit: number;          // seconds at difficulty 0
+  starting: boolean;              // true = no unlock needed
+  unlockPrice?: number | "dynamic";  // omit for starting minigames
+  licenseId?: string;             // override default "{id}-license" for save compat
+  requires?: string;              // prerequisite license ID
+  briefing: MinigameBriefing;     // rules, controls, tips, hint text
+  metaUpgrades: MetaUpgrade[];    // game-specific upgrades for this minigame
+}
+```
+
+All 15 config files are imported and composed into `MINIGAME_REGISTRY` in `src/data/minigames/registry.ts`. Derived data is computed from the registry with no duplication:
+
+```ts
+export const MINIGAME_REGISTRY: Record<MinigameType, MinigameConfig> = { ... };
+
+// Derived — read-only views over the registry:
+export const MINIGAME_COMPONENTS  // component map for the router
+export const BASE_TIME_LIMITS     // base seconds per minigame
+export const STARTING_MINIGAMES   // minigames with starting: true
+export const UNLOCKABLE_MINIGAMES // minigames with starting: false
+export const ALL_MINIGAMES        // all IDs in order
+```
+
+Helper functions also exported from `registry.ts`: `getMinigameDisplayName(type)`, `getMinigameBriefing(type)`, `getMinigameHint(type, isTouch)`.
+
+### buildMetaPowerUps — Generic, No Switch
+
+`buildMetaPowerUps(purchasedUpgrades, type)` in `registry.ts` is fully generic. It reads `config.metaUpgrades` for the given minigame and converts purchased tiers into synthetic `PowerUpInstance` objects — no `switch` statement, no per-minigame special cases. Adding game-specific upgrades to a new minigame requires only adding them to that minigame's config file.
+
+### Upgrade Registries
+
+Meta upgrades are split into focused files under `src/data/upgrades/`:
+
+| File | Contents |
+|---|---|
+| `src/data/upgrades/stat.ts` | Stackable and tiered stat upgrades (HP boost, difficulty reducer, etc.) |
+| `src/data/upgrades/defense.ts` | Defense and healing meta upgrades (Thicker Armor, Data Recovery, etc.) |
+| `src/data/upgrades/starting.ts` | Starting bonus upgrades (Overclocked, Head Start) |
+
+`src/data/upgrades/registry.ts` assembles the final `META_UPGRADE_POOL` by combining all three arrays plus auto-generated minigame unlock licenses and game-specific upgrades (both sourced directly from `MINIGAME_REGISTRY`):
+
+```ts
+export const META_UPGRADE_POOL: MetaUpgrade[] = [
+  ...STAT_UPGRADES,
+  ...DEFENSE_UPGRADES,
+  ...STARTING_UPGRADES,
+  // Auto-generated unlock licenses from each unlockable MinigameConfig
+  ...Object.values(MINIGAME_REGISTRY).filter(...).map(...),
+  // Game-specific upgrades from each MinigameConfig.metaUpgrades
+  ...Object.values(MINIGAME_REGISTRY).flatMap(cfg => cfg.metaUpgrades),
+];
+```
+
+---
+
+## 11. Key Files Reference
 
 | File | Purpose |
 |---|---|
@@ -661,11 +729,15 @@ Uses shadcn/ui dark theme (zinc base) with standard CSS custom properties (`--ba
 | `src/hooks/use-keyboard.ts` | Keyboard input registration (useKeyboard, useKeyPress) |
 | `src/hooks/use-touch-device.ts` | Touch device detection hook |
 | `src/data/balancing.ts` | All economy formulas: difficulty, damage, credits, time limits, prices |
-| `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 46 persistent upgrades across 4 categories |
+| `src/data/minigames/types.ts` | MinigameConfig and MinigameBriefing interfaces |
+| `src/data/minigames/registry.ts` | MINIGAME_REGISTRY, derived data, buildMetaPowerUps, helper functions |
+| `src/data/minigames/{id}.ts` | Per-minigame SSOT: component ref, time limit, briefing, meta upgrades |
+| `src/data/upgrades/stat.ts` | Stat meta upgrades (stackable and tiered) |
+| `src/data/upgrades/defense.ts` | Defense and healing meta upgrades |
+| `src/data/upgrades/starting.ts` | Starting bonus meta upgrades |
+| `src/data/upgrades/registry.ts` | META_UPGRADE_POOL assembled from all upgrade sources |
 | `src/data/power-ups.ts` | RUN_SHOP_POOL: 18 run-shop power-up items |
 | `src/data/achievements.ts` | ACHIEVEMENT_POOL: 30+ achievements with conditions and rewards |
-| `src/data/minigame-descriptions.ts` | MINIGAME_BRIEFINGS: rules, controls, tips, hints per minigame |
-| `src/data/minigame-names.ts` | MINIGAME_DISPLAY_NAMES: type ID to display name mapping |
 | `src/lib/power-up-effects.ts` | applyShield(), checkSkip(), getMetaBonus() utility functions |
 | `src/components/screens/MinigameScreen.tsx` | Minigame lifecycle: countdown/active/result phases, MinigameRouter |
 | `src/components/screens/DeathScreen.tsx` | End-of-run data breakdown, stat banking, achievement awards |

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useGameStore } from "@/store/game-store";
-import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
-import { STARTING_MINIGAMES } from "@/types/game";
+import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
+import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import { cn } from "@/lib/utils";
 import type { MetaUpgrade } from "@/types/shop";
 import { Hexagon } from "lucide-react";

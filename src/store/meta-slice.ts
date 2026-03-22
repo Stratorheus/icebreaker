@@ -1,6 +1,6 @@
 import type { StateCreator } from "zustand";
 import type { MinigameType, PlayerStats } from "@/types/game";
-import { STARTING_MINIGAMES } from "@/types/game";
+import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { RunSlice } from "./run-slice";
 import type { ShopSlice } from "./shop-slice";
 

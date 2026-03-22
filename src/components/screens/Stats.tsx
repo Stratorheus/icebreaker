@@ -1,6 +1,6 @@
 import { useGameStore } from "@/store/game-store";
 import { ACHIEVEMENT_POOL } from "@/data/achievements";
-import { getMinigameDisplayName } from "@/data/minigame-names";
+import { getMinigameDisplayName } from "@/data/minigames/registry";
 import type { PlayerStats } from "@/types/game";
 import type { Achievement } from "@/types/shop";
 import { Hexagon } from "lucide-react";
