@@ -328,7 +328,7 @@ export function SignalEcho(props: MinigameProps) {
   const leftPanel = PANELS[DIR_INDEX.left];
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+    <div data-testid="echo-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
 

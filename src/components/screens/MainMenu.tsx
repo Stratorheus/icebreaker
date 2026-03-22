@@ -19,7 +19,7 @@ export function MainMenu() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div data-testid="main-menu" className="min-h-screen flex flex-col items-center justify-center px-4">
       {/* Logo */}
       <div className="mb-2 select-none">
         <h1 className="text-5xl sm:text-8xl font-heading tracking-tight leading-none glitch-text">
