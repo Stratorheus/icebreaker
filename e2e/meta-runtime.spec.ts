@@ -95,6 +95,36 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     expect(damageTaken).toBe(24);
   });
 
+  test("Thicker Armor tier 1 reduces damage by 5%", async ({ page }) => {
+    await page.goto("/");
+    await setMetaUpgrades(page, { "thicker-armor": 1 });
+    await page.evaluate(() => (window as any).__GAME_STORE__.getState().startRun());
+    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+
+    const hpBefore = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
+    await page.evaluate(() => (window as any).__GAME_STORE__.getState().failMinigame());
+    await page.waitForTimeout(300);
+    const hpAfter = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
+
+    // Floor 1 damage = 24, with 5% reduction = round(24 * 0.95) = 23
+    expect(hpBefore - hpAfter).toBe(23);
+  });
+
+  test("Thicker Armor tier 3 reduces damage by 15%", async ({ page }) => {
+    await page.goto("/");
+    await setMetaUpgrades(page, { "thicker-armor": 3 });
+    await page.evaluate(() => (window as any).__GAME_STORE__.getState().startRun());
+    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+
+    const hpBefore = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
+    await page.evaluate(() => (window as any).__GAME_STORE__.getState().failMinigame());
+    await page.waitForTimeout(300);
+    const hpAfter = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
+
+    // Floor 1 damage = 24, with 15% reduction = round(24 * 0.85) = 20
+    expect(hpBefore - hpAfter).toBe(20);
+  });
+
   // -------------------------------------------------------------------------
   // 2. Credit Multiplier increases credit reward
   // -------------------------------------------------------------------------

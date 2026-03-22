@@ -312,6 +312,7 @@ export function MineSweep(props: MinigameProps) {
                 key={cell.id}
                 data-testid="cell"
                 data-mine={cell.isMine}
+                data-visible-mine={isVisibleMine}
                 data-index={i}
                 type="button"
                 disabled={

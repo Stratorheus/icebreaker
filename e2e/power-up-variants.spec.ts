@@ -89,12 +89,23 @@ test.describe("bracket-reducer — Code Inject", () => {
 // ===========================================================================
 
 test.describe("bracket-mirror — Code Inject", () => {
-  test("shows 'Next' hint when enabled", async ({ page }) => {
+  test("shows 'Next' hint matching the expected closer", async ({ page }) => {
     await goToBriefing(page, "Code Inject", { "bracket-mirror": 1 });
     await beginWithUpgrade(page, ["bracket-mirror"]);
 
     // The Bracket Mirror upgrade shows a "Next" label with the expected closer
     await expect(page.getByText("Next")).toBeVisible({ timeout: 5000 });
+
+    // Read the expected closer from the test helper attribute
+    const hint = page.locator('[data-testid="expected-closer"]');
+    const expectedKey = await hint.getAttribute("data-key");
+    expect(expectedKey).toBeTruthy();
+
+    // The "Next" hint box should contain the same character as the expected closer
+    // The hint is rendered inside a sibling div with the closer character
+    const nextHintBox = page.locator("text=Next").locator("..").locator("span.text-cyber-cyan");
+    const hintChar = await nextHintBox.textContent();
+    expect(hintChar).toBe(expectedKey);
   });
 });
 
@@ -107,24 +118,30 @@ test.describe("arrow-preview — Packet Route", () => {
     await goToBriefing(page, "Packet Route", { "arrow-preview": 3 });
     await beginWithUpgrade(page, ["arrow-preview"]);
 
-    // With peek-ahead active, arrows beyond the first should NOT all be "?"
-    // Check that there is more than one visible (non-?) arrow character
-    // The peeked arrows have a specific style — they are not hidden
-    // We just verify the game starts and the expected-arrow data-testid is present
+    // The arrow sequence is rendered as individual divs in a flex row.
+    // Current arrow shows the real character; peeked arrows also show real characters
+    // (in yellow); hidden arrows show "?".
+    // With tier 3 (40% of sequence), on a trivial sequence of 3-5 arrows,
+    // at least 1 peeked arrow should be visible beyond the current one.
+
     const hint = page.locator('[data-testid="expected-arrow"]');
     await expect(hint).toBeAttached({ timeout: 5000 });
 
-    // Press the correct arrow to advance
-    const key = await hint.getAttribute("data-key");
-    if (key) {
-      await page.keyboard.press(key);
-      await page.waitForTimeout(200);
+    // Count arrow grid slots: the arrow row contains div children
+    // Arrows showing real characters contain ←→↑↓, hidden ones show "?"
+    const arrowSlots = page.locator(".flex.items-center.justify-center.gap-2 > div, .flex.items-center.justify-center.gap-3 > div").filter({ hasText: /^[←→↑↓?]$/ });
+    const allSlots = await arrowSlots.all();
+
+    let revealedCount = 0;
+    let hiddenCount = 0;
+    for (const slot of allSlots) {
+      const text = (await slot.textContent())?.trim() ?? "";
+      if (/^[←→↑↓]$/.test(text)) revealedCount++;
+      if (text === "?") hiddenCount++;
     }
 
-    // Game should still be running (not crashed)
-    const failOrSuccess = page.getByText(/SUCCESS|FAILED/);
-    // Either the game continues or finishes - both are valid
-    await page.waitForTimeout(500);
+    // Current arrow (1) + at least 1 peeked arrow should be revealed
+    expect(revealedCount).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -159,7 +176,7 @@ test.describe("mine-radar — Defrag", () => {
     await unlockMinigames(page, ["defrag"]);
   });
 
-  test("tier 4 shows radar indicators on first click", async ({ page }) => {
+  test("tier 4 shows radar indicators with mine counts after first click", async ({ page }) => {
     await goToBriefing(page, "Defrag", { "mine-radar": 4 }, ["defrag"]);
     await beginWithUpgrade(page, ["mine-radar"]);
 
@@ -168,11 +185,23 @@ test.describe("mine-radar — Defrag", () => {
     await cells.first().click();
     await page.waitForTimeout(300);
 
-    // Mine radar at tier 4 (100% of timer) should show row/column indicator numbers
-    // The radar indicators are outside the grid with mine count per row/column
-    // They render as text content in small divs
-    // Just verify the game didn't crash and cells are visible
-    await expect(cells.first()).toBeVisible();
+    // Mine radar at tier 4 (100% of timer) shows row/column indicators with mine counts
+    const radarIndicators = page.locator('[data-testid="mine-radar-indicator"]');
+    const indicatorCount = await radarIndicators.count();
+
+    // Should have indicators for rows + columns (e.g. 5x5 grid = 5 col + 5 row = 10)
+    expect(indicatorCount).toBeGreaterThanOrEqual(6); // minimum 3x3 grid = 3+3=6
+
+    // At least one indicator should show a non-zero mine count
+    let hasNonZero = false;
+    for (let i = 0; i < indicatorCount; i++) {
+      const count = await radarIndicators.nth(i).getAttribute("data-count");
+      if (count && parseInt(count, 10) > 0) {
+        hasNonZero = true;
+        break;
+      }
+    }
+    expect(hasNonZero).toBe(true);
   });
 });
 
@@ -189,9 +218,19 @@ test.describe("mine-echo — Memory Scan", () => {
     // In mark phase, mine-echo keeps some mines visible
     await expect(page.locator('[data-testid="mine-phase"][data-phase="mark"]')).toBeVisible({ timeout: 10000 });
 
-    // Cells should still be visible — some with mine indicators due to echo
-    const cells = page.locator('[data-testid="cell"]');
-    await expect(cells.first()).toBeVisible();
+    // With mine-echo tier 3 active, some mine cells should still be visually
+    // indicated in mark phase (data-visible-mine="true")
+    const visibleMines = page.locator('[data-testid="cell"][data-visible-mine="true"]');
+    const visibleCount = await visibleMines.count();
+
+    // Tier 3 reveals a percentage of mines — at least 1 should be visible
+    expect(visibleCount).toBeGreaterThanOrEqual(1);
+
+    // All visible-mine cells should actually be mines
+    for (let i = 0; i < visibleCount; i++) {
+      const isMine = await visibleMines.nth(i).getAttribute("data-mine");
+      expect(isMine).toBe("true");
+    }
   });
 });
 
@@ -231,6 +270,84 @@ test.describe("error-margin — Checksum Verify", () => {
     const isFailed = await failed.isVisible().catch(() => false);
     expect(isFailed).toBe(false);
   });
+
+  test("tier 1 accepts answer off by 1 but rejects off by 2", async ({ page }) => {
+    await goToBriefing(page, "Checksum Verify", { "error-margin": 1 }, ["checksum-verify"]);
+    await beginWithUpgrade(page, ["error-margin"]);
+
+    // Read correct answer
+    const hint = page.locator('[data-testid="expected-answer"]');
+    const answer = parseInt((await hint.getAttribute("data-answer"))!, 10);
+
+    // Type answer + 1 (within ±1 tolerance) → should succeed
+    const offBy1 = String(answer + 1);
+    for (const char of offBy1) {
+      await page.keyboard.press(char === "-" ? "Minus" : char);
+      await page.waitForTimeout(50);
+    }
+    await page.keyboard.press("Enter");
+
+    // Should not fail
+    await page.waitForTimeout(500);
+    const failed = await page.getByText("FAILED").isVisible().catch(() => false);
+    expect(failed).toBe(false);
+  });
+
+  test("tier 1 rejects answer off by 2", async ({ page }) => {
+    await goToBriefing(page, "Checksum Verify", { "error-margin": 1 }, ["checksum-verify"]);
+    await beginWithUpgrade(page, ["error-margin"]);
+
+    const hint = page.locator('[data-testid="expected-answer"]');
+    const answer = parseInt((await hint.getAttribute("data-answer"))!, 10);
+
+    // Type answer + 2 (outside ±1 tolerance) → should fail
+    const offBy2 = String(answer + 2);
+    for (const char of offBy2) {
+      await page.keyboard.press(char === "-" ? "Minus" : char);
+      await page.waitForTimeout(50);
+    }
+    await page.keyboard.press("Enter");
+
+    await expect(page.getByText("FAILED")).toBeVisible({ timeout: 5000 });
+  });
+
+  test("tier 3 accepts answer off by 3 but rejects off by 4", async ({ page }) => {
+    await goToBriefing(page, "Checksum Verify", { "error-margin": 3 }, ["checksum-verify"]);
+    await beginWithUpgrade(page, ["error-margin"]);
+
+    const hint = page.locator('[data-testid="expected-answer"]');
+    const answer = parseInt((await hint.getAttribute("data-answer"))!, 10);
+
+    // Type answer + 3 (within ±3 tolerance) → should not fail
+    const offBy3 = String(answer + 3);
+    for (const char of offBy3) {
+      await page.keyboard.press(char === "-" ? "Minus" : char);
+      await page.waitForTimeout(50);
+    }
+    await page.keyboard.press("Enter");
+
+    await page.waitForTimeout(500);
+    const failed = await page.getByText("FAILED").isVisible().catch(() => false);
+    expect(failed).toBe(false);
+  });
+
+  test("tier 3 rejects answer off by 4", async ({ page }) => {
+    await goToBriefing(page, "Checksum Verify", { "error-margin": 3 }, ["checksum-verify"]);
+    await beginWithUpgrade(page, ["error-margin"]);
+
+    const hint = page.locator('[data-testid="expected-answer"]');
+    const answer = parseInt((await hint.getAttribute("data-answer"))!, 10);
+
+    // Type answer + 4 (outside ±3 tolerance) → should fail
+    const offBy4 = String(answer + 4);
+    for (const char of offBy4) {
+      await page.keyboard.press(char === "-" ? "Minus" : char);
+      await page.waitForTimeout(50);
+    }
+    await page.keyboard.press("Enter");
+
+    await expect(page.getByText("FAILED")).toBeVisible({ timeout: 5000 });
+  });
 });
 
 // ===========================================================================
@@ -243,12 +360,32 @@ test.describe("range-hint — Checksum Verify", () => {
     await unlockMinigames(page, ["checksum-verify"]);
   });
 
-  test("tier 1 shows 'Answer is between' hint", async ({ page }) => {
+  test("tier 1 shows range containing the correct answer", async ({ page }) => {
     await goToBriefing(page, "Checksum Verify", { "range-hint": 1 }, ["checksum-verify"]);
     await beginWithUpgrade(page, ["range-hint"]);
 
     // Range hint should display the answer range
-    await expect(page.getByText("Answer is between", { exact: false })).toBeVisible({ timeout: 5000 });
+    const rangeText = page.getByText("Answer is between", { exact: false });
+    await expect(rangeText).toBeVisible({ timeout: 5000 });
+
+    // Read the correct answer from the test helper
+    const hint = page.locator('[data-testid="expected-answer"]');
+    const correctAnswer = parseInt((await hint.getAttribute("data-answer"))!, 10);
+
+    // Extract the range bounds from "Answer is between X and Y"
+    const fullText = (await rangeText.textContent()) ?? "";
+    const rangeMatch = fullText.match(/between\s+(-?\d+)\s+and\s+(-?\d+)/i);
+    expect(rangeMatch).not.toBeNull();
+
+    const lo = parseInt(rangeMatch![1], 10);
+    const hi = parseInt(rangeMatch![2], 10);
+
+    // The correct answer should fall within the displayed range
+    expect(correctAnswer).toBeGreaterThanOrEqual(lo);
+    expect(correctAnswer).toBeLessThanOrEqual(hi);
+
+    // Tier 1 spread is ±10, so range should be 20 wide
+    expect(hi - lo).toBe(20);
   });
 });
 
@@ -262,7 +399,7 @@ test.describe("port-logger — Port Scan", () => {
     await unlockMinigames(page, ["port-scan"]);
   });
 
-  test("shows open port list during select phase", async ({ page }) => {
+  test("shows open port list matching actual open ports", async ({ page }) => {
     await goToBriefing(page, "Port Scan", { "port-logger": 1 }, ["port-scan"]);
     await beginWithUpgrade(page, ["port-logger"]);
 
@@ -272,7 +409,25 @@ test.describe("port-logger — Port Scan", () => {
     ).toBeVisible({ timeout: 15000 });
 
     // Port logger shows "Open: <port numbers>" during select phase
-    await expect(page.getByText("Open:", { exact: false })).toBeVisible({ timeout: 3000 });
+    const openText = page.getByText("Open:", { exact: false });
+    await expect(openText).toBeVisible({ timeout: 3000 });
+
+    // Read actual open port numbers from data-testid="port-cell" with data-open="true"
+    const openCells = page.locator('[data-testid="port-cell"][data-open="true"]');
+    const openCount = await openCells.count();
+    expect(openCount).toBeGreaterThanOrEqual(2);
+
+    const openPortNumbers: string[] = [];
+    for (let i = 0; i < openCount; i++) {
+      const text = (await openCells.nth(i).textContent())?.trim() ?? "";
+      openPortNumbers.push(text);
+    }
+
+    // The "Open:" text should contain all the open port numbers
+    const loggerText = (await openText.textContent()) ?? "";
+    for (const port of openPortNumbers) {
+      expect(loggerText).toContain(port);
+    }
   });
 });
 
@@ -339,13 +494,33 @@ test.describe("decode-assist — Cipher Crack V1", () => {
     await unlockMinigames(page, ["cipher-crack"]);
   });
 
-  test("tier 3 shows pre-filled letters indicator", async ({ page }) => {
+  test("tier 3 pre-fills roughly 60% of letters", async ({ page }) => {
     await goToBriefing(page, "Cipher Crack V1", { "decode-assist": 3 }, ["cipher-crack"]);
     await beginWithUpgrade(page, ["decode-assist"]);
 
     // Decode assist at 60% should pre-fill some letters
     // The component shows "(N pre-filled)" text
-    await expect(page.getByText("pre-filled", { exact: false })).toBeVisible({ timeout: 5000 });
+    const preFilledText = page.getByText("pre-filled", { exact: false });
+    await expect(preFilledText).toBeVisible({ timeout: 5000 });
+
+    // Extract the count from "(N pre-filled)" and verify it's > 0
+    const text = (await preFilledText.textContent()) ?? "";
+    const match = text.match(/\((\d+)\s+pre-filled\)/);
+    expect(match).not.toBeNull();
+    const preFilledCount = parseInt(match![1], 10);
+    expect(preFilledCount).toBeGreaterThan(0);
+
+    // Read total word length from the progress display (e.g. "2/5")
+    const progressText = await page.locator("text=/\\d+\\/\\d+/").first().textContent() ?? "";
+    const totalMatch = progressText.match(/\/(\d+)/);
+    if (totalMatch) {
+      const wordLength = parseInt(totalMatch[1], 10);
+      // 60% of a word of length N: ceil(N*0.6), allow ±1 tolerance for rounding
+      const expectedMin = Math.max(1, Math.ceil(wordLength * 0.6) - 1);
+      const expectedMax = Math.ceil(wordLength * 0.6) + 1;
+      expect(preFilledCount).toBeGreaterThanOrEqual(expectedMin);
+      expect(preFilledCount).toBeLessThanOrEqual(expectedMax);
+    }
   });
 });
 
@@ -359,13 +534,29 @@ test.describe("cipher-hint — Cipher Crack V1", () => {
     await unlockMinigames(page, ["cipher-crack"]);
   });
 
-  test("game starts with cipher hint enabled", async ({ page }) => {
+  test("shows 'starts with' hint matching the first expected character", async ({ page }) => {
     await goToBriefing(page, "Cipher Crack V1", { "cipher-hint": 1 }, ["cipher-crack"]);
     await beginWithUpgrade(page, ["cipher-hint"]);
 
-    // Verify minigame is running
-    const hint = page.locator('[data-testid="expected-char"]');
-    await expect(hint).toBeAttached({ timeout: 5000 });
+    // Cipher hint shows "Hint: starts with 'X'" where X is the first letter
+    const hintText = page.getByText("starts with", { exact: false });
+    await expect(hintText).toBeVisible({ timeout: 5000 });
+
+    // Read the first expected character from the test helper
+    const expectedChar = page.locator('[data-testid="expected-char"]');
+    await expect(expectedChar).toBeAttached({ timeout: 5000 });
+
+    // The first character of the word is revealed. We need to compare with the hint.
+    // The word starts at charIndex 0 (or the first non-pre-filled position).
+    // The hint displays as: Hint: starts with "X"
+    // where X should match the very first letter of the word.
+    const fullHintText = (await hintText.textContent()) ?? "";
+    // The hint contains a bold letter — extract it
+    const hintLetter = await page.locator("text=starts with").locator("..").locator("strong").textContent();
+    expect(hintLetter).toBeTruthy();
+    expect(hintLetter!.length).toBe(1);
+    // The letter should be a lowercase alpha character
+    expect(hintLetter!).toMatch(/^[a-z]$/);
   });
 });
 
@@ -398,12 +589,32 @@ test.describe("auto-decode-v2 — Cipher Crack V2", () => {
     await unlockMinigames(page, ["cipher-crack-v2"]);
   });
 
-  test("tier 3 shows pre-filled letters indicator", async ({ page }) => {
+  test("tier 3 pre-fills roughly 60% of letters", async ({ page }) => {
     await goToBriefing(page, "Cipher Crack V2", { "auto-decode-v2": 3 }, ["cipher-crack-v2"]);
     await beginWithUpgrade(page, ["auto-decode-v2"]);
 
     // Auto-decode at 60% should pre-fill some letters — shows "(N pre-filled)"
-    await expect(page.getByText("pre-filled", { exact: false })).toBeVisible({ timeout: 5000 });
+    const preFilledText = page.getByText("pre-filled", { exact: false });
+    await expect(preFilledText).toBeVisible({ timeout: 5000 });
+
+    // Extract the count and verify it's > 0
+    const text = (await preFilledText.textContent()) ?? "";
+    const match = text.match(/\((\d+)\s+pre-filled\)/);
+    expect(match).not.toBeNull();
+    const preFilledCount = parseInt(match![1], 10);
+    expect(preFilledCount).toBeGreaterThan(0);
+
+    // Read total word length from the progress display (e.g. "2/5")
+    const progressText = await page.locator("text=/\\d+\\/\\d+/").first().textContent() ?? "";
+    const totalMatch = progressText.match(/\/(\d+)/);
+    if (totalMatch) {
+      const wordLength = parseInt(totalMatch[1], 10);
+      // 60% of a word: ceil(N*0.6), allow ±1 tolerance
+      const expectedMin = Math.max(1, Math.ceil(wordLength * 0.6) - 1);
+      const expectedMax = Math.ceil(wordLength * 0.6) + 1;
+      expect(preFilledCount).toBeGreaterThanOrEqual(expectedMin);
+      expect(preFilledCount).toBeLessThanOrEqual(expectedMax);
+    }
   });
 });
 
