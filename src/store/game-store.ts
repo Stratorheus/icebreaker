@@ -40,3 +40,8 @@ export const useGameStore = create<GameStore>()(
     },
   ),
 );
+
+// Expose store on window for E2E testing (Playwright store manipulation)
+if (typeof window !== "undefined") {
+  (window as unknown as Record<string, unknown>).__GAME_STORE__ = useGameStore;
+}
