@@ -1,27 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import type { MinigameType, PowerUpInstance } from "@/types/game";
+import type { MinigameType } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { getMinigameDisplayName } from "@/data/minigame-names";
-import { MINIGAME_BRIEFINGS } from "@/data/minigame-descriptions";
-import type { MinigameBriefing } from "@/data/minigame-descriptions";
+import { MINIGAME_COMPONENTS, buildMetaPowerUps, getMinigameDisplayName, getMinigameBriefing } from "@/data/minigames/registry";
+import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
-import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
-import { SlashTiming } from "@/components/minigames/SlashTiming";
-import { CloseBrackets } from "@/components/minigames/CloseBrackets";
-import { TypeBackward } from "@/components/minigames/TypeBackward";
-import { MatchArrows } from "@/components/minigames/MatchArrows";
-import { FindSymbol } from "@/components/minigames/FindSymbol";
-import { MineSweep } from "@/components/minigames/MineSweep";
-import { WireCutting } from "@/components/minigames/WireCutting";
-import { CipherCrack } from "@/components/minigames/CipherCrack";
-import { Defrag } from "@/components/minigames/Defrag";
-import { NetworkTrace } from "@/components/minigames/NetworkTrace";
-import { SignalEcho } from "@/components/minigames/SignalEcho";
-import { ChecksumVerify } from "@/components/minigames/ChecksumVerify";
-import { PortScan } from "@/components/minigames/PortScan";
-import { SubnetScan } from "@/components/minigames/SubnetScan";
-import { CipherCrackV2 } from "@/components/minigames/CipherCrackV2";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -38,120 +21,6 @@ const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
   { label: "EXPERT", value: 0.85 },
   { label: "INSANE", value: 1.0 },
 ];
-
-// Briefing data imported from shared source
-// (see src/data/minigame-descriptions.ts)
-
-// ---------------------------------------------------------------------------
-// Minigame component map (same as MinigameScreen)
-// ---------------------------------------------------------------------------
-
-const MINIGAME_COMPONENTS: Record<
-  MinigameType,
-  React.ComponentType<import("@/types/minigame").MinigameProps>
-> = {
-  "slash-timing": SlashTiming,
-  "close-brackets": CloseBrackets,
-  "type-backward": TypeBackward,
-  "match-arrows": MatchArrows,
-  "find-symbol": FindSymbol,
-  "mine-sweep": MineSweep,
-  "wire-cutting": WireCutting,
-  "cipher-crack": CipherCrack,
-  "defrag": Defrag,
-  "network-trace": NetworkTrace,
-  "signal-echo": SignalEcho,
-  "checksum-verify": ChecksumVerify,
-  "port-scan": PortScan,
-  "subnet-scan": SubnetScan,
-  "cipher-crack-v2": CipherCrackV2,
-};
-
-// ---------------------------------------------------------------------------
-// Build meta power-ups (replicated from MinigameScreen)
-// ---------------------------------------------------------------------------
-
-function buildMetaPowerUps(
-  purchasedUpgrades: Record<string, number>,
-  type: MinigameType,
-): PowerUpInstance[] {
-  const synth: PowerUpInstance[] = [];
-
-  function addIfOwned(
-    upgradeId: string,
-    effectType: PowerUpInstance["effect"]["type"],
-    valueByTier: number[],
-    minigame?: MinigameType,
-  ) {
-    const tier = purchasedUpgrades[upgradeId] ?? 0;
-    if (tier <= 0) return;
-    const value = valueByTier[tier - 1] ?? valueByTier[valueByTier.length - 1];
-    // Look up display name + description from META_UPGRADE_POOL
-    const upgradeDef = META_UPGRADE_POOL.find((u) => u.id === upgradeId);
-    synth.push({
-      id: `meta-${upgradeId}`,
-      type: `meta-${upgradeId}`,
-      name: upgradeDef?.name ?? upgradeId,
-      description: upgradeDef?.description ?? "",
-      effect: { type: effectType, value, minigame },
-    });
-  }
-
-  switch (type) {
-    case "close-brackets":
-      addIfOwned("bracket-reducer", "minigame-specific", [1, 2, 3], "close-brackets");
-      addIfOwned("bracket-mirror", "bracket-flash", [1], "close-brackets");
-      break;
-    case "mine-sweep":
-      addIfOwned("mine-echo", "minigame-specific", [0.20, 0.30, 0.40, 0.50, 0.60], "mine-sweep");
-      break;
-    case "find-symbol":
-      addIfOwned("symbol-scanner", "hint", [1], "find-symbol");
-      break;
-    case "match-arrows":
-      addIfOwned("arrow-preview", "peek-ahead", [0.20, 0.30, 0.40, 0.50, 0.60], "match-arrows");
-      break;
-    case "type-backward":
-      addIfOwned("reverse-trainer", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "type-backward");
-      break;
-    case "wire-cutting":
-      addIfOwned("wire-labels", "hint", [1], "wire-cutting");
-      break;
-    case "cipher-crack":
-      addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
-      addIfOwned("decode-assist", "minigame-specific", [0.20, 0.40, 0.60], "cipher-crack");
-      break;
-    case "slash-timing":
-      addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
-      break;
-    case "defrag":
-      addIfOwned("mine-radar", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "defrag");
-      break;
-    case "cipher-crack-v2":
-      addIfOwned("shift-marker", "minigame-specific", [1], "cipher-crack-v2");
-      addIfOwned("auto-decode-v2", "hint", [0.20, 0.40, 0.60], "cipher-crack-v2");
-      break;
-    case "network-trace":
-      addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");
-      break;
-    case "signal-echo":
-      addIfOwned("signal-echo-slow", "minigame-specific", [0.3], "signal-echo");
-      break;
-    case "checksum-verify":
-      addIfOwned("error-margin", "hint", [1, 2, 3, 4, 5], "checksum-verify");
-      addIfOwned("range-hint", "preview", [10, 5, 3], "checksum-verify");
-      break;
-    case "port-scan":
-      addIfOwned("port-scan-deep", "minigame-specific", [2], "port-scan");
-      addIfOwned("port-logger", "hint", [1], "port-scan");
-      break;
-    case "subnet-scan":
-      addIfOwned("subnet-cidr-helper", "minigame-specific", [1], "subnet-scan");
-      break;
-  }
-
-  return synth;
-}
 
 // ---------------------------------------------------------------------------
 // Training screen phases
@@ -294,7 +163,7 @@ export function Training() {
     );
   }
 
-  const briefing = MINIGAME_BRIEFINGS[type];
+  const briefing = getMinigameBriefing(type);
   const showQuitButton = phase === "active" || phase === "countdown" || phase === "round-result";
 
   return (

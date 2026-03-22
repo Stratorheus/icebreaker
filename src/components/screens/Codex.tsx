@@ -1,29 +1,9 @@
 import { useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
-import { UNLOCKABLE_MINIGAMES } from "@/types/game";
-import { getMinigameDisplayName } from "@/data/minigame-names";
-import { MINIGAME_BRIEFINGS } from "@/data/minigame-descriptions";
-import type { MinigameBriefing } from "@/data/minigame-descriptions";
+import { ALL_MINIGAMES, UNLOCKABLE_MINIGAMES, getMinigameBriefing, getMinigameDisplayName } from "@/data/minigames/registry";
+import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
-
-const ALL_MINIGAMES: MinigameType[] = [
-  "slash-timing",
-  "close-brackets",
-  "type-backward",
-  "match-arrows",
-  "mine-sweep",
-  "find-symbol",
-  "wire-cutting",
-  "cipher-crack",
-  "defrag",
-  "network-trace",
-  "signal-echo",
-  "checksum-verify",
-  "port-scan",
-  "subnet-scan",
-  "cipher-crack-v2",
-];
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -203,7 +183,7 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
             <UnlockedEntry
               key={type}
               type={type}
-              briefing={MINIGAME_BRIEFINGS[type]}
+              briefing={getMinigameBriefing(type)}
               expanded={expanded.has(type)}
               onToggle={() => toggle(type)}
             />

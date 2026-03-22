@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { PowerUpEffect, PowerUpInstance } from "@/types/game";
 import type { RunShopItem, MetaUpgrade } from "@/types/shop";
 import { RUN_SHOP_POOL } from "@/data/power-ups";
-import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
+import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import { getRunShopPrice } from "@/data/balancing";
 import type { RunSlice } from "./run-slice";
 import type { MetaSlice } from "./meta-slice";

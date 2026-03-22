@@ -1,10 +1,10 @@
 import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance } from "@/types/game";
-import { STARTING_MINIGAMES } from "@/types/game";
+import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { MinigameResult } from "@/types/minigame";
 import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
-import { META_UPGRADE_POOL } from "@/data/meta-upgrades";
+import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
 

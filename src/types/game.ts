@@ -18,27 +18,6 @@ export type MinigameType =
   | "subnet-scan"
   | "cipher-crack-v2";
 
-export const STARTING_MINIGAMES: MinigameType[] = [
-  "slash-timing",
-  "close-brackets",
-  "type-backward",
-  "match-arrows",
-  "mine-sweep",
-];
-
-export const UNLOCKABLE_MINIGAMES: MinigameType[] = [
-  "find-symbol",
-  "wire-cutting",
-  "cipher-crack",
-  "defrag",
-  "network-trace",
-  "signal-echo",
-  "checksum-verify",
-  "port-scan",
-  "subnet-scan",
-  "cipher-crack-v2",
-];
-
 export interface PowerUpInstance {
   id: string;
   type: string;
