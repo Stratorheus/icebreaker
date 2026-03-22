@@ -100,6 +100,22 @@ export function ChecksumVerify(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
+  // Error Margin: accept answers within ±N tolerance
+  const errorTolerance = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "checksum-verify",
+    );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
+
+  // Range Hint: show approximate range of the answer (±percentage)
+  const rangeHintPct = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "preview" && p.effect.minigame === "checksum-verify",
+    );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
+
   // -- Generate all expressions on mount (stable) --
   const expressions = useMemo(() => {
     const count = getExpressionCount(difficulty);
@@ -141,8 +157,11 @@ export function ChecksumVerify(props: MinigameProps) {
     if (isNaN(parsed)) return;
 
     const expected = expressions[idx].answer;
+    const withinTolerance = errorTolerance > 0
+      ? Math.abs(parsed - expected) <= errorTolerance
+      : parsed === expected;
 
-    if (parsed !== expected) {
+    if (!withinTolerance) {
       // Wrong answer -- immediate fail
       resolvedRef.current = true;
       setFlash("wrong");
@@ -168,7 +187,7 @@ export function ChecksumVerify(props: MinigameProps) {
         setFlash(null);
       }, 300);
     }
-  }, [isActive, expressions, fail, complete]);
+  }, [isActive, expressions, fail, complete, errorTolerance]);
 
   // -- Handle digit input --
   const handleDigit = useCallback(
@@ -304,6 +323,20 @@ export function ChecksumVerify(props: MinigameProps) {
               )}
             </p>
           </div>
+
+          {/* Range Hint: show approximate answer range */}
+          {rangeHintPct > 0 && (
+            <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
+              Answer is between {Math.floor(expr.answer * (1 - rangeHintPct))} and {Math.ceil(expr.answer * (1 + rangeHintPct))}
+            </p>
+          )}
+
+          {/* Error Margin indicator */}
+          {errorTolerance > 0 && (
+            <p className="text-cyber-green/50 text-[10px] font-mono uppercase tracking-wider">
+              &plusmn;{errorTolerance} tolerance active
+            </p>
+          )}
 
           {/* Equals sign */}
           <p className="text-white/40 text-2xl font-mono">=</p>

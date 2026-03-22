@@ -119,13 +119,17 @@ function buildMetaPowerUps(
       break;
     case "cipher-crack":
       addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
+      addIfOwned("decode-assist", "minigame-specific", [0.25, 0.50, 0.75], "cipher-crack");
       break;
     case "slash-timing":
       addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
       break;
     case "defrag":
+      addIfOwned("mine-radar", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "defrag");
       break;
     case "cipher-crack-v2":
+      addIfOwned("shift-marker", "minigame-specific", [1], "cipher-crack-v2");
+      addIfOwned("auto-decode-v2", "hint", [0.25, 0.50, 0.75], "cipher-crack-v2");
       break;
     case "network-trace":
       addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");
@@ -135,9 +139,12 @@ function buildMetaPowerUps(
       break;
     case "checksum-verify":
       addIfOwned("checksum-calculator", "minigame-specific", [1], "checksum-verify");
+      addIfOwned("error-margin", "hint", [1, 2, 3, 4, 5], "checksum-verify");
+      addIfOwned("range-hint", "preview", [0.5, 0.3, 0.15], "checksum-verify");
       break;
     case "port-scan":
       addIfOwned("port-scan-deep", "minigame-specific", [2], "port-scan");
+      addIfOwned("port-logger", "hint", [1], "port-scan");
       break;
     case "subnet-scan":
       addIfOwned("subnet-cidr-helper", "minigame-specific", [1], "subnet-scan");

@@ -137,8 +137,16 @@ function placeMines(
  * Arrow keys navigate cursor, Space = uncover, Enter = flag.
  */
 export function Defrag(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("defrag", props);
+
+  // Mine Radar: fraction of timer during which mine-containing rows/cols are highlighted
+  const mineRadarFraction = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "defrag",
+    );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -176,6 +184,12 @@ export function Defrag(props: MinigameProps) {
 
   // Show all mines briefly on fail before triggering fail callback
   const [showMines, setShowMines] = useState(false);
+
+  // Mine Radar: rows and columns that contain mines (computed after first click)
+  const [mineRows, setMineRows] = useState<Set<number>>(new Set());
+  const [mineCols, setMineCols] = useState<Set<number>>(new Set());
+  // Radar is visible while timer.progress > (1 - mineRadarFraction)
+  const radarVisible = minesPlacedRef.current && mineRadarFraction > 0 && timer.progress > (1 - mineRadarFraction);
 
   // ── Cursor for keyboard navigation ────────────────────────────────
   const [cursorRow, setCursorRow] = useState(0);
@@ -242,6 +256,20 @@ export function Defrag(props: MinigameProps) {
         minesPlacedRef.current = true;
         firstClickRef.current = false;
         placeMines(cells, cols, rows, mineCount, cellIndex);
+
+        // Compute mine rows/cols for Mine Radar power-up
+        if (mineRadarFraction > 0) {
+          const mRows = new Set<number>();
+          const mCols = new Set<number>();
+          for (const cell of cells) {
+            if (cell.isMine) {
+              mRows.add(Math.floor(cell.id / cols));
+              mCols.add(cell.id % cols);
+            }
+          }
+          setMineRows(mRows);
+          setMineCols(mCols);
+        }
       }
 
       const cell = cells[cellIndex];
@@ -378,6 +406,10 @@ export function Defrag(props: MinigameProps) {
             const state = cellStates[i];
             const isMineRevealed = showMines && cell.isMine;
 
+            // Mine Radar: subtle indicator on hidden cells in mine-containing rows/cols
+            const hasRadarLeft = radarVisible && state === "hidden" && mineRows.has(cellRow);
+            const hasRadarTop = radarVisible && state === "hidden" && mineCols.has(cellCol);
+
             return (
               <button
                 key={cell.id}
@@ -409,6 +441,12 @@ export function Defrag(props: MinigameProps) {
                   }
                   ${isCursor && !isMineRevealed ? "ring-2 ring-cyber-cyan ring-offset-0 z-10" : ""}
                 `}
+                style={{
+                  borderLeftColor: hasRadarLeft ? "rgba(255, 160, 0, 0.25)" : undefined,
+                  borderLeftWidth: hasRadarLeft ? "3px" : undefined,
+                  borderTopColor: hasRadarTop ? "rgba(255, 160, 0, 0.25)" : undefined,
+                  borderTopWidth: hasRadarTop ? "3px" : undefined,
+                }}
               >
                 {isMineRevealed ? (
                   <span className="text-sm">✦</span>

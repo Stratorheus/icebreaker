@@ -2,7 +2,7 @@ import type { MetaUpgrade } from "@/types/shop";
 
 /**
  * Persistent meta-upgrade pool — purchased with data (◆) between runs.
- * 39 upgrades across all four categories.
+ * 46 upgrades across all four categories.
  */
 export const META_UPGRADE_POOL: MetaUpgrade[] = [
   // ── STAT — stackable (infinite) ────────────────────────────────────────────
@@ -442,5 +442,107 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     maxTier: 1,
     prices: [225],
     effects: [{ type: "minigame-specific", value: 1, minigame: "subnet-scan" }],
+  },
+
+  // ── NEW GAME-SPECIFIC UPGRADES ──────────────────────────────────────────────
+
+  // Mine Radar: highlights rows/columns containing mines in Defrag
+  {
+    id: "mine-radar",
+    name: "Mine Radar",
+    description: "Highlights rows/columns containing mines for 25/50/75/100% of the timer in Defrag.",
+    category: "game-specific",
+    maxTier: 4,
+    prices: [150, 300, 500, 750],
+    effects: [
+      { type: "minigame-specific", value: 0.25, minigame: "defrag" },
+      { type: "minigame-specific", value: 0.50, minigame: "defrag" },
+      { type: "minigame-specific", value: 0.75, minigame: "defrag" },
+      { type: "minigame-specific", value: 1.0, minigame: "defrag" },
+    ],
+  },
+
+  // Decode Assist: pre-fills a fraction of letters in Cipher Crack V1
+  {
+    id: "decode-assist",
+    name: "Decode Assist",
+    description: "Pre-fills 25/50/75% of decoded letters at their correct positions in Cipher Crack V1.",
+    category: "game-specific",
+    maxTier: 3,
+    prices: [150, 300, 500],
+    effects: [
+      { type: "minigame-specific", value: 0.25, minigame: "cipher-crack" },
+      { type: "minigame-specific", value: 0.50, minigame: "cipher-crack" },
+      { type: "minigame-specific", value: 0.75, minigame: "cipher-crack" },
+    ],
+  },
+
+  // Shift Marker: highlights the ROT shift offset in the alphabet chart in Cipher Crack V2
+  {
+    id: "shift-marker",
+    name: "Shift Marker",
+    description: "Highlights the ROT shift amount in the alphabet chart in Cipher Crack V2.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [175],
+    effects: [{ type: "minigame-specific", value: 1, minigame: "cipher-crack-v2" }],
+  },
+
+  // Auto-Decode V2: pre-fills a fraction of decoded letters in Cipher Crack V2
+  {
+    id: "auto-decode-v2",
+    name: "Auto-Decode",
+    description: "Pre-fills 25/50/75% of decoded letters in Cipher Crack V2.",
+    category: "game-specific",
+    maxTier: 3,
+    prices: [200, 400, 650],
+    effects: [
+      { type: "hint", value: 0.25, minigame: "cipher-crack-v2" },
+      { type: "hint", value: 0.50, minigame: "cipher-crack-v2" },
+      { type: "hint", value: 0.75, minigame: "cipher-crack-v2" },
+    ],
+  },
+
+  // Error Margin: accept answers within ±N of correct in Checksum Verify
+  {
+    id: "error-margin",
+    name: "Error Margin",
+    description: "Answers within ±1/±2/±3/±4/±5 of the correct value are accepted in Checksum Verify.",
+    category: "game-specific",
+    maxTier: 5,
+    prices: [100, 200, 350, 500, 700],
+    effects: [
+      { type: "hint", value: 1, minigame: "checksum-verify" },
+      { type: "hint", value: 2, minigame: "checksum-verify" },
+      { type: "hint", value: 3, minigame: "checksum-verify" },
+      { type: "hint", value: 4, minigame: "checksum-verify" },
+      { type: "hint", value: 5, minigame: "checksum-verify" },
+    ],
+  },
+
+  // Range Hint: shows the approximate range of the answer in Checksum Verify
+  {
+    id: "range-hint",
+    name: "Range Hint",
+    description: "Shows the approximate range of the answer in Checksum Verify. Narrows with tier.",
+    category: "game-specific",
+    maxTier: 3,
+    prices: [150, 300, 500],
+    effects: [
+      { type: "preview", value: 0.5, minigame: "checksum-verify" },
+      { type: "preview", value: 0.3, minigame: "checksum-verify" },
+      { type: "preview", value: 0.15, minigame: "checksum-verify" },
+    ],
+  },
+
+  // Port Logger: shows a text list of open port numbers during the selection phase in Port Scan
+  {
+    id: "port-logger",
+    name: "Port Logger",
+    description: "Shows a text list of open port numbers during the selection phase in Port Scan.",
+    category: "game-specific",
+    maxTier: 1,
+    prices: [200],
+    effects: [{ type: "hint", value: 1, minigame: "port-scan" }],
   },
 ];

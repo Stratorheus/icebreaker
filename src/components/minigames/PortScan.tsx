@@ -95,6 +95,13 @@ export function PortScan(props: MinigameProps) {
     return pu ? pu.effect.value : 1;
   }, [activePowerUps]);
 
+  // Port Logger: show list of open port numbers during select phase
+  const hasPortLogger = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "port-scan",
+    );
+  }, [activePowerUps]);
+
   // -- Difficulty params (stable on mount) --
   const params = useMemo(() => getParams(difficulty),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -366,6 +373,12 @@ export function PortScan(props: MinigameProps) {
           {phase === "select" && (
             <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
               Select all open ports
+            </p>
+          )}
+          {/* Port Logger: text list of open ports during select phase */}
+          {hasPortLogger && phase === "select" && (
+            <p className="text-cyber-orange/60 text-[10px] font-mono tracking-wider">
+              Open: {Array.from(puzzle.openIndices).map((idx) => puzzle.ports[idx]).sort((a, b) => a - b).join(", ")}
             </p>
           )}
         </div>

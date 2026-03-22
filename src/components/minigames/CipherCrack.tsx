@@ -153,6 +153,14 @@ export function CipherCrack(props: MinigameProps) {
     return hint ? hint.effect.value : 0;
   }, [activePowerUps]);
 
+  // Decode Assist: fraction of letters pre-filled
+  const decodeAssistFraction = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "cipher-crack",
+    );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
+
   // Generate puzzle on mount
   const puzzle = useMemo(() => {
     const pool = getWordPool(difficulty);
@@ -166,13 +174,50 @@ export function CipherCrack(props: MinigameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Current typed character index
-  const [charIndex, setCharIndex] = useState(0);
-  const charIndexRef = useRef(0);
+  // Compute pre-filled positions for Decode Assist (stable on mount)
+  const preFilledPositions = useMemo(() => {
+    if (decodeAssistFraction <= 0) return new Set<number>();
+    const count = Math.ceil(puzzle.word.length * decodeAssistFraction);
+    // Pick random positions
+    const indices = Array.from({ length: puzzle.word.length }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    return new Set(indices.slice(0, count));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Helper: find next non-pre-filled position starting from `from`
+  const nextTypableIndex = useCallback(
+    (from: number): number => {
+      let idx = from;
+      while (idx < puzzle.word.length && preFilledPositions.has(idx)) idx++;
+      return idx;
+    },
+    [puzzle.word.length, preFilledPositions],
+  );
+
+  // Current typed character index (starts at first non-pre-filled position)
+  const [charIndex, setCharIndex] = useState(() => {
+    let idx = 0;
+    while (idx < puzzle.word.length && preFilledPositions.has(idx)) idx++;
+    return idx;
+  });
+  const charIndexRef = useRef(charIndex);
 
   useEffect(() => {
     charIndexRef.current = charIndex;
   }, [charIndex]);
+
+  // Check if all positions are pre-filled (auto-complete)
+  useEffect(() => {
+    if (charIndex >= puzzle.word.length && !resolvedRef.current) {
+      resolvedRef.current = true;
+      complete(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -184,10 +229,11 @@ export function CipherCrack(props: MinigameProps) {
       e.preventDefault();
 
       const ci = charIndexRef.current;
+      if (ci >= puzzle.word.length) return;
       const expected = puzzle.word[ci];
 
       if (key === expected) {
-        const nextChar = ci + 1;
+        const nextChar = nextTypableIndex(ci + 1);
         if (nextChar >= puzzle.word.length) {
           resolvedRef.current = true;
           complete(true);
@@ -199,7 +245,7 @@ export function CipherCrack(props: MinigameProps) {
         fail();
       }
     },
-    [isActive, puzzle.word, complete, fail],
+    [isActive, puzzle.word, complete, fail, nextTypableIndex],
   );
 
   useEffect(() => {
@@ -207,8 +253,13 @@ export function CipherCrack(props: MinigameProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  const typedPortion = puzzle.word.slice(0, charIndex);
-  const remainingCount = puzzle.word.length - charIndex;
+  // Build per-character display: pre-filled (green), typed (green), cursor, remaining (_)
+  const charDisplay = puzzle.word.split("").map((ch, i) => {
+    if (preFilledPositions.has(i)) return { char: ch, state: "prefilled" as const };
+    if (i < charIndex) return { char: ch, state: "typed" as const };
+    if (i === charIndex) return { char: "_", state: "cursor" as const };
+    return { char: "_", state: "remaining" as const };
+  });
   // V1 never uses ROT — no alphabet chart needed
 
   return (
@@ -275,18 +326,31 @@ export function CipherCrack(props: MinigameProps) {
         {/* Input display */}
         <div className="flex items-center justify-center min-h-[3.5rem]">
           <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl tracking-wider">
-            {typedPortion.split("").map((ch, i) => (
-              <span key={i} className="text-cyber-green font-bold">{ch}</span>
-            ))}
-            <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
-            {Array.from({ length: remainingCount }).map((_, i) => (
-              <span key={`r-${i}`} className="text-white/15 font-bold">_</span>
-            ))}
+            {charDisplay.map((cd, i) => {
+              if (cd.state === "prefilled") {
+                return <span key={i} className="text-cyber-green/70 font-bold">{cd.char}</span>;
+              }
+              if (cd.state === "typed") {
+                return <span key={i} className="text-cyber-green font-bold">{cd.char}</span>;
+              }
+              if (cd.state === "cursor") {
+                return (
+                  <span key={i} className="relative">
+                    <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
+                    <span className="text-white/15 font-bold">_</span>
+                  </span>
+                );
+              }
+              return <span key={i} className="text-white/15 font-bold">_</span>;
+            })}
           </div>
         </div>
 
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          {charIndex}/{puzzle.word.length}
+          {charIndex >= puzzle.word.length ? puzzle.word.length : charIndex}/{puzzle.word.length}
+          {preFilledPositions.size > 0 && (
+            <span className="text-cyber-green/50 ml-2">({preFilledPositions.size} pre-filled)</span>
+          )}
         </p>
       </div>
 

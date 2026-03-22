@@ -42,6 +42,7 @@ A grid of network port numbers is displayed. During the display phase, "open" po
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
 | **Deep Scan** (`port-scan-deep`) | Meta upgrade | `minigame-specific` | Open ports flash **twice** instead of once (`flashRepeat = 2`). A 200 ms gap separates the two full sequences. |
+| **Port Logger** (`port-logger`) | Meta upgrade | `hint` | During the select phase, shows a sorted text list of all open port numbers below the phase indicator (e.g. "Open: 22, 80, 443, 3306"). 1 tier, price: 200 ◆. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
