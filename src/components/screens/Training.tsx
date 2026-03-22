@@ -252,7 +252,7 @@ export function Training() {
       )}
 
       {phase === "active" && (
-        <div className="flex-1 flex items-center justify-center px-4">
+        <div data-testid="minigame-active" className="flex-1 flex items-center justify-center px-4">
           <ActiveRound
             type={type}
             settings={currentSettings}
