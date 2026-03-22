@@ -398,23 +398,23 @@ export function Defrag(props: MinigameProps) {
             <div className="flex gap-1 mb-1">
               {/* Spacer matching the width of row indicators on the left */}
               <div className="w-5 mr-0.5 shrink-0" />
-              <div
-                className="grid gap-1 flex-1"
-                style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-              >
-                {mineColCounts.map((count, c) => (
+              {/* Column indicators — each sized to match the grid cells below */}
+              {mineColCounts.map((count, c) => {
+                // Extract just the width classes from cellSizeClass (e.g. "w-10 sm:w-12")
+                const widthClasses = cellSizeClass.split(" ").filter(c => c.startsWith("w-") || c.startsWith("sm:w-")).join(" ");
+                return (
                   <div
                     key={`col-${c}`}
                     className={`
                       flex items-center justify-center
-                      h-5 font-mono font-bold text-[10px]
+                      ${widthClasses} h-5 font-mono font-bold text-[10px]
                       ${count > 0 ? "text-cyber-orange/70" : "text-white/10"}
                     `}
                   >
                     {count > 0 ? count : "·"}
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
           )}
 
