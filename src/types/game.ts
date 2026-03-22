@@ -66,8 +66,6 @@ export interface PowerUpEffect {
     | "hint"
     | "highlight-danger"
     | "window-extend"
-    | "auto-close"
-    | "reveal-first"
     | "peek-ahead"
     | "flag-mine"
     | "minigame-specific"

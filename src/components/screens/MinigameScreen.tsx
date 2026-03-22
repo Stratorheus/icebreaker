@@ -360,7 +360,7 @@ function buildMetaPowerUps(
       break;
 
     case "mine-sweep":
-      // mine-echo → mines-visible (20/30/40/50/60% of mines shown during preview)
+      // mine-echo → minigame-specific (20/30/40/50/60% of mines shown during preview)
       addIfOwned("mine-echo", "minigame-specific", [0.20, 0.30, 0.40, 0.50, 0.60], "mine-sweep");
       break;
 

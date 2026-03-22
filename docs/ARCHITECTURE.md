@@ -424,12 +424,12 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 
 **Minigame unlocks**: 10 unlockable protocols (see section 4). Dynamic pricing: `200 + unlocksOwned * 100`. Some have prerequisites (e.g., cipher-crack-v2 requires cipher-crack-license).
 
-**Game-specific upgrades**: 15 upgrades that modify individual minigame behavior (bracket-reducer, mine-echo, symbol-scanner, arrow-preview, wire-labels, cipher-hint, slash-window, bracket-mirror, reverse-trainer, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper). Removed: type-assist (weak), symbol-magnifier (ugly, scanner covers it), slash-calibration/bracket-auto-close/arrow-compass/mine-detector (run-shop assists, meta upgrades cover them).
+**Game-specific upgrades**: 14 upgrades that modify individual minigame behavior (bracket-reducer, bracket-mirror, mine-echo, symbol-scanner, arrow-preview, wire-labels, cipher-hint, slash-window, reverse-trainer, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper). Removed: type-assist (weak), symbol-magnifier (ugly, scanner covers it), slash-calibration/bracket-auto-close/arrow-compass/mine-detector (run-shop assists, meta upgrades cover them).
 
 ### Stackable vs Tiered
 
 - **Stackable** (`stackable: true`, `maxTier: 999`): Can be purchased infinitely. Pricing is dynamic via `getStackablePrice()` (not in balancing.ts — handled by MetaShop UI). Effects compound multiplicatively (e.g., `Math.pow(1.03, tier)`).
-- **Tiered** (`maxTier: 1-3`): Fixed number of levels. Each tier has a specific price and effect value. `prices[0]` = tier 1 cost, `prices[1]` = tier 2 cost, etc.
+- **Tiered** (`maxTier: 1-6`): Fixed number of levels. Each tier has a specific price and effect value. `prices[0]` = tier 1 cost, `prices[1]` = tier 2 cost, etc.
 
 ### How startRun Applies Meta Upgrades
 
@@ -499,7 +499,7 @@ interface PowerUpEffect {
     | "skip" | "skip-floor" | "skip-silent"
     | "heal" | "heal-on-success"
     | "preview" | "hint" | "highlight-danger"
-    | "window-extend" | "auto-close" | "reveal-first"
+    | "window-extend"
     | "peek-ahead" | "flag-mine" | "minigame-specific"
     | "bracket-flash"
     | "time-siphon" | "deadline-override" | "cascade-clock"
@@ -580,11 +580,13 @@ Components use these classes to show/hide input instructions and touch controls 
 ```ts
 interface TouchControlsProps {
   type: "dpad" | "brackets" | "none";
+  /** Closer keys to hide from the bracket buttons (e.g. removed bracket types). */
+  excludedClosers?: string[];
 }
 ```
 
 - **dpad**: Renders 4 directional buttons (Up/Down/Left/Right) dispatching synthetic `KeyboardEvent` on `window`. Used by MatchArrows, NetworkTrace, Defrag, FindSymbol, etc.
-- **brackets**: Renders 6 bracket-closing buttons (`)`, `]`, `}`, `>`, `|`, `/`) dispatching synthetic key events. Used by CloseBrackets.
+- **brackets**: Renders bracket-closing buttons (`)`, `]`, `}`, `>`, `|`, `/`) dispatching synthetic key events. Used by CloseBrackets. When `excludedClosers` is provided, those keys are filtered out (e.g., Bracket Reducer removes `/`, `|`, `]` progressively).
 - **none**: Renders nothing.
 
 All touch buttons fire via `onPointerDown` for immediate response. They use `fireKey()` which dispatches a synthetic `keydown` event, so the same `useKeyboard` handlers work for both input methods.
