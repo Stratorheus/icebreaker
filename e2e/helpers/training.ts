@@ -10,8 +10,11 @@ export async function openTraining(page: Page, minigameDisplayName: string, diff
   await page.getByText(minigameDisplayName.toUpperCase()).click();
   await page.getByText(difficulty).click();
   await page.getByText("BEGIN TRAINING").click();
-  await page.getByText("GO").waitFor({ timeout: 5000 });
-  await page.waitForTimeout(800);
+  // Countdown shows 3-2-1-GO then instantly transitions to active phase.
+  // "GO" is only visible for one render frame — too fast for Playwright.
+  // Instead, wait for the QUIT button which appears in active phase.
+  await page.getByText("QUIT").first().waitFor({ timeout: 8000 });
+  await page.waitForTimeout(300);
 }
 
 /**
@@ -70,6 +73,7 @@ export async function openTrainingWithUpgrades(
   }
   await page.getByText(difficulty).click();
   await page.getByText("BEGIN TRAINING").click();
-  await page.getByText("GO").waitFor({ timeout: 5000 });
-  await page.waitForTimeout(800);
+  // Wait for active phase (QUIT button appears when minigame is running)
+  await page.getByText("QUIT").first().waitFor({ timeout: 8000 });
+  await page.waitForTimeout(300);
 }

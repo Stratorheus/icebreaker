@@ -7,9 +7,11 @@ import { setMetaUpgrades } from "./helpers/training";
 
 async function startRunAndWait(page: Page) {
   await page.getByText("START RUN").click();
-  // Wait for countdown (3-2-1-GO) to finish and minigame to be active
-  await page.getByText("GO").waitFor({ timeout: 8000 });
-  await page.waitForTimeout(800);
+  // Countdown shows 3-2-1-GO then instantly transitions to active.
+  // "GO" is only visible for one frame — too fast for Playwright.
+  // Wait for [data-testid="minigame-active"] which wraps the active minigame.
+  await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+  await page.waitForTimeout(300);
 }
 
 // ===========================================================================
