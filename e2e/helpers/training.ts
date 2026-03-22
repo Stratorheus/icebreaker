@@ -36,6 +36,21 @@ export async function setMetaUpgrades(page: Page, upgrades: Record<string, numbe
 }
 
 /**
+ * Unlock non-starting minigames in localStorage so they appear in the Training picker.
+ */
+export async function unlockMinigames(page: Page, minigameTypes: string[]) {
+  await page.evaluate((types) => {
+    const raw = localStorage.getItem("icebreaker-meta");
+    const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
+    const current: string[] = meta.state.unlockedMinigames ?? [];
+    const merged = [...new Set([...current, ...types])];
+    meta.state.unlockedMinigames = merged;
+    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
+  }, minigameTypes);
+  await page.reload();
+}
+
+/**
  * Open Training with upgrades enabled at specific tiers.
  */
 export async function openTrainingWithUpgrades(
