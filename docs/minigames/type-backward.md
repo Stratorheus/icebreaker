@@ -45,12 +45,11 @@ Word length categories in `TECH_WORDS`:
 
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
-| **Type Assist** (`type-assist`) | Meta upgrade | `hint` | Shows the **first letter** of the current expected answer above the input area. |
-| **Reverse Trainer** (`reverse-trainer`) | Meta upgrade | `minigame-specific` | Words are displayed in **normal order** (not mirrored) -- the player simply types what they see. The display order is still reversed, but since words are un-mirrored, it becomes a straight typing test. |
+| **Autocorrect** (`reverse-trainer`, 4 tiers) | Meta upgrade | `minigame-specific` | Shows 25/50/75/100% of words in normal order (not mirrored) in Decrypt Signal. Corrected words are marked with a green checkmark. The remaining words are still mirrored. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
-When Reverse Trainer is active, the `expectedAnswers` array becomes the display words themselves (no reversal needed), and a label "REVERSE TRAINER ACTIVE -- WORDS SHOWN NORMALLY" appears.
+When Autocorrect is active, a fraction of words are randomly selected to display in normal order (marked with a green check). The `expectedAnswers` for corrected words are the display words themselves (no reversal needed). An "AUTOCORRECT ACTIVE" label shows the percentage.
 
 ## Controls
 
@@ -93,8 +92,9 @@ Additional timing modifiers that affect the effective timer:
 - `mirroredWords: string[]` -- each original word reversed.
 - `displayWords: string[]` -- mirrored words in reversed list order (what the player sees).
 - `expectedAnswers: string[]` -- the correct answer for each displayed word.
-- `hasFirstLetterHint: boolean` -- whether Type Assist is active.
-- `hasReverseTrainer: boolean` -- whether Reverse Trainer is active.
+- `autocorrectFraction: number` -- 0 (no upgrade), or 0.25/0.50/0.75/1.0 from Autocorrect tiers.
+- `correctedIndices: Set<number>` -- which original-word indices are shown in normal order.
+- `correctedDisplayIndices: Set<number>` -- which display-order indices are corrected (for visual marker).
 
 **Data dependency:** `src/data/words.ts` -- exports `TECH_WORDS` with `short`, `medium`, `long` arrays.
 
@@ -106,5 +106,4 @@ Additional timing modifiers that affect the effective timer:
 | Word pool composition | `getWordPool()` lines 16-26 | Change difficulty thresholds or pool mixing |
 | Word list | `src/data/words.ts` | Add/remove tech words in each length category |
 | Base time limit | `MinigameScreen.tsx` `BASE_TIME_LIMITS["type-backward"]: 18` | Increase for more time |
-| First-letter hint | `meta-upgrades.ts` `type-assist` entry | Change effect type or add more hint letters |
-| Reverse Trainer behaviour | Lines 93-99, 106-109 | Modify what "normal order" means |
+| Autocorrect fractions | `meta-upgrades.ts` `reverse-trainer` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less correction |

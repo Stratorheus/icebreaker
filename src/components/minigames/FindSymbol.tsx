@@ -117,19 +117,11 @@ export function FindSymbol(props: MinigameProps) {
   const resolvedRef = useRef(false);
   const isTouch = useTouchDevice();
 
-  // 3b. Symbol Scanner (hint): highlight cells adjacent to target
+  // 3b. Symbol Scanner (hint): subtly highlight the target cell
   const hasProximityHint = useMemo(() => {
     return activePowerUps.some(
       (p) => p.effect.type === "hint" && p.effect.minigame === "find-symbol",
     );
-  }, [activePowerUps]);
-
-  // 3b. Symbol Magnifier (minigame-specific): scale up target symbol
-  const targetScale = useMemo(() => {
-    const magnifier = activePowerUps.find(
-      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "find-symbol",
-    );
-    return magnifier ? 1.3 : 1;
   }, [activePowerUps]);
 
   // Generate puzzle on mount (stable across re-renders)
@@ -288,13 +280,9 @@ export function FindSymbol(props: MinigameProps) {
             const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
             const isSelected = selectedCells.has(cell.id);
 
-            // 3b. Symbol Scanner: subtly blink the target cell itself (not neighbors)
+            // Symbol Scanner: subtly lighter text/border on the target cell
             const isTargetHinted = hasProximityHint && !isSelected
               && targetIndex < targets.length && cell.code === targets[targetIndex];
-
-            // 3b. Target scale: if this cell is the current target, make it larger
-            const isCurrentTarget = !isSelected && targetIndex < targets.length && cell.code === targets[targetIndex];
-            const scaleFactor = isCurrentTarget && targetScale > 1 ? targetScale : 1;
 
             return (
               <button
@@ -313,13 +301,13 @@ export function FindSymbol(props: MinigameProps) {
                   ${
                     isSelected
                       ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
-                      : isCursor
-                        ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                        : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
+                      : isTargetHinted && !isCursor
+                        ? "border-white/20 bg-white/10 text-white/90"
+                        : isCursor
+                          ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
+                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
                   }
-                  ${isTargetHinted && !isCursor ? "animate-pulse" : ""}
                 `}
-                style={scaleFactor > 1 ? { fontSize: `${scaleFactor}em` } : undefined}
               >
                 {isSelected ? (
                   <span className="text-cyber-green text-sm">&#10003;</span>

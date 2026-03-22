@@ -2,7 +2,7 @@ import type { RunShopItem } from "@/types/shop";
 
 /**
  * Run-shop item pool — purchased with credits during a run.
- * All 22 items are spread across every category defined in RunShopItem.
+ * All 18 items are spread across every category defined in RunShopItem.
  */
 export const RUN_SHOP_POOL: RunShopItem[] = [
   // ── TIME ──────────────────────────────────────────────────────────────────
@@ -182,40 +182,8 @@ export const RUN_SHOP_POOL: RunShopItem[] = [
   },
 
   // ── ASSIST ────────────────────────────────────────────────────────────────
-  {
-    id: "slash-calibration",
-    name: "Slash Calibration",
-    description: "Widens the perfect-hit window for Slash Timing by 20 %.",
-    category: "assist",
-    basePrice: 40,
-    effect: { type: "window-extend", value: 0.2, minigame: "slash-timing" },
-    icon: "sword",
-  },
-  {
-    id: "bracket-auto-close",
-    name: "Bracket Auto-Close",
-    description: "One random bracket is pre-closed in Code Inject.",
-    category: "assist",
-    basePrice: 45,
-    effect: { type: "auto-close", value: 1, minigame: "close-brackets" },
-    icon: "code",
-  },
-  {
-    id: "arrow-compass",
-    name: "Arrow Compass",
-    description: "See 2 arrows ahead in Packet Route instead of just 1.",
-    category: "assist",
-    basePrice: 40,
-    effect: { type: "peek-ahead", value: 2, minigame: "match-arrows" },
-    icon: "compass",
-  },
-  {
-    id: "mine-detector",
-    name: "Sector Scanner",
-    description: "One random corrupted sector is flagged at the start of Memory Scan.",
-    category: "assist",
-    basePrice: 45,
-    effect: { type: "flag-mine", value: 1, minigame: "mine-sweep" },
-    icon: "radio",
-  },
+  // (slash-calibration removed — meta slash-window covers it)
+  // (bracket-auto-close removed — meta bracket-reducer/mirror cover it)
+  // (arrow-compass removed — meta arrow-preview covers it)
+  // (mine-detector removed — meta mine-echo covers it)
 ];

@@ -85,7 +85,7 @@ export function MineSweep(props: MinigameProps) {
     return count;
   }, [activePowerUps]);
 
-  // 3c. MineSweep minigame-specific: mines-visible (percentage of mines visible after preview)
+  // 3c. MineSweep minigame-specific (percentage of mines visible after preview)
   const minesVisiblePct = useMemo(() => {
     let pct = 0;
     for (const pu of activePowerUps) {
@@ -116,7 +116,7 @@ export function MineSweep(props: MinigameProps) {
     const flagCount = Math.min(flagMineCount, shuffled.length);
     const autoFlagged = new Set(shuffled.slice(0, flagCount));
 
-    // Visible mines (from mines-visible meta upgrade, percentage-based) — pick from remaining
+    // Visible mines (from mine-echo meta upgrade, percentage-based) — pick from remaining
     const remaining = shuffled.filter((i) => !autoFlagged.has(i));
     const visCount = minesVisiblePct > 0
       ? Math.min(Math.max(1, Math.round(mineCount * minesVisiblePct)), remaining.length)
@@ -325,7 +325,7 @@ export function MineSweep(props: MinigameProps) {
               !isTouch && phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
             const isMarked = markedCells.has(cell.id);
             const showMine = phase === "preview" && cell.isMine;
-            // 3c. mines-visible: keep certain mines visible even in mark phase
+            // mine-echo: keep certain mines visible even in mark phase
             const isVisibleMine = phase === "mark" && visibleMines.has(cell.id) && !isMarked;
 
             return (

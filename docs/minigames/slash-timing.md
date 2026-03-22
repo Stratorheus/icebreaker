@@ -39,12 +39,11 @@ Where `windowExtendBonus` is the sum of all `window-extend` effect values from a
 
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
-| **Slash Calibration** (`slash-calibration`) | Run shop | `window-extend` | Attack window widened by 20% (`value: 0.2`). |
 | **Slash Window** (`slash-window`) | Meta upgrade | `window-extend` | Attack window widened by 25% (`value: 0.25`). |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
 | **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
 
-Both window-extend bonuses stack additively. With both active: `effectiveAttackWindow = base * (1 + 0.2 + 0.25) = base * 1.45`.
+Only the meta Slash Window remains: `effectiveAttackWindow = base * (1 + 0.25) = base * 1.25`.
 
 ## Controls
 
@@ -93,6 +92,5 @@ Additional timing modifiers that affect the effective timer:
 | Attack window range | Lines 37, 39: `800 - d * 500` and `* (1 + bonus)` | Decrease 800 or increase 500 for harder base |
 | Prepare duration range | Line 40: `500 - d * 300` | Shorter prepare = less warning |
 | Guard duration range | Lines 41-42 | Narrower range = more predictable timing |
-| Run-shop window-extend value | `power-ups.ts` `slash-calibration`, `value: 0.2` | Percentage added to attack window |
 | Meta window-extend value | `meta-upgrades.ts` `slash-window`, `value: 0.25` | Percentage added to attack window |
 | Phase visuals | `phaseConfig` object (lines 130-161) | Colors, labels, icons, animations per phase |

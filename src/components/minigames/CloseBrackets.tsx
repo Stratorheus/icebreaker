@@ -41,28 +41,37 @@ export function CloseBrackets(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // Check if player has the "next char hint" meta upgrade
-  const hasNextCharHint = useMemo(() => {
+  // Bracket Mirror: flash the next expected closer for 0.3 s
+  const hasBracketFlash = useMemo(() => {
     return activePowerUps.some(
-      (p) =>
-        (p.effect.type === "hint" && p.effect.minigame === "close-brackets") ||
-        (p.effect.type === "minigame-specific" && p.effect.minigame === "close-brackets"),
+      (p) => p.effect.type === "bracket-flash" && p.effect.minigame === "close-brackets",
     );
   }, [activePowerUps]);
 
-  // 3f. Bracket Reducer (minigame-specific): remove a bracket type from the pool
-  const availableOpeners = useMemo(() => {
-    const hasBracketReducer = activePowerUps.some(
+  // Bracket Reducer tier (1/2/3): removes opener types progressively
+  const bracketReducerTier = useMemo(() => {
+    const pu = activePowerUps.find(
       (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "close-brackets",
     );
-    if (hasBracketReducer && OPENERS.length > 2) {
-      // Remove the hardest bracket type (pipe or backslash) from the pool
-      return OPENERS.filter((o) => o !== "\\" && o !== "|").length >= 2
-        ? OPENERS.filter((o) => o !== "\\" && o !== "|")
-        : OPENERS.slice(0, -1);
-    }
-    return OPENERS;
+    return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
+
+  const availableOpeners = useMemo(() => {
+    let openers = [...OPENERS]; // ["(", "[", "{", "<", "|", "\\"]
+    if (bracketReducerTier >= 1) openers = openers.filter(o => o !== "\\");
+    if (bracketReducerTier >= 2) openers = openers.filter(o => o !== "|");
+    if (bracketReducerTier >= 3) openers = openers.filter(o => o !== "[");
+    return openers;
+  }, [bracketReducerTier]);
+
+  // Compute which closers are excluded based on removed openers
+  const excludedClosers = useMemo(() => {
+    const excluded: string[] = [];
+    if (bracketReducerTier >= 1) excluded.push("/");   // closer for "\"
+    if (bracketReducerTier >= 2) excluded.push("|");   // closer for "|"
+    if (bracketReducerTier >= 3) excluded.push("]");   // closer for "["
+    return excluded;
+  }, [bracketReducerTier]);
 
   // Bracket count: range-based, 2-4 (d=0) -> 6-8 (d=1)
   const bracketMin = Math.round(2 + difficulty * 4);
@@ -85,20 +94,9 @@ export function CloseBrackets(props: MinigameProps) {
     [sequence],
   );
 
-  // 2g. Bracket Auto-Close: pre-fill one closer if player has auto-close power-up
-  const autoCloseCount = useMemo(() => {
-    let count = 0;
-    for (const pu of activePowerUps) {
-      if (pu.effect.type === "auto-close" && (!pu.effect.minigame || pu.effect.minigame === "close-brackets")) {
-        count += pu.effect.value;
-      }
-    }
-    return Math.min(count, expectedClosers.length);
-  }, [activePowerUps, expectedClosers.length]);
-
-  // Current position in the expected closers array (start past auto-closed ones)
-  const [currentIndex, setCurrentIndex] = useState(autoCloseCount);
-  const currentIndexRef = useRef(autoCloseCount);
+  // Current position in the expected closers array
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(0);
 
   // Sync ref with state for use in keyboard handler
   useEffect(() => {
@@ -108,6 +106,9 @@ export function CloseBrackets(props: MinigameProps) {
   const handleKeyPress = useCallback(
     (key: string) => {
       if (!isActive || resolvedRef.current) return;
+
+      // Ignore keys for excluded closers (removed bracket types)
+      if (excludedClosers.includes(key)) return;
 
       const idx = currentIndexRef.current;
       const expected = expectedClosers[idx];
@@ -128,7 +129,7 @@ export function CloseBrackets(props: MinigameProps) {
         fail();
       }
     },
-    [isActive, expectedClosers, complete, fail],
+    [isActive, expectedClosers, excludedClosers, complete, fail],
   );
 
   // Build the key map for useKeyboard -- only closer keys
@@ -212,8 +213,8 @@ export function CloseBrackets(props: MinigameProps) {
           {currentIndex}/{expectedClosers.length} closed
         </p>
 
-        {/* Next character hint -- ONLY if player has the meta upgrade */}
-        {hasNextCharHint && nextExpected && (
+        {/* Next character hint -- ONLY if player has the Bracket Mirror meta upgrade */}
+        {hasBracketFlash && nextExpected && (
           <div className="flex flex-col items-center gap-2">
             <p className="text-white/40 text-xs uppercase tracking-widest">
               Next
@@ -241,7 +242,7 @@ export function CloseBrackets(props: MinigameProps) {
           Type the matching closers in reverse order
         </p>
         <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          {CLOSER_KEYS.map((key) => (
+          {CLOSER_KEYS.filter(k => !excludedClosers.includes(k)).map((key) => (
             <kbd
               key={key}
               className="px-2 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono"
@@ -258,7 +259,7 @@ export function CloseBrackets(props: MinigameProps) {
           TAP the matching closers
         </p>
       </div>
-      <TouchControls type="brackets" />
+      <TouchControls type="brackets" excludedClosers={excludedClosers} />
     </div>
   );
 }

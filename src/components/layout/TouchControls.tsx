@@ -48,7 +48,7 @@ function DPad() {
 
 const BRACKET_KEYS = [")", "]", "}", ">", "|", "/"] as const;
 
-function BracketButtons() {
+function BracketButtons({ excludedClosers }: { excludedClosers?: string[] }) {
   const press = useCallback((key: string) => () => fireKey(key), []);
 
   const btn =
@@ -58,9 +58,13 @@ function BracketButtons() {
     "active:bg-cyber-cyan/20 active:scale-95 active:shadow-[0_0_12px_rgba(0,255,255,0.4)] " +
     "transition-all duration-100";
 
+  const visibleKeys = excludedClosers?.length
+    ? BRACKET_KEYS.filter(k => !excludedClosers.includes(k))
+    : BRACKET_KEYS;
+
   return (
     <div className="flex items-center justify-center gap-2 flex-wrap">
-      {BRACKET_KEYS.map((key) => (
+      {visibleKeys.map((key) => (
         <button key={key} className={btn} onPointerDown={press(key)} aria-label={key}>
           {key}
         </button>
@@ -73,9 +77,11 @@ function BracketButtons() {
 
 export interface TouchControlsProps {
   type: "dpad" | "brackets" | "none";
+  /** Closer keys to hide from the bracket buttons (e.g. removed bracket types). */
+  excludedClosers?: string[];
 }
 
-export function TouchControls({ type }: TouchControlsProps) {
+export function TouchControls({ type, excludedClosers }: TouchControlsProps) {
   if (type === "none") return null;
 
   return (
@@ -84,7 +90,7 @@ export function TouchControls({ type }: TouchControlsProps) {
     >
       <div className="px-4 py-3">
         {type === "dpad" && <DPad />}
-        {type === "brackets" && <BracketButtons />}
+        {type === "brackets" && <BracketButtons excludedClosers={excludedClosers} />}
       </div>
     </div>
   );

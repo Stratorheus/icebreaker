@@ -40,8 +40,7 @@ The game has two phases. In the **preview phase**, a grid is shown with "corrupt
 
 | Power-Up | Source | Effect Type | Behavior |
 |----------|--------|-------------|----------|
-| **Sector Scanner** | Run shop (`mine-detector`) | `flag-mine` | Pre-flags 1 random mine at the start of the mark phase. The flagged cell cannot be un-marked. Multiple instances stack (though the pool only has 1). |
-| **Memory Echo** (T1/T2/T3) | Meta upgrade (`mine-echo`) | `minigame-specific` + `mine-sweep` | 20%/35%/50% of mines remain faintly visible (dimmed magenta pentagon) during the mark phase. These are chosen from mines not already auto-flagged. `visCount = max(1, round(mineCount * pct))`. |
+| **Memory Echo** (5 tiers) | Meta upgrade (`mine-echo`) | `minigame-specific` + `mine-sweep` | 20/30/40/50/60% of mines remain faintly visible (dimmed magenta pentagon) during the mark phase. `visCount = max(1, round(mineCount * pct))`. |
 | **Time bonuses** | Run shop (various) | `time-bonus` | Adds seconds to the overall timer for this floor. |
 
 ## Controls
@@ -96,6 +95,5 @@ Additional timing modifiers that affect the effective timer:
 | Mine count range | `generateGrid`, `const rawMines = Math.round(3 + difficulty * 7)` | Change `3` (min) or `7` (scale) |
 | Mine cap percentage | `generateGrid`, `Math.floor(totalCells * 0.4)` | Raise/lower 0.4 to adjust max mine density |
 | Preview duration range | `generateGrid`, `(3 - difficulty * 2) * 1000` | Change `3` (max seconds) or `2` (reduction scale) |
-| Auto-flag count | `power-ups.ts`, Sector Scanner `value: 1` | Increase to flag more mines automatically |
-| Memory Echo percentages | `meta-upgrades.ts`, `mine-echo` effects | Currently `[0.20, 0.35, 0.50]` |
+| Memory Echo percentages | `meta-upgrades.ts`, `mine-echo` effects | Currently `[0.20, 0.30, 0.40, 0.50, 0.60]` |
 | Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["mine-sweep"]` | Currently `15` |

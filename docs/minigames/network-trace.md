@@ -20,7 +20,7 @@ A maze is displayed as a grid of cells with neon cyan wall edges. The player con
 
 3. **Win condition**: When `playerRow === end[0] && playerCol === end[1]`, `complete(true)` is called. There is no explicit fail action -- the only way to lose is timeout.
 
-4. **Path highlight** (power-up): If active, the solution path (computed via BFS) is highlighted with a green background for 1 second at the start of the game.
+4. **Path highlight** (power-up, 4 tiers): If active, the solution path (computed via BFS) is highlighted with a green background for a fraction of the timer duration. Tier 1 (25%): visible during the first 25% of time. Tier 4 (100%): visible for the entire duration.
 
 5. **BFS solver** (`solveMaze`):
    - Standard BFS from `start` to `end`, respecting wall edges.
@@ -48,7 +48,7 @@ Note: The maze algorithm always produces a perfect maze regardless of size, so t
 
 | Power-Up | Source | Effect Type | Behavior |
 |----------|--------|-------------|----------|
-| **Path Highlight** | Meta upgrade (`network-trace-highlight`) | `minigame-specific` + `network-trace` | At game start, the BFS-solved shortest path is highlighted with a green background for 1 second, then fades. |
+| **Path Highlight** (4 tiers) | Meta upgrade (`network-trace-highlight`) | `minigame-specific` + `network-trace` | Shows the BFS-solved shortest path for 25/50/75/100% of the timer. Path visible while `timer.progress > (1 - tierValue)`. |
 | **Time bonuses** | Run shop (various) | `time-bonus` | Adds seconds to the timer for this floor. |
 
 ## Controls
@@ -86,7 +86,8 @@ Additional timing modifiers that affect the effective timer:
   - `playerRow`, `playerCol` / refs -- current player position in the maze
   - `maze` (memoized) -- the generated `MazeData` with `cells`, `rows`, `cols`, `start`, `end`
   - `solutionPath: Set<string>` -- BFS solution (empty if no Path Highlight)
-  - `showPathHighlight: boolean` -- true for the first 1000ms if power-up is active
+  - `pathHighlightFraction: number` -- 0 (no upgrade), or 0.25/0.50/0.75/1.0 from tier
+  - `showPathHighlight: boolean` -- derived: `pathHighlightFraction > 0 && timer.progress > (1 - pathHighlightFraction)`
 - **Types** (from `maze-generator.ts`):
   - `CellWalls { north, south, east, west: boolean }`
   - `MazeData { cells: CellWalls[][], rows, cols, start: [r,c], end: [r,c] }`
@@ -97,7 +98,7 @@ Additional timing modifiers that affect the effective timer:
 |----------------|-------|-------|
 | Maze size range | `NetworkTrace.tsx`, `const cellSize = Math.round(5 + difficulty * 6)` | Change `5` (min) or `6` (scale). Large mazes (>11) may overflow small screens. |
 | Cell pixel sizes | `NetworkTrace.tsx`, step function at line 167 | Adjust thresholds and pixel values for different screen targets |
-| Path highlight duration | `NetworkTrace.tsx`, `setTimeout(..., 1000)` | Change `1000` ms to show the path longer/shorter |
+| Path highlight tiers | `meta-upgrades.ts`, `network-trace-highlight` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less path visibility |
 | Maze algorithm | `maze-generator.ts` | Replace recursive backtracking with a different algorithm (Prim's, Kruskal's, etc.) for different maze characteristics |
 | Start/End positions | `maze-generator.ts`, return value `start: [0,0], end: [rows-1, cols-1]` | Randomize for variety |
 | Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["network-trace"]` | Currently `20` |

@@ -56,18 +56,12 @@ export function TypeBackward(props: MinigameProps) {
     }
   }, [isTouch]);
 
-  // 3d. Type Assist (hint): show first letter of expected answer
-  const hasFirstLetterHint = useMemo(() => {
-    return activePowerUps.some(
-      (p) => p.effect.type === "hint" && p.effect.minigame === "type-backward",
-    );
-  }, [activePowerUps]);
-
-  // 3d. Reverse Trainer (minigame-specific): show words in normal order (not reversed)
-  const hasReverseTrainer = useMemo(() => {
-    return activePowerUps.some(
+  // Autocorrect (reverse-trainer): fraction of words shown in normal order (0.25-1.0)
+  const autocorrectFraction = useMemo(() => {
+    const pu = activePowerUps.find(
       (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "type-backward",
     );
+    return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
   // Number of words: range-based, 2-4 (d=0) -> 5-8 (d=1)
@@ -88,25 +82,50 @@ export function TypeBackward(props: MinigameProps) {
     [originalWords],
   );
 
-  // Display order: reversed list of mirrored words (or normal order if Reverse Trainer owned)
-  // displayWords[0] = last mirrored word, displayWords[N-1] = first mirrored word
-  const displayWords = useMemo(() => {
-    if (hasReverseTrainer) {
-      // Reverse Trainer: show words in normal (un-mirrored) order, reversed list
-      return [...originalWords].reverse();
+  // Autocorrect: determine which word indices (in original order) are "corrected" (shown normally)
+  const correctedIndices = useMemo(() => {
+    if (autocorrectFraction <= 0) return new Set<number>();
+    const normalCount = Math.ceil(originalWords.length * autocorrectFraction);
+    // Pick normalCount random indices to show in normal order
+    const indices = originalWords.map((_, i) => i);
+    // Shuffle and pick first normalCount
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
     }
-    return [...mirroredWords].reverse();
-  }, [mirroredWords, originalWords, hasReverseTrainer]);
+    return new Set(indices.slice(0, normalCount));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // originalWords is stable (mount-only useMemo), so this is safe
+  }, []);
 
-  // The expected answers: un-mirror each displayed word (i.e. the original word
-  // corresponding to each displayed mirrored word, in display order)
-  // displayWords[i] is mirroredWords[N-1-i], which is originalWords[N-1-i] reversed.
-  // So the answer for displayWords[i] is originalWords[N-1-i].
+  // Display order: reversed list. Corrected words show in normal order, others mirrored.
+  // displayWords[0] corresponds to originalWords[N-1], etc.
+  const displayWords = useMemo(() => {
+    const words = originalWords.map((orig, i) =>
+      correctedIndices.has(i) ? orig : mirroredWords[i],
+    );
+    return [...words].reverse();
+  }, [mirroredWords, originalWords, correctedIndices]);
+
+  // Track which display indices are "corrected" (shown normally) for visual indicator
+  const correctedDisplayIndices = useMemo(() => {
+    const set = new Set<number>();
+    const n = originalWords.length;
+    for (const origIdx of correctedIndices) {
+      // display index = n - 1 - origIdx
+      set.add(n - 1 - origIdx);
+    }
+    return set;
+  }, [correctedIndices, originalWords.length]);
+
+  // Expected answers: un-mirror each displayed word to get the answer to type.
+  // For corrected words (shown normally), the answer IS the displayed word.
+  // For mirrored words, the answer is the reverse of the displayed word.
   const expectedAnswers = useMemo(
-    () => hasReverseTrainer
-      ? displayWords.map((dw) => dw) // words already normal, type as-is
-      : displayWords.map((dw) => dw.split("").reverse().join("")),
-    [displayWords, hasReverseTrainer],
+    () => displayWords.map((dw, i) =>
+      correctedDisplayIndices.has(i) ? dw : dw.split("").reverse().join(""),
+    ),
+    [displayWords, correctedDisplayIndices],
   );
 
   // Current word index (in display order)
@@ -193,10 +212,11 @@ export function TypeBackward(props: MinigameProps) {
             Unscramble each mirrored word
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            {displayWords.map((mirrored, i) => {
+            {displayWords.map((word, i) => {
               const isCompleted = i < wordIndex;
               const isCurrent = i === wordIndex;
               const isPending = i > wordIndex;
+              const isCorrected = correctedDisplayIndices.has(i);
 
               return (
                 <div key={i} className="flex items-center gap-1.5">
@@ -218,8 +238,11 @@ export function TypeBackward(props: MinigameProps) {
                       }
                     `}
                   >
-                    {mirrored}
+                    {word}
                   </span>
+                  {isCorrected && !isCompleted && (
+                    <span className="text-cyber-green text-[10px]" title="Autocorrected">✓</span>
+                  )}
                 </div>
               );
             })}
@@ -234,15 +257,10 @@ export function TypeBackward(props: MinigameProps) {
           Word {wordIndex + 1}/{displayWords.length}
         </p>
 
-        {/* Word hints from meta upgrades */}
-        {hasFirstLetterHint && currentAnswer && (
-          <div className="flex items-center gap-4 text-xs uppercase tracking-widest text-cyber-green/60">
-            <span>First letter: <strong className="text-cyber-green">{currentAnswer[0]}</strong></span>
-          </div>
-        )}
-        {hasReverseTrainer && (
+        {/* Autocorrect indicator */}
+        {autocorrectFraction > 0 && (
           <p className="text-cyber-green/50 text-[10px] uppercase tracking-widest">
-            REVERSE TRAINER ACTIVE — WORDS SHOWN NORMALLY
+            AUTOCORRECT ACTIVE — {Math.round(autocorrectFraction * 100)}% CORRECTED
           </p>
         )}
 

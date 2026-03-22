@@ -12,14 +12,16 @@ On mount, the component generates a random sequence of opening brackets from the
 
 The player presses closer keys one at a time. Each keypress is compared against `expectedClosers[currentIndex]`. If correct, `currentIndex` advances. When `currentIndex >= expectedClosers.length`, `complete(true)` fires. If wrong, `fail()` fires immediately.
 
-### Auto-Close
-If the player has the Bracket Auto-Close power-up, `autoCloseCount` closers are pre-filled at the start. The `currentIndex` state initializes to `autoCloseCount` instead of 0, effectively skipping that many brackets.
+### Bracket Reducer (3 tiers)
+The Bracket Reducer meta upgrade progressively removes opener types from the pool:
+- **Tier 1**: removes `\` (slash). Remaining: `( [ { < |`
+- **Tier 2**: removes `\` and `|` (pipe). Remaining: `( [ { <`
+- **Tier 3**: removes `\`, `|`, and `[` (square bracket). Remaining: `( { <`
 
-### Bracket Reducer
-If the Bracket Reducer meta upgrade is owned, the hardest bracket types (`\` and `|`) are removed from the opener pool, reducing the number of distinct bracket types the player must handle. The filter ensures at least 2 bracket types remain.
+Mobile bracket buttons and desktop key hints hide the removed closer types. Pressing a removed closer key is ignored (no fail).
 
-### Next-Char Hint
-If the player has the Bracket Mirror or a hint-type upgrade targeting `close-brackets`, the next expected closer is displayed in a large highlighted box below the bracket sequence.
+### Bracket Mirror (Next-Char Hint)
+If the player has the Bracket Mirror meta upgrade, the next expected closer is displayed in a large highlighted box below the bracket sequence.
 
 ## Difficulty Scaling
 
@@ -36,11 +38,10 @@ Note: The bracket type pool does NOT change with difficulty -- all 6 types are a
 
 ## Power-Up Support
 
-| Name | ID | Effect Type | What It Does | Code Location |
-|---|---|---|---|---|
-| Bracket Auto-Close (run-shop) | `bracket-auto-close` | `auto-close` | Pre-closes 1 bracket (skips 1 position). Multiple copies stack additively. Capped at `expectedClosers.length`. | `CloseBrackets.tsx` lines 89-97 (`autoCloseCount` memo) |
-| Bracket Reducer (meta) | `bracket-reducer` | `bracket-type-removal` / `minigame-specific` | Removes `\` and `|` from the opener pool, leaving only `( [ { <` | `CloseBrackets.tsx` lines 54-65 (`availableOpeners` memo) |
-| Bracket Mirror (meta) | `bracket-mirror` | `auto-close` (repurposed) | Enables the "Next char hint" display showing the next expected closer | `CloseBrackets.tsx` lines 45-51 (`hasNextCharHint` memo), lines 216-235 (render) |
+| Name | ID | Effect Type | What It Does |
+|---|---|---|---|
+| Bracket Reducer (meta, 3 tiers) | `bracket-reducer` | `minigame-specific` | Tier 1: removes `\`. Tier 2: +`|`. Tier 3: +`[`. Excluded closers are hidden from controls. |
+| Bracket Mirror (meta) | `bracket-mirror` | `bracket-flash` | Shows the next expected closer in a highlighted box below the sequence. |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
 | Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in shorter bracket sequences | `MinigameScreen.tsx` line 438-439 |
@@ -69,23 +70,21 @@ Additional timing modifiers that affect the effective timer:
 - Component: `src/components/minigames/CloseBrackets.tsx`
 - `BRACKET_PAIRS` -- lines 9-16: opener-to-closer mapping object
 - `CLOSER_KEYS` -- line 21: `[")", "]", "}", ">", "|", "/"]`
-- `availableOpeners` memo -- lines 54-65: filters opener pool based on Bracket Reducer
-- `sequence` memo -- lines 73-80: generates random opener sequence on mount
-- `expectedClosers` memo -- lines 83-86: reverses sequence and maps to closers
-- `autoCloseCount` memo -- lines 89-97: counts auto-close power-ups, caps at sequence length
-- `handleKeyPress(key)` -- lines 108-132: validates key against expected closer, win/fail
-- `keyMap` memo -- lines 135-141: maps CLOSER_KEYS to handleKeyPress calls
+- `availableOpeners` memo -- filters opener pool based on Bracket Reducer tier
+- `excludedClosers` memo -- computes which closers to hide based on removed openers
+- `sequence` memo -- generates random opener sequence on mount
+- `expectedClosers` memo -- reverses sequence and maps to closers
+- `handleKeyPress(key)` -- validates key against expected closer, ignores excluded closers, win/fail
 - State variables:
   - `sequence: string[]` -- the opener sequence, generated on mount
   - `expectedClosers: string[]` -- derived from sequence, the answer key
   - `currentIndex` / `currentIndexRef` -- which closer the player must type next
-  - `hasNextCharHint` -- boolean, true if hint/bracket-mirror upgrade is active
-  - `autoCloseCount` -- number of pre-filled closers
+  - `hasBracketFlash` -- boolean, true if bracket-mirror upgrade is active
+  - `bracketReducerTier` -- 0/1/2/3, determines which openers are removed
 
 ## Tuning Guide
 - **Bracket count range**: Modify `bracketMin` and `bracketMax` formulas at lines 68-69. Currently `2 + d*4` to `4 + d*4`.
 - **Bracket types**: Add or remove entries in `BRACKET_PAIRS` (line 9) and `CLOSER_KEYS` (line 21). Also update `OPENERS` (derived automatically from `BRACKET_PAIRS` keys).
-- **Bracket Reducer behavior**: Change which types are filtered in `availableOpeners` at lines 60-61. Currently removes `\` and `|`.
-- **Auto-close stacking**: The cap is at `expectedClosers.length` (line 96). To limit stacking, add a hard cap (e.g. `Math.min(count, 3)`).
+- **Bracket Reducer tiers**: Change which types are filtered per tier in the `availableOpeners` memo. Currently: T1 removes `\`, T2 removes `|`, T3 removes `[`.
 - **Base time**: Change `"close-brackets": 8` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 275.
 - **Touch controls**: The `TouchControls` component with `type="brackets"` is rendered at line 261. Its layout is defined in `src/components/layout/TouchControls.tsx`.

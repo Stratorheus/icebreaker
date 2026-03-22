@@ -76,7 +76,6 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | Chrono Surge (+1.5 s) | 40 CR | time |
 | Damage Reducer (75% reduction) | 40 CR | defense |
 | Nano Repair (+5 HP/win) | 45 CR | healing |
-| Bracket Auto-Close | 45 CR | assist |
 | Repair Kit (+25 HP) | 65 CR | healing |
 | Backdoor (skip, no rewards) | 45 CR | skip |
 | Repair Drone (+15 HP) | 50 CR | healing |
@@ -86,14 +85,13 @@ Rerolling replaces all current offers. The reroll price comes out of current cre
 | System Restore (+35 HP) | 80 CR | healing |
 | Redundancy Layer (2× 50%) | 75 CR | defense |
 | Warp Gate (skip floor, 15% rewards) | 150 CR | skip |
-| Slash Calibration | 40 CR | assist |
-| Arrow Compass | 40 CR | assist |
-| Sector Scanner | 45 CR | assist |
 | Time Siphon (+0.2 s per win) | 35 CR | time |
 | Deadline Override (1 s pause at 5%) | 50 CR | time |
 | HP Leech (+2 HP after every protocol) | 40 CR | healing |
 
 Healing items (Repair Kit, System Restore, Repair Drone) apply immediately on purchase and do not occupy an inventory slot. HP Leech enters the inventory and triggers after each protocol (win or fail), then is consumed at floor advance. All other items enter the inventory.
+
+Note: Run-shop assist items (Slash Calibration, Bracket Auto-Close, Arrow Compass, Sector Scanner) were removed -- their meta-upgrade counterparts provide better coverage.
 
 **No-stacking rule:** You cannot hold two items of the same type simultaneously.
 
