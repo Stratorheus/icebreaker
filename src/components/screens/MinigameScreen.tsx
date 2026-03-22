@@ -387,8 +387,8 @@ function buildMetaPowerUps(
     case "cipher-crack":
       // cipher-hint → hint (extra letter)
       addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
-      // decode-assist → minigame-specific (pre-fill 25/50/75% of letters)
-      addIfOwned("decode-assist", "minigame-specific", [0.25, 0.50, 0.75], "cipher-crack");
+      // decode-assist → minigame-specific (pre-fill 20/40/60% of letters)
+      addIfOwned("decode-assist", "minigame-specific", [0.20, 0.40, 0.60], "cipher-crack");
       break;
 
     case "slash-timing":
@@ -404,8 +404,8 @@ function buildMetaPowerUps(
     case "cipher-crack-v2":
       // shift-marker → minigame-specific (highlights shift offset in alphabet chart)
       addIfOwned("shift-marker", "minigame-specific", [1], "cipher-crack-v2");
-      // auto-decode-v2 → hint (pre-fill 25/50/75% of letters)
-      addIfOwned("auto-decode-v2", "hint", [0.25, 0.50, 0.75], "cipher-crack-v2");
+      // auto-decode-v2 → hint (pre-fill 20/40/60% of letters)
+      addIfOwned("auto-decode-v2", "hint", [0.20, 0.40, 0.60], "cipher-crack-v2");
       break;
 
     case "network-trace":
@@ -419,12 +419,10 @@ function buildMetaPowerUps(
       break;
 
     case "checksum-verify":
-      // checksum-calculator → show intermediate hint
-      addIfOwned("checksum-calculator", "minigame-specific", [1], "checksum-verify");
       // error-margin → hint (accept answers within ±N tolerance)
       addIfOwned("error-margin", "hint", [1, 2, 3, 4, 5], "checksum-verify");
-      // range-hint → preview (show approximate answer range)
-      addIfOwned("range-hint", "preview", [0.5, 0.3, 0.15], "checksum-verify");
+      // range-hint → preview (show answer range: ±10/±5/±3)
+      addIfOwned("range-hint", "preview", [10, 5, 3], "checksum-verify");
       break;
 
     case "port-scan":

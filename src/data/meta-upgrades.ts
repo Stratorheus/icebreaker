@@ -416,15 +416,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     prices: [200],
     effects: [{ type: "minigame-specific", value: 0.3, minigame: "signal-echo" }],
   },
-  {
-    id: "checksum-calculator",
-    name: "Calculator",
-    description: "Shows an intermediate result hint in Checksum Verify.",
-    category: "game-specific",
-    maxTier: 1,
-    prices: [175],
-    effects: [{ type: "minigame-specific", value: 1, minigame: "checksum-verify" }],
-  },
+  // (checksum-calculator removed — Error Margin and Range Hint are better alternatives)
   {
     id: "port-scan-deep",
     name: "Deep Scan",
@@ -446,11 +438,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
 
   // ── NEW GAME-SPECIFIC UPGRADES ──────────────────────────────────────────────
 
-  // Mine Radar: highlights rows/columns containing mines in Defrag
+  // Mine Radar: shows mine count per row/column in Defrag
   {
     id: "mine-radar",
     name: "Mine Radar",
-    description: "Highlights rows/columns containing mines for 25/50/75/100% of the timer in Defrag.",
+    description: "Shows mine count per row and column for 25/50/75/100% of the timer in Defrag.",
     category: "game-specific",
     maxTier: 4,
     prices: [150, 300, 500, 750],
@@ -466,14 +458,14 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "decode-assist",
     name: "Decode Assist",
-    description: "Pre-fills 25/50/75% of decoded letters at their correct positions in Cipher Crack V1.",
+    description: "Pre-fills 20/40/60% of decoded letters at their correct positions in Cipher Crack V1.",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 500],
     effects: [
-      { type: "minigame-specific", value: 0.25, minigame: "cipher-crack" },
-      { type: "minigame-specific", value: 0.50, minigame: "cipher-crack" },
-      { type: "minigame-specific", value: 0.75, minigame: "cipher-crack" },
+      { type: "minigame-specific", value: 0.20, minigame: "cipher-crack" },
+      { type: "minigame-specific", value: 0.40, minigame: "cipher-crack" },
+      { type: "minigame-specific", value: 0.60, minigame: "cipher-crack" },
     ],
   },
 
@@ -492,14 +484,14 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "auto-decode-v2",
     name: "Auto-Decode",
-    description: "Pre-fills 25/50/75% of decoded letters in Cipher Crack V2.",
+    description: "Pre-fills 20/40/60% of decoded letters in Cipher Crack V2.",
     category: "game-specific",
     maxTier: 3,
     prices: [200, 400, 650],
     effects: [
-      { type: "hint", value: 0.25, minigame: "cipher-crack-v2" },
-      { type: "hint", value: 0.50, minigame: "cipher-crack-v2" },
-      { type: "hint", value: 0.75, minigame: "cipher-crack-v2" },
+      { type: "hint", value: 0.20, minigame: "cipher-crack-v2" },
+      { type: "hint", value: 0.40, minigame: "cipher-crack-v2" },
+      { type: "hint", value: 0.60, minigame: "cipher-crack-v2" },
     ],
   },
 
@@ -520,18 +512,18 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     ],
   },
 
-  // Range Hint: shows the approximate range of the answer in Checksum Verify
+  // Range Hint: shows the answer range with fixed ±values in Checksum Verify
   {
     id: "range-hint",
     name: "Range Hint",
-    description: "Shows the approximate range of the answer in Checksum Verify. Narrows with tier.",
+    description: "Shows the answer range: ±10/±5/±3 in Checksum Verify.",
     category: "game-specific",
     maxTier: 3,
     prices: [150, 300, 500],
     effects: [
-      { type: "preview", value: 0.5, minigame: "checksum-verify" },
-      { type: "preview", value: 0.3, minigame: "checksum-verify" },
-      { type: "preview", value: 0.15, minigame: "checksum-verify" },
+      { type: "preview", value: 10, minigame: "checksum-verify" },
+      { type: "preview", value: 5, minigame: "checksum-verify" },
+      { type: "preview", value: 3, minigame: "checksum-verify" },
     ],
   },
 

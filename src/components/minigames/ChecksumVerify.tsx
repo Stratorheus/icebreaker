@@ -93,12 +93,7 @@ export function ChecksumVerify(props: MinigameProps) {
     }
   }, [isTouch]);
 
-  // Calculator module: show intermediate result hint
-  const hasCalculator = useMemo(() => {
-    return activePowerUps.some(
-      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "checksum-verify",
-    );
-  }, [activePowerUps]);
+  // (calculator removed — Error Margin and Range Hint replace it)
 
   // Error Margin: accept answers within ±N tolerance
   const errorTolerance = useMemo(() => {
@@ -108,8 +103,8 @@ export function ChecksumVerify(props: MinigameProps) {
     return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
-  // Range Hint: show approximate range of the answer (±percentage)
-  const rangeHintPct = useMemo(() => {
+  // Range Hint: show answer range with fixed ±spread (10/5/3)
+  const rangeHintSpread = useMemo(() => {
     const pu = activePowerUps.find(
       (p) => p.effect.type === "preview" && p.effect.minigame === "checksum-verify",
     );
@@ -316,20 +311,13 @@ export function ChecksumVerify(props: MinigameProps) {
               style={{ textShadow: "0 0 12px rgba(0, 255, 255, 0.4)" }}
             >
               {expr.display}
-              {hasCalculator && (
-                <span className="text-cyber-green/40 text-lg ml-3">
-                  = {expr.answer < 0 ? "-" : ""}{Math.abs(expr.answer).toString()[0]}...
-                </span>
-              )}
             </p>
           </div>
 
-          {/* Range Hint: show approximate answer range */}
-          {rangeHintPct > 0 && (() => {
-            // Use absolute spread so range works correctly for negative answers and zero
-            const spread = Math.max(1, Math.abs(expr.answer) * rangeHintPct);
-            const lo = Math.floor(expr.answer - spread);
-            const hi = Math.ceil(expr.answer + spread);
+          {/* Range Hint: show answer range with fixed ±spread */}
+          {rangeHintSpread > 0 && (() => {
+            const lo = expr.answer - rangeHintSpread;
+            const hi = expr.answer + rangeHintSpread;
             return (
               <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
                 Answer is between {lo} and {hi}

@@ -32,10 +32,13 @@ export function MatchArrows(props: MinigameProps) {
     props,
   );
 
-  // Row length: range-based, 3-5 (d=0) -> 7-10 (d=1)
-  const rowMin = Math.round(3 + difficulty * 4);
-  const rowMax = Math.round(5 + difficulty * 5);
-  const rowLength = rowMin + Math.floor(Math.random() * (rowMax - rowMin + 1));
+  // Row length: range-based, 3-5 (d=0) -> 7-10 (d=1). Stable on mount.
+  const rowLength = useMemo(() => {
+    const rowMin = Math.round(3 + difficulty * 4);
+    const rowMax = Math.round(5 + difficulty * 5);
+    return rowMin + Math.floor(Math.random() * (rowMax - rowMin + 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Peek-ahead: how many arrows ahead of the current one to reveal (percentage-based from meta, fixed from run-shop)
   const peekAhead = useMemo(() => {
@@ -44,15 +47,16 @@ export function MatchArrows(props: MinigameProps) {
       if (pu.effect.type === "peek-ahead") {
         const val = pu.effect.value;
         if (val < 1) {
-          // Percentage-based (meta upgrade): compute from sequence length
-          count = Math.max(count, Math.round(rowLength * val));
+          // Percentage-based (meta upgrade): use floor to avoid exceeding available slots
+          count = Math.max(count, Math.floor(rowLength * val));
         } else {
           // Fixed count (run-shop power-up)
           count = Math.max(count, val);
         }
       }
     }
-    return count;
+    // Cap at sequence length - 1 to prevent peeking beyond the last arrow
+    return Math.min(count, rowLength - 1);
   }, [activePowerUps, rowLength]);
 
   // Check if player has the "direction hint" meta upgrade

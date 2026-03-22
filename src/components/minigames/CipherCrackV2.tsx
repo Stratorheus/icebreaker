@@ -66,29 +66,44 @@ function pickOne<T>(arr: readonly T[]): T {
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarker?: boolean }) {
+  // Example pair for shift marker: A → shifted letter
+  const examplePlain = "A";
+  const exampleShifted = String.fromCharCode(((0 + rotN) % 26) + 65);
+
   return (
     <div className="w-full max-w-md mx-auto mt-2 px-2">
+      {/* Prominent ROT label when shift marker is active */}
+      {showShiftMarker && (
+        <div className="flex items-center justify-center gap-3 mb-2 py-1.5 px-3 border border-cyber-orange/30 bg-cyber-orange/[0.06] rounded">
+          <span className="text-cyber-orange font-mono font-bold text-sm tracking-wider">
+            ROT-{rotN}
+          </span>
+          <span className="text-white/40 text-[10px]">|</span>
+          <span className="text-cyber-orange/80 text-[11px] font-mono">
+            {examplePlain} → {exampleShifted}
+          </span>
+          <span className="text-white/40 text-[10px]">|</span>
+          <span className="text-white/40 text-[10px] uppercase tracking-wider">
+            shift {rotN} right
+          </span>
+        </div>
+      )}
+
       <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1 text-center">
         Alphabet reference (shift +{rotN})
-        {showShiftMarker && (
-          <span className="text-cyber-orange ml-2">
-            ← {rotN} position{rotN > 1 ? "s" : ""} right
-          </span>
-        )}
       </p>
       <div className="grid grid-cols-13 gap-0 text-center font-mono text-[11px] leading-tight">
         {/* First row: original A-M */}
         {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`o1-${i}`} className="text-white/30 py-0.5">{ch}</div>
+          <div key={`o1-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
         ))}
-        {/* Second row: shifted A-M, with shift marker on first N columns */}
+        {/* Second row: shifted A-M — highlight matching pairs with shift marker */}
         {ALPHABET.slice(0, 13).split("").map((ch, i) => {
           const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
-          const isMarked = showShiftMarker && i < rotN;
           return (
             <div
               key={`s1-${i}`}
-              className={`py-0.5 font-bold ${isMarked ? "text-cyber-orange bg-cyber-orange/15 rounded-sm" : "text-cyber-cyan/70"}`}
+              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
             >
               {shifted}
             </div>
@@ -96,16 +111,15 @@ function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarke
         })}
         {/* Third row: original N-Z */}
         {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`o2-${i}`} className="text-white/30 py-0.5">{ch}</div>
+          <div key={`o2-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
         ))}
         {/* Fourth row: shifted N-Z */}
         {ALPHABET.slice(13).split("").map((ch, i) => {
           const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
-          const isMarked = showShiftMarker && (13 + i) < rotN;
           return (
             <div
               key={`s2-${i}`}
-              className={`py-0.5 font-bold ${isMarked ? "text-cyber-orange bg-cyber-orange/15 rounded-sm" : "text-cyber-cyan/70"}`}
+              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
             >
               {shifted}
             </div>
@@ -115,11 +129,6 @@ function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarke
       <p className="text-white/20 text-[9px] text-center mt-1">
         Top = original, bottom = encrypted. Find encrypted letter on bottom, read original above.
       </p>
-      {showShiftMarker && (
-        <p className="text-cyber-orange/60 text-[9px] text-center mt-0.5">
-          Shift marker: each letter shifts +{rotN} positions in the alphabet
-        </p>
-      )}
     </div>
   );
 }
