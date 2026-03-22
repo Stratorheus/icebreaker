@@ -93,5 +93,4 @@ Additional timing modifiers that affect the effective timer:
 | Prepare duration range | Line 40: `500 - d * 300` | Shorter prepare = less warning |
 | Guard duration range | Lines 41-42 | Narrower range = more predictable timing |
 | Meta window-extend value | `meta-upgrades.ts` `slash-window`, `value: 0.25` | Percentage added to attack window |
-| Meta window-extend value | `meta-upgrades.ts` `slash-window`, `value: 0.25` | Percentage added to attack window |
 | Phase visuals | `phaseConfig` object (lines 130-161) | Colors, labels, icons, animations per phase |

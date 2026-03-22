@@ -100,7 +100,7 @@ function buildMetaPowerUps(
   switch (type) {
     case "close-brackets":
       addIfOwned("bracket-reducer", "minigame-specific", [1, 2, 3], "close-brackets");
-      addIfOwned("bracket-mirror", "bracket-flash", [0.3], "close-brackets");
+      addIfOwned("bracket-mirror", "bracket-flash", [1], "close-brackets");
       break;
     case "mine-sweep":
       addIfOwned("mine-echo", "minigame-specific", [0.20, 0.30, 0.40, 0.50, 0.60], "mine-sweep");
@@ -124,6 +124,8 @@ function buildMetaPowerUps(
       addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
       break;
     case "defrag":
+      break;
+    case "cipher-crack-v2":
       break;
     case "network-trace":
       addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");

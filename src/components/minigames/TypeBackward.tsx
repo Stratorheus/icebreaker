@@ -95,6 +95,7 @@ export function TypeBackward(props: MinigameProps) {
     }
     return new Set(indices.slice(0, normalCount));
     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // originalWords is stable (mount-only useMemo), so this is safe
   }, []);
 
   // Display order: reversed list. Corrected words show in normal order, others mirrored.

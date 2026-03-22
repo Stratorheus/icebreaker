@@ -319,7 +319,7 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     category: "game-specific",
     maxTier: 1,
     prices: [200],
-    effects: [{ type: "symbol-blink", value: 1, minigame: "find-symbol" }],
+    effects: [{ type: "hint", value: 1, minigame: "find-symbol" }],
   },
   {
     id: "arrow-preview",
@@ -329,11 +329,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
     maxTier: 5,
     prices: [150, 250, 400, 600, 850],
     effects: [
-      { type: "arrows-revealed", value: 0.20, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 0.30, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 0.40, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 0.50, minigame: "match-arrows" },
-      { type: "arrows-revealed", value: 0.60, minigame: "match-arrows" },
+      { type: "peek-ahead", value: 0.20, minigame: "match-arrows" },
+      { type: "peek-ahead", value: 0.30, minigame: "match-arrows" },
+      { type: "peek-ahead", value: 0.40, minigame: "match-arrows" },
+      { type: "peek-ahead", value: 0.50, minigame: "match-arrows" },
+      { type: "peek-ahead", value: 0.60, minigame: "match-arrows" },
     ],
   },
   // (type-assist removed — weak effect, reverse-trainer covers Decrypt Signal)
@@ -367,11 +367,11 @@ export const META_UPGRADE_POOL: MetaUpgrade[] = [
   {
     id: "bracket-mirror",
     name: "Bracket Mirror",
-    description: "Matching brackets flash the same color for 0.3 s in Code Inject.",
+    description: "Shows the next expected closing bracket in Code Inject.",
     category: "game-specific",
     maxTier: 1,
     prices: [150],
-    effects: [{ type: "bracket-flash", value: 0.3, minigame: "close-brackets" }],
+    effects: [{ type: "bracket-flash", value: 1, minigame: "close-brackets" }],
   },
   // (symbol-magnifier removed — ugly, symbol-scanner covers Address Lookup)
   {

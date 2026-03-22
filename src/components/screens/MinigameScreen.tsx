@@ -356,7 +356,7 @@ function buildMetaPowerUps(
       // bracket-reducer → minigame-specific (tier 1/2/3: removes slash/+pipe/+square bracket)
       addIfOwned("bracket-reducer", "minigame-specific", [1, 2, 3], "close-brackets");
       // bracket-mirror → bracket-flash (shows next expected closer briefly)
-      addIfOwned("bracket-mirror", "bracket-flash", [0.3], "close-brackets");
+      addIfOwned("bracket-mirror", "bracket-flash", [1], "close-brackets");
       break;
 
     case "mine-sweep":
@@ -395,6 +395,9 @@ function buildMetaPowerUps(
       break;
 
     case "defrag":
+      break;
+
+    case "cipher-crack-v2":
       break;
 
     case "network-trace":

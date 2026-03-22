@@ -117,7 +117,7 @@ export function FindSymbol(props: MinigameProps) {
   const resolvedRef = useRef(false);
   const isTouch = useTouchDevice();
 
-  // 3b. Symbol Scanner (hint): highlight cells adjacent to target
+  // 3b. Symbol Scanner (hint): subtly highlight the target cell
   const hasProximityHint = useMemo(() => {
     return activePowerUps.some(
       (p) => p.effect.type === "hint" && p.effect.minigame === "find-symbol",
@@ -302,7 +302,7 @@ export function FindSymbol(props: MinigameProps) {
                     isSelected
                       ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
                       : isTargetHinted && !isCursor
-                        ? "border-white/20 bg-white/8 text-white/90"
+                        ? "border-white/20 bg-white/10 text-white/90"
                         : isCursor
                           ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
                           : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
