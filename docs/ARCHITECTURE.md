@@ -424,7 +424,7 @@ Defined in `src/data/meta-upgrades.ts` (META_UPGRADE_POOL). Four categories:
 
 **Minigame unlocks**: 10 unlockable protocols (see section 4). Dynamic pricing: `200 + unlocksOwned * 100`. Some have prerequisites (e.g., cipher-crack-v2 requires cipher-crack-license).
 
-**Game-specific upgrades**: 14 upgrades that modify individual minigame behavior (bracket-reducer, bracket-mirror, mine-echo, symbol-scanner, arrow-preview, wire-labels, cipher-hint, slash-window, reverse-trainer, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper). Removed: type-assist (weak), symbol-magnifier (ugly, scanner covers it), slash-calibration/bracket-auto-close/arrow-compass/mine-detector (run-shop assists, meta upgrades cover them).
+**Game-specific upgrades**: 21 upgrades that modify individual minigame behavior (bracket-reducer, bracket-mirror, mine-echo, symbol-scanner, arrow-preview, wire-labels, cipher-hint, slash-window, reverse-trainer, network-trace-highlight, signal-echo-slow, checksum-calculator, port-scan-deep, subnet-cidr-helper, mine-radar, decode-assist, shift-marker, auto-decode-v2, error-margin, range-hint, port-logger). Removed: type-assist (weak), symbol-magnifier (ugly, scanner covers it), slash-calibration/bracket-auto-close/arrow-compass/mine-detector (run-shop assists, meta upgrades cover them).
 
 ### Stackable vs Tiered
 
@@ -660,7 +660,7 @@ Uses shadcn/ui dark theme (zinc base) with standard CSS custom properties (`--ba
 | `src/hooks/use-keyboard.ts` | Keyboard input registration (useKeyboard, useKeyPress) |
 | `src/hooks/use-touch-device.ts` | Touch device detection hook |
 | `src/data/balancing.ts` | All economy formulas: difficulty, damage, credits, time limits, prices |
-| `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 39 persistent upgrades across 4 categories |
+| `src/data/meta-upgrades.ts` | META_UPGRADE_POOL: 46 persistent upgrades across 4 categories |
 | `src/data/power-ups.ts` | RUN_SHOP_POOL: 18 run-shop power-up items |
 | `src/data/achievements.ts` | ACHIEVEMENT_POOL: 30+ achievements with conditions and rewards |
 | `src/data/minigame-descriptions.ts` | MINIGAME_BRIEFINGS: rules, controls, tips, hints per minigame |

@@ -119,13 +119,17 @@ function buildMetaPowerUps(
       break;
     case "cipher-crack":
       addIfOwned("cipher-hint", "hint", [1], "cipher-crack");
+      addIfOwned("decode-assist", "minigame-specific", [0.20, 0.40, 0.60], "cipher-crack");
       break;
     case "slash-timing":
       addIfOwned("slash-window", "window-extend", [0.25], "slash-timing");
       break;
     case "defrag":
+      addIfOwned("mine-radar", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "defrag");
       break;
     case "cipher-crack-v2":
+      addIfOwned("shift-marker", "minigame-specific", [1], "cipher-crack-v2");
+      addIfOwned("auto-decode-v2", "hint", [0.20, 0.40, 0.60], "cipher-crack-v2");
       break;
     case "network-trace":
       addIfOwned("network-trace-highlight", "minigame-specific", [0.25, 0.50, 0.75, 1.0], "network-trace");
@@ -134,10 +138,12 @@ function buildMetaPowerUps(
       addIfOwned("signal-echo-slow", "minigame-specific", [0.3], "signal-echo");
       break;
     case "checksum-verify":
-      addIfOwned("checksum-calculator", "minigame-specific", [1], "checksum-verify");
+      addIfOwned("error-margin", "hint", [1, 2, 3, 4, 5], "checksum-verify");
+      addIfOwned("range-hint", "preview", [10, 5, 3], "checksum-verify");
       break;
     case "port-scan":
       addIfOwned("port-scan-deep", "minigame-specific", [2], "port-scan");
+      addIfOwned("port-logger", "hint", [1], "port-scan");
       break;
     case "subnet-scan":
       addIfOwned("subnet-cidr-helper", "minigame-specific", [1], "subnet-scan");
@@ -651,19 +657,29 @@ function BriefingPhase({
               {">"}_&nbsp;ACTIVE META UPGRADES
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {metaPowerUps.map((pu, i) => (
-                <div
-                  key={i}
-                  className="border border-cyber-green/20 bg-cyber-green/[0.04] px-3 py-2.5"
-                >
-                  <p className="text-xs font-bold text-cyber-green uppercase tracking-wider mb-0.5">
-                    {pu.name}
-                  </p>
-                  <p className="text-[10px] text-white/40 leading-relaxed">
-                    {pu.description}
-                  </p>
-                </div>
-              ))}
+              {metaPowerUps.map((pu, i) => {
+                // Extract tier from purchasedUpgrades: pu.id is "meta-{upgradeId}"
+                const upgradeId = pu.id.replace(/^meta-/, "");
+                const tier = purchasedUpgrades[upgradeId] ?? 0;
+                return (
+                  <div
+                    key={i}
+                    className="border border-cyber-green/20 bg-cyber-green/[0.04] px-3 py-2.5"
+                  >
+                    <div className="flex items-center justify-between mb-0.5">
+                      <p className="text-xs font-bold text-cyber-green uppercase tracking-wider">
+                        {pu.name}
+                      </p>
+                      <span className="text-[10px] font-mono text-cyber-green/60 uppercase tracking-wider">
+                        Lv.&nbsp;{tier}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-white/40 leading-relaxed">
+                      {pu.description}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}

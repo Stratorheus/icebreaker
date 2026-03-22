@@ -502,7 +502,7 @@ function findUpgradeName(id: string): string {
   return META_UPGRADE_POOL.find((u) => u.id === id)?.name ?? id;
 }
 
-function formatEffect(effect: { type: string; value: number }): string {
+function formatEffect(effect: { type: string; value: number; minigame?: string }): string {
   switch (effect.type) {
     case "damage-reduction":
       return `${Math.round(effect.value * 100)}% damage reduction`;
@@ -534,7 +534,55 @@ function formatEffect(effect: { type: string; value: number }): string {
       return `+2% base timer per win (cap ${Math.round(effect.value * 100)}%)`;
     case "floor-regen":
       return "+2% max HP regen per floor (stackable)";
+    case "minigame-specific":
+      return formatMinigameSpecific(effect.value, effect.minigame);
+    case "peek-ahead":
+      return `${Math.round(effect.value * 100)}% of arrows pre-revealed`;
+    case "preview":
+      return `\u00b1${effect.value} answer range (fixed)`;
+    case "hint":
+      // For hint effects with fractional values, show as percentage
+      if (effect.value < 1) return `${Math.round(effect.value * 100)}% pre-filled`;
+      return "active";
+    case "window-extend":
+      return `+${Math.round(effect.value * 100)}% wider window`;
+    case "bracket-flash":
+      return "shows next expected bracket";
+    case "wire-color-labels":
+      return "highlights next wire";
+    case "extra-hint":
+      return "extra hint letter";
     default:
       return effect.type.replace(/-/g, " ");
+  }
+}
+
+/** Format minigame-specific effect values with descriptive text */
+function formatMinigameSpecific(value: number, minigame?: string): string {
+  switch (minigame) {
+    case "defrag":
+      return `${Math.round(value * 100)}% of timer`;
+    case "close-brackets":
+      return `removes ${value} bracket type${value > 1 ? "s" : ""}`;
+    case "mine-sweep":
+      return `${Math.round(value * 100)}% sectors visible`;
+    case "type-backward":
+      return `${Math.round(value * 100)}% words shown normally`;
+    case "network-trace":
+      return `${Math.round(value * 100)}% of timer`;
+    case "signal-echo":
+      return `${Math.round(value * 100)}% slower replay`;
+    case "checksum-verify":
+      return "intermediate result hint";
+    case "port-scan":
+      return `${value}x flash repeat`;
+    case "subnet-scan":
+      return "expanded IP range shown";
+    case "cipher-crack":
+      return `${Math.round(value * 100)}% pre-filled`;
+    case "cipher-crack-v2":
+      return "shift offset highlighted";
+    default:
+      return value < 1 ? `${Math.round(value * 100)}%` : `${value}`;
   }
 }

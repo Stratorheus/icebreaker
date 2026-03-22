@@ -95,6 +95,13 @@ export function PortScan(props: MinigameProps) {
     return pu ? pu.effect.value : 1;
   }, [activePowerUps]);
 
+  // Port Logger: show list of open port numbers during select phase
+  const hasPortLogger = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "port-scan",
+    );
+  }, [activePowerUps]);
+
   // -- Difficulty params (stable on mount) --
   const params = useMemo(() => getParams(difficulty),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -357,15 +364,23 @@ export function PortScan(props: MinigameProps) {
         </p>
 
         {/* Phase indicator */}
-        <div className="h-5 flex items-center justify-center">
-          {phase === "display" && (
-            <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
-              Memorize the open ports...
-            </p>
-          )}
-          {phase === "select" && (
-            <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
-              Select all open ports
+        <div className="flex flex-col items-center gap-1">
+          <div className="h-5 flex items-center justify-center">
+            {phase === "display" && (
+              <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
+                Memorize the open ports...
+              </p>
+            )}
+            {phase === "select" && (
+              <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
+                Select all open ports
+              </p>
+            )}
+          </div>
+          {/* Port Logger: text list of open ports during select phase */}
+          {hasPortLogger && phase === "select" && (
+            <p className="text-cyber-orange/60 text-[10px] font-mono tracking-wider">
+              Open: {Array.from(puzzle.openIndices).map((idx) => puzzle.ports[idx]).join(", ")}
             </p>
           )}
         </div>

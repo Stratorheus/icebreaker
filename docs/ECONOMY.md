@@ -299,6 +299,32 @@ Remaining unlocks (Defrag, Network Trace, Signal Echo, Checksum Verify, Port Sca
 price = round((200 + unlocksOwned * 100) * (1 + totalPurchasesMade * 0.15))
 ```
 
+### Game-Specific Upgrades (tiered, global scalar applies)
+
+| Upgrade | Protocol | Tiers | Prices | Effect |
+|---|---|---|---|---|
+| Bracket Reducer | Code Inject | 3 | 150/300/500 ◆ | Removes bracket types (slash/+pipe/+square) |
+| Bracket Mirror | Code Inject | 1 | 150 ◆ | Shows next expected closing bracket |
+| Memory Echo | Memory Scan | 5 | 150/250/400/600/850 ◆ | 20/30/40/50/60% mines visible at start |
+| Symbol Scanner | Address Lookup | 1 | 200 ◆ | Subtly highlights target hex code |
+| Arrow Preview | Packet Route | 5 | 150/250/400/600/850 ◆ | 20/30/40/50/60% of arrows pre-revealed |
+| Wire Guide | Wire Cutting | 1 | 200 ◆ | Dims non-target wires, highlights next |
+| Cipher Hint | Cipher Crack V1 | 1 | 225 ◆ | Shows first letter of answer |
+| Decode Assist | Cipher Crack V1 | 3 | 150/300/500 ◆ | Pre-fills 25/50/75% of letters |
+| Slash Window | Slash Timing | 1 | 175 ◆ | Attack window 25% wider |
+| Autocorrect | Decrypt Signal | 4 | 150/300/500/750 ◆ | Shows 25/50/75/100% of words normally |
+| Path Highlight | Network Trace | 4 | 150/300/500/750 ◆ | Shows path for 25/50/75/100% of timer |
+| Slow Replay | Signal Echo | 1 | 200 ◆ | Sequence 30% slower |
+| Calculator | Checksum Verify | 1 | 175 ◆ | Shows first digit of answer |
+| Error Margin | Checksum Verify | 5 | 100/200/350/500/700 ◆ | Accept ±1/±2/±3/±4/±5 tolerance |
+| Range Hint | Checksum Verify | 3 | 150/300/500 ◆ | Shows answer range (±50%/±30%/±15%) |
+| Deep Scan | Port Scan | 1 | 200 ◆ | Ports flash twice |
+| Port Logger | Port Scan | 1 | 200 ◆ | Shows open port list during selection |
+| Mine Radar | Defrag | 4 | 150/300/500/750 ◆ | Row/col indicators for 25/50/75/100% of timer |
+| Shift Marker | Cipher Crack V2 | 1 | 175 ◆ | Highlights shift offset in alphabet chart |
+| Auto-Decode | Cipher Crack V2 | 3 | 200/400/650 ◆ | Pre-fills 25/50/75% of letters |
+| CIDR Helper | Subnet Scan | 1 | 225 ◆ | Shows expanded IP range |
+
 ---
 
 ## Example Runs

@@ -45,6 +45,7 @@ export const MINIGAME_BRIEFINGS: Record<MinigameType, MinigameBriefing> = {
       "Type the matching closing brackets in REVERSE order (stack style)",
       "Bracket pairs: ( → )  [ → ]  { → }  < → >  | → |  \\ → /",
       "Any wrong key causes immediate failure",
+      "Note: Some bracket types may be removed by the Bracket Reducer upgrade",
     ],
     controls: {
       desktop: "Keyboard keys: ) ] } > | /",

@@ -26,6 +26,8 @@ Key functions:
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
 | Calculator | `checksum-calculator` | `minigame-specific` | Shows an intermediate result hint next to the expression: the sign (if negative) plus the first digit of the answer, followed by `...`. E.g. for answer `42` shows `= 4...` | `ChecksumVerify.tsx` line 97-101 (`hasCalculator` memo), line 300-304 (render) |
+| Error Margin | `error-margin` | `hint` | Answers within ±1/±2/±3/±4/±5 of the correct value are accepted. Tolerance is shown in UI as "±N tolerance active". 5 tiers, prices: 100/200/350/500/700 ◆. | `ChecksumVerify.tsx` (`errorTolerance` memo, `withinTolerance` check in `handleConfirm`, UI indicator) |
+| Range Hint | `range-hint` | `preview` | Shows the approximate range of the answer: "Answer is between X and Y". Range is ±50%/±30%/±15% of correct answer. 3 tiers, prices: 150/300/500 ◆. | `ChecksumVerify.tsx` (`rangeHintPct` memo, range display above equals sign) |
 | Time Freeze / Clock Boost / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` line 443-444 |
 | Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies total time by `1.03^tier` | `MinigameScreen.tsx` line 442-444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Multiplies difficulty by `0.95^tier`, reducing expression complexity and count | `MinigameScreen.tsx` line 438-439 |

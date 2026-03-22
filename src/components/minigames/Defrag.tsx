@@ -137,8 +137,16 @@ function placeMines(
  * Arrow keys navigate cursor, Space = uncover, Enter = flag.
  */
 export function Defrag(props: MinigameProps) {
-  const { difficulty } = props;
+  const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame("defrag", props);
+
+  // Mine Radar: fraction of timer during which mine-containing rows/cols are highlighted
+  const mineRadarFraction = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "defrag",
+    );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
 
@@ -176,6 +184,12 @@ export function Defrag(props: MinigameProps) {
 
   // Show all mines briefly on fail before triggering fail callback
   const [showMines, setShowMines] = useState(false);
+
+  // Mine Radar: mine count per row and per column (computed after first click)
+  const [mineRowCounts, setMineRowCounts] = useState<number[]>([]);
+  const [mineColCounts, setMineColCounts] = useState<number[]>([]);
+  // Radar is visible while timer.progress > (1 - mineRadarFraction)
+  const radarVisible = minesPlacedRef.current && mineRadarFraction > 0 && timer.progress > (1 - mineRadarFraction);
 
   // ── Cursor for keyboard navigation ────────────────────────────────
   const [cursorRow, setCursorRow] = useState(0);
@@ -242,6 +256,20 @@ export function Defrag(props: MinigameProps) {
         minesPlacedRef.current = true;
         firstClickRef.current = false;
         placeMines(cells, cols, rows, mineCount, cellIndex);
+
+        // Compute mine counts per row/col for Mine Radar power-up
+        if (mineRadarFraction > 0) {
+          const rowCounts = new Array(rows).fill(0) as number[];
+          const colCounts = new Array(cols).fill(0) as number[];
+          for (const cell of cells) {
+            if (cell.isMine) {
+              rowCounts[Math.floor(cell.id / cols)]++;
+              colCounts[cell.id % cols]++;
+            }
+          }
+          setMineRowCounts(rowCounts);
+          setMineColCounts(colCounts);
+        }
       }
 
       const cell = cells[cellIndex];
@@ -269,7 +297,7 @@ export function Defrag(props: MinigameProps) {
         return newStates;
       });
     },
-    [isActive, cells, floodFill, fail],
+    [isActive, cells, cols, rows, mineCount, mineRadarFraction, floodFill, fail],
   );
 
   // ── Toggle flag on a cell ─────────────────────────────────────────
@@ -363,67 +391,122 @@ export function Defrag(props: MinigameProps) {
         {/* Divider */}
         <div className="w-24 h-px bg-white/10" />
 
-        {/* Grid */}
-        <div
-          className="grid gap-1"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          }}
-          onContextMenu={(e) => e.preventDefault()}
-        >
-          {cells.map((cell, i) => {
-            const cellRow = Math.floor(i / cols);
-            const cellCol = i % cols;
-            const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
-            const state = cellStates[i];
-            const isMineRevealed = showMines && cell.isMine;
-
-            return (
-              <button
-                key={cell.id}
-                type="button"
-                disabled={!isActive || resolvedRef.current}
-                onClick={() => flagMode ? toggleFlag(i) : uncoverCell(i)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  toggleFlag(i);
-                }}
-                className={`
-                  flex items-center justify-center
-                  ${cellSizeClass}
-                  rounded-sm border font-mono font-bold
-                  transition-all duration-150
-                  focus:outline-none
-                  ${
-                    isMineRevealed
-                      ? "border-cyber-magenta bg-cyber-magenta/30 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.4)]"
-                      : state === "revealed"
-                        ? cell.adjacentMines > 0
-                          ? "border-white/5 bg-white/5 " + (NUMBER_COLORS[cell.adjacentMines] ?? "text-cyber-magenta")
-                          : "border-white/5 bg-white/[0.03]"
-                        : state === "flagged"
-                          ? "border-cyber-magenta/60 bg-cyber-magenta/10 text-cyber-magenta"
-                          : isCursor
-                            ? "border-cyber-cyan/80 bg-cyber-cyan/10 shadow-[0_0_10px_rgba(0,255,255,0.2)]"
-                            : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 cursor-pointer"
-                  }
-                  ${isCursor && !isMineRevealed ? "ring-2 ring-cyber-cyan ring-offset-0 z-10" : ""}
-                `}
+        {/* Grid with Mine Radar indicators */}
+        <div className="flex flex-col items-center gap-0">
+          {/* Column indicators (above grid) — only visible when radar is active */}
+          {radarVisible && mineColCounts.length > 0 && (
+            <div className="flex gap-1 mb-1">
+              {/* Spacer matching the width of row indicators on the left */}
+              <div className="w-5 mr-0.5 shrink-0" />
+              <div
+                className="grid gap-1 flex-1"
+                style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
               >
-                {isMineRevealed ? (
-                  <span className="text-sm">✦</span>
-                ) : state === "revealed" ? (
-                  cell.adjacentMines > 0 ? (
-                    <span>{cell.adjacentMines}</span>
-                  ) : null
-                ) : state === "flagged" ? (
-                  <span className="text-sm">⚑</span>
-                ) : (
-                  <span className="text-white/10">·</span>
-                )}
-              </button>
-            );
-          })}
+                {mineColCounts.map((count, c) => (
+                  <div
+                    key={`col-${c}`}
+                    className={`
+                      flex items-center justify-center
+                      h-5 font-mono font-bold text-[10px]
+                      ${count > 0 ? "text-cyber-orange/70" : "text-white/10"}
+                    `}
+                  >
+                    {count > 0 ? count : "·"}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Grid rows with optional row indicators */}
+          <div className="flex gap-1">
+            {/* Row indicators (left of grid) — only visible when radar is active */}
+            {radarVisible && mineRowCounts.length > 0 && (
+              <div className="flex flex-col gap-1 justify-start mr-0.5">
+                {mineRowCounts.map((count, r) => (
+                  <div
+                    key={`row-${r}`}
+                    className={`
+                      flex items-center justify-center
+                      w-5 font-mono font-bold text-[10px]
+                      ${cellSizeClass.replace(/w-\S+/g, "").replace(/text-\S+/g, "")}
+                      ${count > 0 ? "text-cyber-orange/70" : "text-white/10"}
+                    `}
+                    style={{
+                      height: cellSizeClass.includes("w-10") ? "2.5rem"
+                        : cellSizeClass.includes("w-9") ? "2.25rem"
+                        : "1.75rem",
+                    }}
+                  >
+                    {count > 0 ? count : "·"}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Main grid */}
+            <div
+              className="grid gap-1"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+              }}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              {cells.map((cell, i) => {
+                const cellRow = Math.floor(i / cols);
+                const cellCol = i % cols;
+                const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
+                const state = cellStates[i];
+                const isMineRevealed = showMines && cell.isMine;
+
+                return (
+                  <button
+                    key={cell.id}
+                    type="button"
+                    disabled={!isActive || resolvedRef.current}
+                    onClick={() => flagMode ? toggleFlag(i) : uncoverCell(i)}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      toggleFlag(i);
+                    }}
+                    className={`
+                      flex items-center justify-center
+                      ${cellSizeClass}
+                      rounded-sm border font-mono font-bold
+                      transition-all duration-150
+                      focus:outline-none
+                      ${
+                        isMineRevealed
+                          ? "border-cyber-magenta bg-cyber-magenta/30 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.4)]"
+                          : state === "revealed"
+                            ? cell.adjacentMines > 0
+                              ? "border-white/5 bg-white/5 " + (NUMBER_COLORS[cell.adjacentMines] ?? "text-cyber-magenta")
+                              : "border-white/5 bg-white/[0.03]"
+                            : state === "flagged"
+                              ? "border-cyber-magenta/60 bg-cyber-magenta/10 text-cyber-magenta"
+                              : isCursor
+                                ? "border-cyber-cyan/80 bg-cyber-cyan/10 shadow-[0_0_10px_rgba(0,255,255,0.2)]"
+                                : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 cursor-pointer"
+                      }
+                      ${isCursor && !isMineRevealed ? "ring-2 ring-cyber-cyan ring-offset-0 z-10" : ""}
+                    `}
+                  >
+                    {isMineRevealed ? (
+                      <span className="text-sm">✦</span>
+                    ) : state === "revealed" ? (
+                      cell.adjacentMines > 0 ? (
+                        <span>{cell.adjacentMines}</span>
+                      ) : null
+                    ) : state === "flagged" ? (
+                      <span className="text-sm">⚑</span>
+                    ) : (
+                      <span className="text-white/10">·</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 

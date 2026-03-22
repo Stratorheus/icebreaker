@@ -93,11 +93,22 @@ export function ChecksumVerify(props: MinigameProps) {
     }
   }, [isTouch]);
 
-  // Calculator module: show intermediate result hint
-  const hasCalculator = useMemo(() => {
-    return activePowerUps.some(
-      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "checksum-verify",
+  // (calculator removed — Error Margin and Range Hint replace it)
+
+  // Error Margin: accept answers within ±N tolerance
+  const errorTolerance = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "checksum-verify",
     );
+    return pu ? pu.effect.value : 0;
+  }, [activePowerUps]);
+
+  // Range Hint: show answer range with fixed ±spread (10/5/3)
+  const rangeHintSpread = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "preview" && p.effect.minigame === "checksum-verify",
+    );
+    return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
   // -- Generate all expressions on mount (stable) --
@@ -141,8 +152,11 @@ export function ChecksumVerify(props: MinigameProps) {
     if (isNaN(parsed)) return;
 
     const expected = expressions[idx].answer;
+    const withinTolerance = errorTolerance > 0
+      ? Math.abs(parsed - expected) <= errorTolerance
+      : parsed === expected;
 
-    if (parsed !== expected) {
+    if (!withinTolerance) {
       // Wrong answer -- immediate fail
       resolvedRef.current = true;
       setFlash("wrong");
@@ -168,7 +182,7 @@ export function ChecksumVerify(props: MinigameProps) {
         setFlash(null);
       }, 300);
     }
-  }, [isActive, expressions, fail, complete]);
+  }, [isActive, expressions, fail, complete, errorTolerance]);
 
   // -- Handle digit input --
   const handleDigit = useCallback(
@@ -297,13 +311,26 @@ export function ChecksumVerify(props: MinigameProps) {
               style={{ textShadow: "0 0 12px rgba(0, 255, 255, 0.4)" }}
             >
               {expr.display}
-              {hasCalculator && (
-                <span className="text-cyber-green/40 text-lg ml-3">
-                  = {expr.answer < 0 ? "-" : ""}{Math.abs(expr.answer).toString()[0]}...
-                </span>
-              )}
             </p>
           </div>
+
+          {/* Range Hint: show answer range with fixed ±spread */}
+          {rangeHintSpread > 0 && (() => {
+            const lo = expr.answer - rangeHintSpread;
+            const hi = expr.answer + rangeHintSpread;
+            return (
+              <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
+                Answer is between {lo} and {hi}
+              </p>
+            );
+          })()}
+
+          {/* Error Margin indicator */}
+          {errorTolerance > 0 && (
+            <p className="text-cyber-green/50 text-[10px] font-mono uppercase tracking-wider">
+              &plusmn;{errorTolerance} tolerance active
+            </p>
+          )}
 
           {/* Equals sign */}
           <p className="text-white/40 text-2xl font-mono">=</p>

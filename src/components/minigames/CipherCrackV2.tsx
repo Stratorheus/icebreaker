@@ -65,33 +65,66 @@ function pickOne<T>(arr: readonly T[]): T {
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-function AlphabetChart({ rotN }: { rotN: number }) {
+function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarker?: boolean }) {
+  // Example pair for shift marker: A → shifted letter
+  const examplePlain = "A";
+  const exampleShifted = String.fromCharCode(((0 + rotN) % 26) + 65);
+
   return (
     <div className="w-full max-w-md mx-auto mt-2 px-2">
+      {/* Prominent ROT label when shift marker is active */}
+      {showShiftMarker && (
+        <div className="flex items-center justify-center gap-3 mb-2 py-1.5 px-3 border border-cyber-orange/30 bg-cyber-orange/[0.06] rounded">
+          <span className="text-cyber-orange font-mono font-bold text-sm tracking-wider">
+            ROT-{rotN}
+          </span>
+          <span className="text-white/40 text-[10px]">|</span>
+          <span className="text-cyber-orange/80 text-[11px] font-mono">
+            {examplePlain} → {exampleShifted}
+          </span>
+          <span className="text-white/40 text-[10px]">|</span>
+          <span className="text-white/40 text-[10px] uppercase tracking-wider">
+            shift {rotN} right
+          </span>
+        </div>
+      )}
+
       <p className="text-white/30 text-[10px] uppercase tracking-widest mb-1 text-center">
         Alphabet reference (shift +{rotN})
       </p>
       <div className="grid grid-cols-13 gap-0 text-center font-mono text-[11px] leading-tight">
         {/* First row: original A-M */}
         {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`o1-${i}`} className="text-white/30 py-0.5">{ch}</div>
+          <div key={`o1-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
         ))}
-        {/* Second row: shifted A-M */}
-        {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`s1-${i}`} className="text-cyber-cyan/70 py-0.5 font-bold">
-            {String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65)}
-          </div>
-        ))}
+        {/* Second row: shifted A-M — highlight matching pairs with shift marker */}
+        {ALPHABET.slice(0, 13).split("").map((ch, i) => {
+          const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
+          return (
+            <div
+              key={`s1-${i}`}
+              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
+            >
+              {shifted}
+            </div>
+          );
+        })}
         {/* Third row: original N-Z */}
         {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`o2-${i}`} className="text-white/30 py-0.5">{ch}</div>
+          <div key={`o2-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
         ))}
         {/* Fourth row: shifted N-Z */}
-        {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`s2-${i}`} className="text-cyber-cyan/70 py-0.5 font-bold">
-            {String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65)}
-          </div>
-        ))}
+        {ALPHABET.slice(13).split("").map((ch, i) => {
+          const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
+          return (
+            <div
+              key={`s2-${i}`}
+              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
+            >
+              {shifted}
+            </div>
+          );
+        })}
       </div>
       <p className="text-white/20 text-[9px] text-center mt-1">
         Top = original, bottom = encrypted. Find encrypted letter on bottom, read original above.
@@ -130,12 +163,19 @@ export function CipherCrackV2(props: MinigameProps) {
     }
   }, [isTouch]);
 
-  // Cipher Hint meta upgrade: show first letter of answer
-  const extraHintLetter = useMemo(() => {
-    const hint = activePowerUps.find(
-      (p) => p.effect.type === "hint" && p.effect.minigame === "cipher-crack-v2",
+  // Shift Marker: highlights the shift offset in the alphabet chart
+  const hasShiftMarker = useMemo(() => {
+    return activePowerUps.some(
+      (p) => p.effect.type === "minigame-specific" && p.effect.minigame === "cipher-crack-v2",
     );
-    return hint ? hint.effect.value : 0;
+  }, [activePowerUps]);
+
+  // Auto-Decode V2: fraction of letters pre-filled (uses "hint" type)
+  const autoDecodeFraction = useMemo(() => {
+    const pu = activePowerUps.find(
+      (p) => p.effect.type === "hint" && p.effect.minigame === "cipher-crack-v2" && p.effect.value < 1,
+    );
+    return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
   // Generate puzzle on mount
@@ -151,13 +191,49 @@ export function CipherCrackV2(props: MinigameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Current typed character index
-  const [charIndex, setCharIndex] = useState(0);
-  const charIndexRef = useRef(0);
+  // Compute pre-filled positions for Auto-Decode V2 (stable on mount)
+  const preFilledPositions = useMemo(() => {
+    if (autoDecodeFraction <= 0) return new Set<number>();
+    const count = Math.ceil(puzzle.word.length * autoDecodeFraction);
+    const indices = Array.from({ length: puzzle.word.length }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    return new Set(indices.slice(0, count));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Helper: find next non-pre-filled position starting from `from`
+  const nextTypableIndex = useCallback(
+    (from: number): number => {
+      let idx = from;
+      while (idx < puzzle.word.length && preFilledPositions.has(idx)) idx++;
+      return idx;
+    },
+    [puzzle.word.length, preFilledPositions],
+  );
+
+  // Current typed character index (starts at first non-pre-filled position)
+  const [charIndex, setCharIndex] = useState(() => {
+    let idx = 0;
+    while (idx < puzzle.word.length && preFilledPositions.has(idx)) idx++;
+    return idx;
+  });
+  const charIndexRef = useRef(charIndex);
 
   useEffect(() => {
     charIndexRef.current = charIndex;
   }, [charIndex]);
+
+  // Check if all positions are pre-filled (auto-complete)
+  useEffect(() => {
+    if (charIndex >= puzzle.word.length && !resolvedRef.current) {
+      resolvedRef.current = true;
+      complete(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleKey = useCallback(
     (e: KeyboardEvent) => {
@@ -169,10 +245,11 @@ export function CipherCrackV2(props: MinigameProps) {
       e.preventDefault();
 
       const ci = charIndexRef.current;
+      if (ci >= puzzle.word.length) return;
       const expected = puzzle.word[ci];
 
       if (key === expected) {
-        const nextChar = ci + 1;
+        const nextChar = nextTypableIndex(ci + 1);
         if (nextChar >= puzzle.word.length) {
           resolvedRef.current = true;
           complete(true);
@@ -184,7 +261,7 @@ export function CipherCrackV2(props: MinigameProps) {
         fail();
       }
     },
-    [isActive, puzzle.word, complete, fail],
+    [isActive, puzzle.word, complete, fail, nextTypableIndex],
   );
 
   useEffect(() => {
@@ -192,8 +269,13 @@ export function CipherCrackV2(props: MinigameProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
-  const typedPortion = puzzle.word.slice(0, charIndex);
-  const remainingCount = puzzle.word.length - charIndex;
+  // Build per-character display for pre-filled positions
+  const charDisplay = puzzle.word.split("").map((ch, i) => {
+    if (preFilledPositions.has(i)) return { char: ch, state: "prefilled" as const };
+    if (i < charIndex) return { char: ch, state: "typed" as const };
+    if (i === charIndex) return { char: "_", state: "cursor" as const };
+    return { char: "_", state: "remaining" as const };
+  });
 
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
@@ -240,15 +322,8 @@ export function CipherCrackV2(props: MinigameProps) {
           </div>
         </div>
 
-        {/* Alphabet chart -- always shown */}
-        <AlphabetChart rotN={puzzle.rotN} />
-
-        {/* Extra hint from meta upgrade */}
-        {extraHintLetter > 0 && puzzle.word.length > 0 && (
-          <div className="text-xs uppercase tracking-widest text-cyber-green/70">
-            Hint: starts with &ldquo;<strong className="text-cyber-green">{puzzle.word[0]}</strong>&rdquo;
-          </div>
-        )}
+        {/* Alphabet chart -- always shown, with optional shift marker */}
+        <AlphabetChart rotN={puzzle.rotN} showShiftMarker={hasShiftMarker} />
 
         <div className="w-24 h-px bg-white/10 my-1" />
 
@@ -259,18 +334,31 @@ export function CipherCrackV2(props: MinigameProps) {
         {/* Input display */}
         <div className="flex items-center justify-center min-h-[3.5rem]">
           <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl tracking-wider">
-            {typedPortion.split("").map((ch, i) => (
-              <span key={i} className="text-cyber-green font-bold">{ch}</span>
-            ))}
-            <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
-            {Array.from({ length: remainingCount }).map((_, i) => (
-              <span key={`r-${i}`} className="text-white/15 font-bold">_</span>
-            ))}
+            {charDisplay.map((cd, i) => {
+              if (cd.state === "prefilled") {
+                return <span key={i} className="text-cyber-green/70 font-bold">{cd.char}</span>;
+              }
+              if (cd.state === "typed") {
+                return <span key={i} className="text-cyber-green font-bold">{cd.char}</span>;
+              }
+              if (cd.state === "cursor") {
+                return (
+                  <span key={i} className="relative">
+                    <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
+                    <span className="text-white/15 font-bold">_</span>
+                  </span>
+                );
+              }
+              return <span key={i} className="text-white/15 font-bold">_</span>;
+            })}
           </div>
         </div>
 
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          {charIndex}/{puzzle.word.length}
+          {charIndex >= puzzle.word.length ? puzzle.word.length : charIndex}/{puzzle.word.length}
+          {preFilledPositions.size > 0 && (
+            <span className="text-cyber-green/50 ml-2">({preFilledPositions.size} pre-filled)</span>
+          )}
         </p>
       </div>
 

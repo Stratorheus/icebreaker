@@ -34,6 +34,7 @@ Word pool thresholds (0.35, 0.65) are independent of cipher method thresholds (0
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
 | Cipher Hint | `cipher-hint` | `hint` | Shows the first letter of the answer word below the cipher box: `Hint: starts with "X"` | `CipherCrack.tsx` lines 149-153 (detection), lines 263-267 (render) |
+| Decode Assist | `decode-assist` | `minigame-specific` | Pre-fills 25/50/75% of decoded letters at random positions. Pre-filled letters appear in green and are non-editable; the player only types the remaining positions. 3 tiers, prices: 150/300/500 ◆. | `CipherCrack.tsx` (decodeAssistFraction memo, preFilledPositions computation, nextTypableIndex helper, charDisplay rendering) |
 | Hint Module (run-shop) | `hint-module` | `hint` | Generic hint; the cipher-crack component checks for `effect.minigame === "cipher-crack"` specifically, so only the meta upgrade `cipher-hint` provides the first-letter hint | `CipherCrack.tsx` line 151 |
 | Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer (applied in MinigameRouter) | `MinigameScreen.tsx` line 443 |
 | Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |

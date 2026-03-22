@@ -48,7 +48,9 @@ The 20% mine cap prevents degenerate boards at any difficulty. At d=1, raw mines
 | Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
 | Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in smaller grid and fewer mines | `MinigameScreen.tsx` line 438-439 |
 
-Note: Defrag currently has **no active game-specific power-ups**. The `defrag-safe-start` upgrade was removed because safe first click became the default behavior. There are no run-shop items that specifically target defrag.
+| Mine Radar | `mine-radar` | `minigame-specific` | After mines are placed (first click), highlights mine-containing rows (left border) and columns (top border) with a subtle orange tint. Active while `timer.progress > (1 - tierValue)` where tierValue is 0.25/0.50/0.75/1.0. 4 tiers, prices: 150/300/500/750 ◆. | `Defrag.tsx` lines 139-148 (detection), mine placement callback (row/col computation), cell render (border styles) |
+
+Note: The `defrag-safe-start` upgrade was removed because safe first click became the default behavior.
 
 ## Controls
 ### Desktop
@@ -102,4 +104,4 @@ Additional timing modifiers that affect the effective timer:
 - **Cell size classes**: Modify `cellSizeClass` at lines 339-344 for different visual sizing at different grid dimensions.
 - **Base time**: Change `"defrag": 40` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 281.
 - **Number colors**: Change `NUMBER_COLORS` at lines 29-38 to adjust the color coding for adjacency numbers.
-- **Add game-specific power-up**: Create a new entry in `src/data/meta-upgrades.ts` targeting `minigame: "defrag"` and add detection logic in the component. Potential ideas: reveal one mine location, larger protected zone, or an "undo last click" ability.
+- **Mine Radar tuning**: Adjust tier values in `meta-upgrades.ts` (mine-radar entry) and the timer threshold formula in `Defrag.tsx`. Currently uses `timer.progress > (1 - fraction)` where fraction is 0.25/0.50/0.75/1.0. The border indicator colors can be changed in the cell render style attributes.
