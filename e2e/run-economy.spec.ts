@@ -29,7 +29,7 @@ test.describe("Run Economy", () => {
     const header = page.locator("header");
     await expect(header).toBeVisible({ timeout: 5000 });
 
-    // HUD should show HP (100/100 with no upgrades)
+    // HUD should show HP — BASE_HP = 100, see run-slice.ts startRun
     await expect(header).toContainText("100/100");
 
     // HUD should show credits
@@ -42,7 +42,7 @@ test.describe("Run Economy", () => {
     const header = page.locator("header");
     await expect(header).toBeVisible({ timeout: 5000 });
 
-    // Credits display should contain "25"
+    // getStartingCredits(0) = 25, see balancing.ts
     await expect(header).toContainText("25");
   });
 
@@ -106,6 +106,7 @@ test.describe("Run Economy", () => {
     const isRunning = await header.isVisible().catch(() => false);
     if (isRunning) {
       // Just verify the run started correctly with HUD visible
+      // BASE_HP = 100, see run-slice.ts startRun
       await expect(header).toContainText("100/100");
     }
   });

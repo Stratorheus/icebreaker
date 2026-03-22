@@ -1,18 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
-
-// ---------------------------------------------------------------------------
-// Helper: inject data balance into localStorage
-// ---------------------------------------------------------------------------
-
-async function injectData(page: Page, amount: number) {
-  await page.evaluate((amt) => {
-    const raw = localStorage.getItem("icebreaker-meta");
-    const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-    meta.state.data = amt;
-    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
-  }, amount);
-  await page.reload();
-}
+import { test, expect } from "@playwright/test";
+import { injectData } from "./helpers/training";
 
 // ===========================================================================
 // META SHOP TESTS

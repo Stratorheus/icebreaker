@@ -1,18 +1,5 @@
-import { test, expect, type Page } from "@playwright/test";
-
-// ---------------------------------------------------------------------------
-// Helper: inject data into localStorage
-// ---------------------------------------------------------------------------
-
-async function injectData(page: Page, amount: number) {
-  await page.evaluate((amt) => {
-    const raw = localStorage.getItem("icebreaker-meta");
-    const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-    meta.state.data = amt;
-    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
-  }, amount);
-  await page.reload();
-}
+import { test, expect } from "@playwright/test";
+import { injectData, startRunViaStore, setMetaUpgrades, unlockMinigames } from "./helpers/training";
 
 // ===========================================================================
 // MINIGAME UNLOCK VERIFICATION
@@ -93,24 +80,10 @@ test.describe("Minigame Unlock", () => {
   // 2. Unlocked minigame is playable
   // -------------------------------------------------------------------------
   test("unlocked minigame can be played in Training", async ({ page }) => {
-    // Unlock Defrag by injecting into localStorage directly
-    await page.evaluate(() => {
-      const raw = localStorage.getItem("icebreaker-meta");
-      const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-      meta.state.data = 50000;
-      // Add defrag to unlocked minigames
-      const current: string[] = meta.state.unlockedMinigames ?? [];
-      if (!current.includes("defrag")) {
-        meta.state.unlockedMinigames = [...current, "defrag"];
-      }
-      // Also mark the license as purchased
-      meta.state.purchasedUpgrades = {
-        ...meta.state.purchasedUpgrades,
-        "defrag-license": 1,
-      };
-      localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
-    });
-    await page.reload();
+    // Unlock Defrag using shared helpers
+    await injectData(page, 50000);
+    await unlockMinigames(page, ["defrag"]);
+    await setMetaUpgrades(page, { "defrag-license": 1 });
 
     // Navigate to Training
     await page.getByText("TRAINING").click();
@@ -142,23 +115,13 @@ test.describe("Minigame Unlock", () => {
   // 3. Multiple unlocks increase picker count
   // -------------------------------------------------------------------------
   test("multiple unlocks all appear in Training picker", async ({ page }) => {
-    // Unlock several minigames at once
-    await page.evaluate(() => {
-      const raw = localStorage.getItem("icebreaker-meta");
-      const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-      const current: string[] = meta.state.unlockedMinigames ?? [];
-      const toUnlock = ["defrag", "wire-cutting", "cipher-crack"];
-      const merged = [...new Set([...current, ...toUnlock])];
-      meta.state.unlockedMinigames = merged;
-      meta.state.purchasedUpgrades = {
-        ...meta.state.purchasedUpgrades,
-        "defrag-license": 1,
-        "wire-cutting-toolkit": 1,
-        "cipher-crack-license": 1,
-      };
-      localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
+    // Unlock several minigames at once using shared helpers
+    await unlockMinigames(page, ["defrag", "wire-cutting", "cipher-crack"]);
+    await setMetaUpgrades(page, {
+      "defrag-license": 1,
+      "wire-cutting-toolkit": 1,
+      "cipher-crack-license": 1,
     });
-    await page.reload();
 
     // Navigate to Training
     await page.getByText("TRAINING").click();
@@ -188,27 +151,14 @@ test.describe("Minigame Unlock", () => {
   // 4. Unlock bonus: +5 max HP per unlock beyond starting set
   // -------------------------------------------------------------------------
   test("unlocked minigames give +5 max HP bonus per unlock", async ({ page }) => {
-    // Unlock 2 extra minigames
-    await page.evaluate(() => {
-      const raw = localStorage.getItem("icebreaker-meta");
-      const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
-      const current: string[] = meta.state.unlockedMinigames ?? [];
-      const toUnlock = ["defrag", "wire-cutting"];
-      meta.state.unlockedMinigames = [...new Set([...current, ...toUnlock])];
-      localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
-    });
-    await page.reload();
+    // Unlock 2 extra minigames using shared helper
+    await unlockMinigames(page, ["defrag", "wire-cutting"]);
 
     // Wait for the app to fully mount and the store to hydrate from localStorage
-    // before calling store actions (Zustand persist hydrates asynchronously)
     await page.getByText("META SHOP").waitFor({ timeout: 5000 });
 
     // Start a run via store
-    await page.evaluate(() => {
-      (window as any).__GAME_STORE__.getState().startRun();
-    });
-    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
-    await page.waitForTimeout(300);
+    await startRunViaStore(page);
 
     // Max HP should be 100 + 2*5 = 110
     const maxHp = await page.evaluate(() =>

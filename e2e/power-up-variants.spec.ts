@@ -45,8 +45,8 @@ async function beginWithUpgrade(
   for (const id of upgradeIds) {
     await enableUpgrade(page, id);
   }
-  await page.getByText(difficulty).click();
-  await page.getByText("BEGIN TRAINING").click();
+  await page.locator(`[data-testid="difficulty-option"][data-value="${difficulty}"]`).click();
+  await page.locator('[data-testid="begin-training"]').click();
   await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
   await page.waitForTimeout(300);
 }
@@ -691,8 +691,8 @@ test.describe("upgrade checkbox UI", () => {
     await expect(rangeCard.locator('[data-testid="upgrade-checkbox"]')).toHaveAttribute("data-checked", "true");
 
     // Begin training and verify both effects are active
-    await page.getByText("TRIVIAL").click();
-    await page.getByText("BEGIN TRAINING").click();
+    await page.locator('[data-testid="difficulty-option"][data-value="TRIVIAL"]').click();
+    await page.locator('[data-testid="begin-training"]').click();
     await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
     await page.waitForTimeout(300);
 

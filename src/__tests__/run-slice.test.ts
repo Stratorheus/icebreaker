@@ -1,23 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { create } from "zustand";
-import { createRunSlice } from "@/store/run-slice";
-import { createMetaSlice } from "@/store/meta-slice";
-import { createShopSlice } from "@/store/shop-slice";
-import type { GameStore } from "@/store/game-store";
+import { createTestStore } from "./helpers/test-store";
 import { getStartingCredits, getEffectiveDamage } from "@/data/balancing";
 import type { PowerUpInstance } from "@/types/game";
-
-// ---------------------------------------------------------------------------
-// Test store factory (no persist middleware)
-// ---------------------------------------------------------------------------
-
-function createTestStore() {
-  return create<GameStore>()((...a) => ({
-    ...createRunSlice(...a),
-    ...createMetaSlice(...a),
-    ...createShopSlice(...a),
-  }));
-}
 
 // ---------------------------------------------------------------------------
 // Helpers

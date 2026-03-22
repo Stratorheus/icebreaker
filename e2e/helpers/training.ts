@@ -1,6 +1,30 @@
 import type { Page } from "@playwright/test";
 
 /**
+ * Inject data balance into localStorage and reload.
+ */
+export async function injectData(page: Page, amount: number) {
+  await page.evaluate((amt) => {
+    const raw = localStorage.getItem("icebreaker-meta");
+    const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
+    meta.state.data = amt;
+    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
+  }, amount);
+  await page.reload();
+}
+
+/**
+ * Start a run via the game store, wait for the minigame-active wrapper.
+ */
+export async function startRunViaStore(page: Page) {
+  await page.evaluate(() => {
+    (window as any).__GAME_STORE__.getState().startRun();
+  });
+  await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+  await page.waitForTimeout(300);
+}
+
+/**
  * Navigate to Training and start a minigame.
  * Flow: Menu → TRAINING (picker) → pick minigame → briefing → select difficulty → BEGIN TRAINING → countdown → GO
  */

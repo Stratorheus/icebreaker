@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { setMetaUpgrades } from "./helpers/training";
+import { injectData, setMetaUpgrades, startRunViaStore } from "./helpers/training";
 
 // ---------------------------------------------------------------------------
 // Helper: inject data + upgrades into localStorage
@@ -17,20 +17,6 @@ async function injectMeta(page: Page, data: number, upgrades: Record<string, num
     { d: data, ups: upgrades },
   );
   await page.reload();
-}
-
-// ---------------------------------------------------------------------------
-// Helper: start a run via store, wait for "playing" UI
-// ---------------------------------------------------------------------------
-
-async function startRunViaStore(page: Page) {
-  await page.goto("/");
-  await page.evaluate(() => {
-    (window as any).__GAME_STORE__.getState().startRun();
-  });
-  // Wait for the minigame-active wrapper to appear (status = "playing")
-  await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
-  await page.waitForTimeout(300);
 }
 
 // ===========================================================================
@@ -66,10 +52,9 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     const damageTaken = hpBefore - hpAfter;
 
-    // Floor 1 base damage = 20 + 1*4 = 24
+    // getEffectiveDamage(1, 0) = 24, see balancing.ts
     // With 25% reduction: Math.round(24 * 0.75) = 18
-    // Without armor it would be 24
-    expect(damageTaken).toBeLessThan(24);
+    expect(damageTaken).toBeLessThan(24); // getEffectiveDamage(1, 0) = 24, see balancing.ts
     expect(damageTaken).toBe(18);
   });
 
@@ -91,37 +76,34 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     );
 
     const damageTaken = hpBefore - hpAfter;
-    // Floor 1 base damage = 20 + 1*4 = 24
-    expect(damageTaken).toBe(24);
+    expect(damageTaken).toBe(24); // getEffectiveDamage(1, 0) = 24, see balancing.ts
   });
 
   test("Thicker Armor tier 1 reduces damage by 5%", async ({ page }) => {
     await page.goto("/");
     await setMetaUpgrades(page, { "thicker-armor": 1 });
-    await page.evaluate(() => (window as any).__GAME_STORE__.getState().startRun());
-    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+    await startRunViaStore(page);
 
     const hpBefore = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
     await page.evaluate(() => (window as any).__GAME_STORE__.getState().failMinigame());
     await page.waitForTimeout(300);
     const hpAfter = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
 
-    // Floor 1 damage = 24, with 5% reduction = round(24 * 0.95) = 23
+    // getEffectiveDamage(1, 0) = 24, with 5% reduction = round(24 * 0.95) = 23
     expect(hpBefore - hpAfter).toBe(23);
   });
 
   test("Thicker Armor tier 3 reduces damage by 15%", async ({ page }) => {
     await page.goto("/");
     await setMetaUpgrades(page, { "thicker-armor": 3 });
-    await page.evaluate(() => (window as any).__GAME_STORE__.getState().startRun());
-    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+    await startRunViaStore(page);
 
     const hpBefore = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
     await page.evaluate(() => (window as any).__GAME_STORE__.getState().failMinigame());
     await page.waitForTimeout(300);
     const hpAfter = await page.evaluate(() => (window as any).__GAME_STORE__.getState().hp);
 
-    // Floor 1 damage = 24, with 15% reduction = round(24 * 0.85) = 20
+    // getEffectiveDamage(1, 0) = 24, with 15% reduction = round(24 * 0.85) = 20
     expect(hpBefore - hpAfter).toBe(20);
   });
 
@@ -137,11 +119,12 @@ test.describe("Meta Upgrade Runtime Effects", () => {
       (window as any).__GAME_STORE__.getState().credits,
     );
 
-    // Complete a minigame with 30 base credits at 5000ms
+    // Complete a minigame — completeMinigame uses MinigameResult shape
     await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().completeMinigame({
-        credits: 30,
+        success: true,
         timeMs: 5000,
+        minigame: "slash-timing",
       }),
     );
     await page.waitForTimeout(300);
@@ -153,16 +136,10 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     const earned = creditsAfter - creditsBefore;
 
     // With credit-multiplier tier 5: credits are multiplied by 1.03^5 = ~1.159
-    // The store uses getEffectiveCredits which computes:
-    //   base = 20 * (1 + difficulty) * speedBonus
-    //   then * Math.pow(1.03, 5)
-    // Without multiplier, base earned would be some value X;
-    // with multiplier it should be > X
     // Just verify earned is positive and more than what you'd get without multiplier
     expect(earned).toBeGreaterThan(0);
 
     // Now test without multiplier to compare
-    // Start a fresh run without upgrades
     await page.evaluate(() => {
       const store = (window as any).__GAME_STORE__;
       store.setState({ status: "menu" });
@@ -177,11 +154,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
       localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
     });
     await page.reload();
-    await page.evaluate(() =>
-      (window as any).__GAME_STORE__.getState().startRun(),
-    );
-    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
-    await page.waitForTimeout(300);
+    await startRunViaStore(page);
 
     const creditsBeforeBase = await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().credits,
@@ -189,8 +162,9 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().completeMinigame({
-        credits: 30,
+        success: true,
         timeMs: 5000,
+        minigame: "slash-timing",
       }),
     );
     await page.waitForTimeout(300);
@@ -214,17 +188,12 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     await startRunViaStore(page);
 
-    // Complete some minigames to advance the run
+    // Complete a minigame to advance the run
     await page.evaluate(() => {
       const store = (window as any).__GAME_STORE__;
-      store.getState().completeMinigame({ credits: 30, timeMs: 5000 });
+      store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     });
     await page.waitForTimeout(200);
-
-    // Read state before quit to understand floor
-    const floor = await page.evaluate(() =>
-      (window as any).__GAME_STORE__.getState().floor,
-    );
 
     // Quit the run (voluntary — no death penalty)
     await page.evaluate(() =>
@@ -305,8 +274,6 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     // Read the store state — difficulty is computed per floor, not stored directly.
     // We verify via completeMinigame: higher effective credits = lower difficulty.
     // With reducer tier 5: difficulty = getDifficulty(1) * 0.95^5
-    //   getDifficulty(1) = min(0.1 + 1/15, 1.0) = 0.1667
-    //   effective = 0.1667 * 0.95^5 = 0.1667 * 0.7738 = 0.1290
 
     // Complete a minigame and measure credits earned
     const creditsBefore = await page.evaluate(() =>
@@ -315,8 +282,9 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().completeMinigame({
-        credits: 30,
+        success: true,
         timeMs: 5000,
+        minigame: "slash-timing",
       }),
     );
     await page.waitForTimeout(200);
@@ -341,11 +309,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
       localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
     });
     await page.reload();
-    await page.evaluate(() =>
-      (window as any).__GAME_STORE__.getState().startRun(),
-    );
-    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
-    await page.waitForTimeout(300);
+    await startRunViaStore(page);
 
     const creditsBeforeBase = await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().credits,
@@ -353,8 +317,9 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().completeMinigame({
-        credits: 30,
+        success: true,
         timeMs: 5000,
+        minigame: "slash-timing",
       }),
     );
     await page.waitForTimeout(200);
@@ -367,7 +332,6 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     // Lower difficulty = lower base credits (since getCredits = 20 * (1 + difficulty) * speedBonus)
     // So with difficulty reducer, credits should be LESS
-    // (difficulty reducer makes the game easier but base credits scale with difficulty)
     expect(earnedWithReducer).toBeLessThan(earnedBase);
   });
 });
