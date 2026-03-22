@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
-import type { MinigameType, PowerUpInstance, PowerUpEffect } from "@/types/game";
+import type { MinigameType } from "@/types/game";
 import type { MinigameResult } from "@/types/minigame";
-import { MINIGAME_COMPONENTS, MINIGAME_REGISTRY, getMinigameDisplayName, getMinigameBriefing } from "@/data/minigames/registry";
+import { MINIGAME_COMPONENTS, MINIGAME_REGISTRY, getMinigameDisplayName, getMinigameBriefing, buildMetaPowerUps } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
@@ -793,24 +793,14 @@ function ActiveRound({
 }) {
   const Component = MINIGAME_COMPONENTS[type];
 
-  const activePowerUps = useMemo(() => {
-    const config = MINIGAME_REGISTRY[type];
-    const synth: PowerUpInstance[] = [];
-    for (const upgrade of config.metaUpgrades) {
-      if (!settings.activeUpgradeIds.has(upgrade.id)) continue;
-      const tier = settings.upgradeTiers[upgrade.id] ?? 1;
-      const effect = upgrade.effects[tier - 1];
-      if (!effect) continue;
-      synth.push({
-        id: `meta-${upgrade.id}`,
-        type: `meta-${upgrade.id}`,
-        name: upgrade.name,
-        description: upgrade.description,
-        effect: { type: effect.type as PowerUpEffect["type"], value: effect.value, minigame: type },
-      });
-    }
-    return synth;
-  }, [type, settings]);
+  const activePowerUps = useMemo(
+    () =>
+      buildMetaPowerUps({}, type, {
+        activeIds: settings.activeUpgradeIds,
+        tierMap: settings.upgradeTiers,
+      }),
+    [type, settings],
+  );
 
   return (
     <Component
@@ -969,10 +959,10 @@ function formatUpgradeEffect(effect: { type: string; value: number; minigame?: M
       return `+${pct}% wider (Lv.${tier})`;
     case "bracket-flash":
       return `shows next bracket (Lv.${tier})`;
-    case "highlight-danger":
-      return `highlights danger (Lv.${tier})`;
-    case "flag-mine":
-      return `flags mines (Lv.${tier})`;
+    case "wire-color-labels":
+      return `highlights next wire (Lv.${tier})`;
+    case "extra-hint":
+      return `extra hint letter (Lv.${tier})`;
     default:
       return `${effect.type.replace(/-/g, " ")} (Lv.${tier})`;
   }

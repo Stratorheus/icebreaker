@@ -69,15 +69,34 @@ export function getMinigameHint(type: MinigameType, isTouch: boolean): string {
   return isTouch ? b.hint.touch : b.hint.desktop;
 }
 
+/**
+ * Build synthetic PowerUpInstances from a minigame's meta upgrades.
+ *
+ * Default mode (no overrides): uses purchasedUpgrades to determine which
+ * upgrades are active and at what tier — used by MinigameScreen during runs.
+ *
+ * Training mode (with overrides): uses explicit activeIds/tierMap so players
+ * can selectively enable upgrades at chosen tiers during practice.
+ */
 export function buildMetaPowerUps(
   purchasedUpgrades: Record<string, number>,
   type: MinigameType,
+  overrides?: {
+    activeIds: Set<string>;
+    tierMap: Record<string, number>;
+  },
 ): PowerUpInstance[] {
   const config = MINIGAME_REGISTRY[type];
   const synth: PowerUpInstance[] = [];
   for (const upgrade of config.metaUpgrades) {
-    const tier = purchasedUpgrades[upgrade.id] ?? 0;
-    if (tier <= 0) continue;
+    let tier: number;
+    if (overrides) {
+      if (!overrides.activeIds.has(upgrade.id)) continue;
+      tier = overrides.tierMap[upgrade.id] ?? 1;
+    } else {
+      tier = purchasedUpgrades[upgrade.id] ?? 0;
+      if (tier <= 0) continue;
+    }
     const effect = upgrade.effects[tier - 1] ?? upgrade.effects[upgrade.effects.length - 1];
     synth.push({
       id: `meta-${upgrade.id}`,
