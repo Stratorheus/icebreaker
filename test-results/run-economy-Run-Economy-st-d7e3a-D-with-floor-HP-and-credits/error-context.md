@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: ICE
+      - generic [ref=e7]: BREAKER
+      - generic [ref=e8]: v1.3.1
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]: ◆
+        - generic [ref=e12]: FLOOR
+        - generic [ref=e13]: "1"
+      - generic [ref=e14]:
+        - generic [ref=e15]: HP
+        - generic [ref=e16]: ██████████
+        - generic [ref=e17]: 100/100
+      - generic [ref=e18]:
+        - img [ref=e19]
+        - generic [ref=e24]: 25 CR
+      - generic [ref=e25]:
+        - img [ref=e26]
+        - generic [ref=e28]: "0"
+  - generic [ref=e32]:
+    - progressbar [ref=e33]
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Memorize targets
+        - paragraph [ref=e40]: 2s
+      - generic [ref=e42]:
+        - button "·" [disabled] [ref=e43]:
+          - generic [ref=e44]: ·
+        - button "·" [disabled] [ref=e45]:
+          - generic [ref=e46]: ·
+        - button "·" [disabled] [ref=e47]:
+          - generic [ref=e48]: ·
+        - button "⬟" [disabled] [ref=e49]:
+          - generic [ref=e50]: ⬟
+        - button "·" [disabled] [ref=e51]:
+          - generic [ref=e52]: ·
+        - button "·" [disabled] [ref=e53]:
+          - generic [ref=e54]: ·
+        - button "⬟" [disabled] [ref=e55]:
+          - generic [ref=e56]: ⬟
+        - button "·" [disabled] [ref=e57]:
+          - generic [ref=e58]: ·
+        - button "⬟" [disabled] [ref=e59]:
+          - generic [ref=e60]: ⬟
+        - button "⬟" [disabled] [ref=e61]:
+          - generic [ref=e62]: ⬟
+        - button "·" [disabled] [ref=e63]:
+          - generic [ref=e64]: ·
+        - button "·" [disabled] [ref=e65]:
+          - generic [ref=e66]: ·
+        - button "·" [disabled] [ref=e67]:
+          - generic [ref=e68]: ·
+        - button "·" [disabled] [ref=e69]:
+          - generic [ref=e70]: ·
+        - button "·" [disabled] [ref=e71]:
+          - generic [ref=e72]: ·
+        - button "·" [disabled] [ref=e73]:
+          - generic [ref=e74]: ·
+    - paragraph [ref=e76]: Remember the corrupted sector positions
+  - region "Notifications alt+T"
+```

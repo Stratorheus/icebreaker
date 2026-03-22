@@ -1,0 +1,83 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - progressbar [ref=e7]
+      - generic [ref=e9]:
+        - paragraph [ref=e10]: Encrypted signal
+        - generic [ref=e11]: LQLW
+        - generic [ref=e12]:
+          - generic [ref=e13]: "METHOD: SHIFTED +3"
+          - generic [ref=e15]: Use the alphabet chart below to decode each letter
+        - generic [ref=e16]:
+          - paragraph [ref=e17]: Alphabet reference (shift +3)
+          - generic [ref=e18]:
+            - generic [ref=e19]: A
+            - generic [ref=e20]: B
+            - generic [ref=e21]: C
+            - generic [ref=e22]: D
+            - generic [ref=e23]: E
+            - generic [ref=e24]: F
+            - generic [ref=e25]: G
+            - generic [ref=e26]: H
+            - generic [ref=e27]: I
+            - generic [ref=e28]: J
+            - generic [ref=e29]: K
+            - generic [ref=e30]: L
+            - generic [ref=e31]: M
+            - generic [ref=e32]: D
+            - generic [ref=e33]: E
+            - generic [ref=e34]: F
+            - generic [ref=e35]: G
+            - generic [ref=e36]: H
+            - generic [ref=e37]: I
+            - generic [ref=e38]: J
+            - generic [ref=e39]: K
+            - generic [ref=e40]: L
+            - generic [ref=e41]: M
+            - generic [ref=e42]: "N"
+            - generic [ref=e43]: O
+            - generic [ref=e44]: P
+            - generic [ref=e45]: "N"
+            - generic [ref=e46]: O
+            - generic [ref=e47]: P
+            - generic [ref=e48]: Q
+            - generic [ref=e49]: R
+            - generic [ref=e50]: S
+            - generic [ref=e51]: T
+            - generic [ref=e52]: U
+            - generic [ref=e53]: V
+            - generic [ref=e54]: W
+            - generic [ref=e55]: X
+            - generic [ref=e56]: "Y"
+            - generic [ref=e57]: Z
+            - generic [ref=e58]: Q
+            - generic [ref=e59]: R
+            - generic [ref=e60]: S
+            - generic [ref=e61]: T
+            - generic [ref=e62]: U
+            - generic [ref=e63]: V
+            - generic [ref=e64]: W
+            - generic [ref=e65]: X
+            - generic [ref=e66]: "Y"
+            - generic [ref=e67]: Z
+            - generic [ref=e68]: A
+            - generic [ref=e69]: B
+            - generic [ref=e70]: C
+          - paragraph [ref=e71]: Top = original, bottom = encrypted. Find encrypted letter on bottom, read original above.
+        - paragraph [ref=e73]: Decrypted output
+        - generic [ref=e75]:
+          - generic [ref=e76]: i
+          - generic [ref=e77]: "n"
+          - generic [ref=e78]: _
+          - generic [ref=e80]: t
+        - paragraph [ref=e81]:
+          - text: 2/4
+          - generic [ref=e82]: (3 pre-filled)
+      - textbox [ref=e83]
+      - paragraph [ref=e85]: Type the decrypted word — wrong key = fail
+    - button "ESC — QUIT" [ref=e86] [cursor=pointer]
+  - region "Notifications alt+T"
+```

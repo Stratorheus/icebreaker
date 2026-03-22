@@ -47,8 +47,8 @@ async function beginWithUpgrade(
   }
   await page.getByText(difficulty).click();
   await page.getByText("BEGIN TRAINING").click();
-  await page.getByText("GO").waitFor({ timeout: 5000 });
-  await page.waitForTimeout(800);
+  await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+  await page.waitForTimeout(300);
 }
 
 // ===========================================================================

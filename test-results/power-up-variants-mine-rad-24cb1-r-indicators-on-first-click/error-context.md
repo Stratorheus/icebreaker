@@ -1,0 +1,76 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e6]:
+      - progressbar [ref=e7]
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - paragraph [ref=e11]: Defragmenting memory block...
+          - paragraph [ref=e12]: 0/23 sectors clear | ⚑ 0/2
+        - generic [ref=e16]:
+          - button "·" [ref=e17]:
+            - generic [ref=e18]: ·
+          - button "·" [ref=e19] [cursor=pointer]:
+            - generic [ref=e20]: ·
+          - button "·" [ref=e21] [cursor=pointer]:
+            - generic [ref=e22]: ·
+          - button "·" [ref=e23] [cursor=pointer]:
+            - generic [ref=e24]: ·
+          - button "·" [ref=e25] [cursor=pointer]:
+            - generic [ref=e26]: ·
+          - button "·" [ref=e27] [cursor=pointer]:
+            - generic [ref=e28]: ·
+          - button "·" [ref=e29] [cursor=pointer]:
+            - generic [ref=e30]: ·
+          - button "·" [ref=e31] [cursor=pointer]:
+            - generic [ref=e32]: ·
+          - button "·" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: ·
+          - button "·" [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]: ·
+          - button "·" [ref=e37] [cursor=pointer]:
+            - generic [ref=e38]: ·
+          - button "·" [ref=e39] [cursor=pointer]:
+            - generic [ref=e40]: ·
+          - button "·" [ref=e41] [cursor=pointer]:
+            - generic [ref=e42]: ·
+          - button "·" [ref=e43] [cursor=pointer]:
+            - generic [ref=e44]: ·
+          - button "·" [ref=e45] [cursor=pointer]:
+            - generic [ref=e46]: ·
+          - button "·" [ref=e47] [cursor=pointer]:
+            - generic [ref=e48]: ·
+          - button "·" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]: ·
+          - button "·" [ref=e51] [cursor=pointer]:
+            - generic [ref=e52]: ·
+          - button "·" [ref=e53] [cursor=pointer]:
+            - generic [ref=e54]: ·
+          - button "·" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]: ·
+          - button "·" [ref=e57] [cursor=pointer]:
+            - generic [ref=e58]: ·
+          - button "·" [ref=e59] [cursor=pointer]:
+            - generic [ref=e60]: ·
+          - button "·" [ref=e61] [cursor=pointer]:
+            - generic [ref=e62]: ·
+          - button "·" [ref=e63] [cursor=pointer]:
+            - generic [ref=e64]: ·
+          - button "·" [ref=e65] [cursor=pointer]:
+            - generic [ref=e66]: ·
+      - generic [ref=e67]:
+        - paragraph [ref=e68]: L-Click / Space = uncover | R-Click / Enter = flag
+        - generic [ref=e69]:
+          - generic [ref=e70]: ↑
+          - generic [ref=e71]:
+            - generic [ref=e72]: ←
+            - generic [ref=e73]: ↓
+            - generic [ref=e74]: →
+          - generic [ref=e75]:
+            - generic [ref=e76]: Space
+            - generic [ref=e77]: Enter
+    - button "ESC — QUIT" [ref=e78] [cursor=pointer]
+  - region "Notifications alt+T"
+```
