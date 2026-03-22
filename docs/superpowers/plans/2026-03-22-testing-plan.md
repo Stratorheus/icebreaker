@@ -114,59 +114,149 @@ import {
 } from "@/data/balancing";
 
 describe("balancing", () => {
+  describe("getMinigamesPerFloor", () => {
+    it("floor 1 gives 2 minigames", () => {
+      expect(getMinigamesPerFloor(1)).toBe(2);
+    });
+    it("caps at 8", () => {
+      expect(getMinigamesPerFloor(100)).toBe(8);
+    });
+  });
+
+  describe("getDataReward", () => {
+    it("floor 1 gives 7", () => {
+      expect(getDataReward(1)).toBe(Math.round(3 + 1 * 4));
+    });
+    it("scales with floor", () => {
+      expect(getDataReward(10)).toBe(Math.round(3 + 10 * 4));
+    });
+  });
+
+  describe("getMilestoneBonus", () => {
+    it("returns 0 for non-milestone floors", () => {
+      expect(getMilestoneBonus(3)).toBe(0);
+    });
+    it("returns floor*5 for milestone floors (every 5th)", () => {
+      expect(getMilestoneBonus(5)).toBe(25);
+      expect(getMilestoneBonus(10)).toBe(50);
+    });
+    it("returns 0 for floor 0", () => {
+      expect(getMilestoneBonus(0)).toBe(0);
+    });
+  });
+
+  describe("getRunShopPrice", () => {
+    it("floor 1 applies scaling", () => {
+      const price = getRunShopPrice(100, 1);
+      expect(price).toBe(Math.round(100 * (1 + 1 * 0.25) * (1 + 1 * 0.01)));
+    });
+    it("scales quadratically with floor", () => {
+      const f1 = getRunShopPrice(100, 1);
+      const f10 = getRunShopPrice(100, 10);
+      expect(f10).toBeGreaterThan(f1);
+    });
+  });
+
+  describe("getTimeLimit", () => {
+    it("reduces with difficulty", () => {
+      const easy = getTimeLimit(10, 0);
+      const hard = getTimeLimit(10, 1);
+      expect(hard).toBeLessThan(easy);
+    });
+    it("applies floor scale after floor 15", () => {
+      const f1 = getTimeLimit(10, 0.5, 1);
+      const f20 = getTimeLimit(10, 0.5, 20);
+      expect(f20).toBeLessThan(f1);
+    });
+    it("no floor scale for floor <= 15", () => {
+      const f1 = getTimeLimit(10, 0.5, 1);
+      const f15 = getTimeLimit(10, 0.5, 15);
+      expect(f15).toBe(f1);
+    });
+  });
+
   describe("getEffectiveDifficulty", () => {
     it("returns base difficulty for tier 0", () => {
+      // getDifficulty(1) = min(0.1 + 1/15, 1.0) ≈ 0.167
       expect(getEffectiveDifficulty(1, 0)).toBeCloseTo(0.167, 2);
     });
-    it("reduces difficulty per tier", () => {
+    it("reduces difficulty per tier (0.95^tier)", () => {
       const d0 = getEffectiveDifficulty(5, 0);
       const d3 = getEffectiveDifficulty(5, 3);
       expect(d3).toBeLessThan(d0);
       expect(d3).toBeCloseTo(d0 * Math.pow(0.95, 3), 5);
     });
-    it("caps at 1.0 base", () => {
+    it("caps base at 1.0", () => {
       expect(getEffectiveDifficulty(100, 0)).toBeLessThanOrEqual(1.0);
     });
   });
 
   describe("getEffectiveTimeLimit", () => {
-    it("applies flat bonuses before percentages", () => {
+    it("applies flat bonuses (timeSiphon) before percentages", () => {
+      // signature: (baseTimeLimitSecs, difficulty, floor, timeSiphonBonus, cascadeClockPct, delayInjectorTier)
       const base = getEffectiveTimeLimit(10, 0.5, 1, 0, 0, 0);
       const withFlat = getEffectiveTimeLimit(10, 0.5, 1, 2, 0, 0);
       const withPct = getEffectiveTimeLimit(10, 0.5, 1, 0, 0.5, 0);
       const withBoth = getEffectiveTimeLimit(10, 0.5, 1, 2, 0.5, 0);
-      // flat + pct should be more than flat alone or pct alone
+      // flat + pct synergy: more than either alone
       expect(withBoth).toBeGreaterThan(withFlat);
       expect(withBoth).toBeGreaterThan(withPct);
     });
-    it("delay injector amplifies flat bonuses", () => {
+    it("delay injector (1.03^tier) amplifies everything", () => {
       const noInjector = getEffectiveTimeLimit(10, 0.5, 1, 2, 0, 0);
       const withInjector = getEffectiveTimeLimit(10, 0.5, 1, 2, 0, 5);
       expect(withInjector).toBeGreaterThan(noInjector);
+    });
+    it("cascade clock pct amplifies base + flat", () => {
+      const noCascade = getEffectiveTimeLimit(10, 0.5, 1, 0, 0, 0);
+      const withCascade = getEffectiveTimeLimit(10, 0.5, 1, 0, 0.3, 0);
+      expect(withCascade).toBeGreaterThan(noCascade);
     });
   });
 
   describe("getEffectiveDamage", () => {
     it("returns full damage with tier 0", () => {
-      expect(getEffectiveDamage(1, 0)).toBe(24); // 20 + 1*4
+      // getDamage(1) = 20 + 1*4 = 24
+      expect(getEffectiveDamage(1, 0)).toBe(24);
     });
     it("reduces by 25% at tier 5", () => {
       const full = getEffectiveDamage(5, 0);
       const reduced = getEffectiveDamage(5, 5);
       expect(reduced).toBe(Math.round(full * 0.75));
     });
+    it("armor reduction lookup: tier 1 = 5%, tier 3 = 15%", () => {
+      const full = getEffectiveDamage(1, 0);
+      expect(getEffectiveDamage(1, 1)).toBe(Math.round(full * 0.95));
+      expect(getEffectiveDamage(1, 3)).toBe(Math.round(full * 0.85));
+    });
   });
 
   describe("getEffectiveCredits", () => {
-    it("speed tax is amplified by credit multiplier", () => {
+    it("speed tax flat added before credit multiplier", () => {
+      // signature: (timeMs, difficulty, creditTier, speedTaxTier, unlockBonus)
       const noTax = getEffectiveCredits(5000, 0.5, 3, 0, 0);
       const withTax = getEffectiveCredits(5000, 0.5, 3, 2, 0);
       expect(withTax).toBeGreaterThan(noTax);
     });
-    it("returns 0 speed bonus for Infinity timeMs", () => {
-      const fast = getEffectiveCredits(0, 0.5, 0, 0, 0);
-      const skip = getEffectiveCredits(Infinity, 0.5, 0, 0, 0);
-      expect(skip).toBeLessThan(fast);
+    it("unlock bonus applies as final multiplier", () => {
+      const noBonus = getEffectiveCredits(5000, 0.5, 0, 0, 0);
+      const withBonus = getEffectiveCredits(5000, 0.5, 0, 0, 0.5);
+      expect(withBonus).toBeGreaterThan(noBonus);
+    });
+  });
+
+  describe("getEffectiveDataReward", () => {
+    it("data siphon scales by 1.03^tier", () => {
+      const base = getEffectiveDataReward(5, 0);
+      const t3 = getEffectiveDataReward(5, 3);
+      expect(t3).toBe(Math.round(base * Math.pow(1.03, 3)));
+    });
+  });
+
+  describe("getCreditsSaved", () => {
+    it("saves 8% of credits", () => {
+      expect(getCreditsSaved(100)).toBe(8);
+      expect(getCreditsSaved(50)).toBe(4);
     });
   });
 
@@ -174,7 +264,7 @@ describe("balancing", () => {
     it("returns 0 for voluntary quit", () => {
       expect(getDeathPenaltyPct(0, true)).toBe(0);
     });
-    it("returns 25% base for no recovery", () => {
+    it("returns 25% base for death with no recovery", () => {
       expect(getDeathPenaltyPct(0, false)).toBe(0.25);
     });
     it("reduces by 2.5% per tier", () => {
@@ -189,23 +279,16 @@ describe("balancing", () => {
     it("gives 25 base with no upgrade", () => {
       expect(getStartingCredits(0)).toBe(25);
     });
-    it("tier 5 gives 1025", () => {
+    it("tier 1 gives 75 (25 + 50)", () => {
+      expect(getStartingCredits(1)).toBe(75);
+    });
+    it("tier 5 gives 1025 (25 + 1000)", () => {
       expect(getStartingCredits(5)).toBe(1025);
     });
   });
 
-  describe("getMilestoneBonus", () => {
-    it("returns 0 for non-milestone floors", () => {
-      expect(getMilestoneBonus(3)).toBe(0);
-    });
-    it("returns floor*5 for milestone floors", () => {
-      expect(getMilestoneBonus(5)).toBe(25);
-      expect(getMilestoneBonus(10)).toBe(50);
-    });
-  });
-
   describe("getDataDrip", () => {
-    it("scales with floor", () => {
+    it("scales with floor: round(1 + floor * 0.8)", () => {
       expect(getDataDrip(1)).toBe(Math.round(1 + 1 * 0.8));
       expect(getDataDrip(10)).toBe(Math.round(1 + 10 * 0.8));
     });
@@ -431,6 +514,15 @@ For each minigame, add attributes that expose the expected answer:
 | PortScan | `data-testid="port-cell"` `data-open={isOpen}` on each port |
 | SubnetScan | `data-testid="address"` `data-correct={isCorrect}` on each address |
 
+Also add to Training upgrade cards:
+| Element | Attribute needed |
+|---------|-----------------|
+| Upgrade card | `data-testid="upgrade-card"` `data-upgrade-id={upgrade.id}` |
+| Upgrade checkbox | `data-testid="upgrade-checkbox"` `data-checked={isActive}` |
+| Mine radar row indicator | `data-testid="mine-radar-row"` |
+| Mine radar col indicator | `data-testid="mine-radar-col"` |
+| Arrow preview indicator | `data-testid="preview-arrow"` |
+
 - [ ] **Step 1:** Add data-testid attributes to all 15 components (hidden from user, only for tests)
 
 - [ ] **Step 2:** Verify build: `npm run build`
@@ -441,14 +533,16 @@ For each minigame, add attributes that expose the expected answer:
 
 ## Task 7b: E2E tests — per-minigame via Training
 
-**Strategy:** Use Training mode as test sandbox. For each minigame:
-1. Navigate: Menu → Training → Select Protocol → Pick difficulty → Begin
-2. Wait for countdown → GO
-3. Read data-testid attributes to know correct answer
-4. Interact (type, click, press keys)
-5. Assert success
-6. Repeat for fail case (wrong input)
-7. Quit training
+**Strategy:** Use Training mode as test sandbox. Current flow (v1.3.1):
+1. Navigate: Menu → TRAINING → Pick minigame from list (picker phase)
+2. Briefing phase: select difficulty (7 buttons), optionally toggle upgrades
+3. Click BEGIN TRAINING → countdown (3-2-1-GO) → active minigame
+4. Read data-testid attributes to know correct answer
+5. Interact (type, click, press keys)
+6. Assert SUCCESS/FAILED in round-result phase
+7. After 3 rounds → complete phase, or quit via ESC/QUIT button
+
+**Important:** Difficulty is selected in the **briefing** phase (not picker). Picker is just a list of unlocked minigames. Upgrades are per-minigame checkboxes in briefing (not a global toggle).
 
 **Files:**
 - Create: `e2e/minigames/slash-timing.spec.ts`
@@ -460,24 +554,90 @@ For each minigame, add attributes that expose the expected answer:
 Shared helper:
 ```ts
 // e2e/helpers/training.ts
-export async function openTraining(page, minigameDisplayName: string, difficulty = "NORMAL") {
+import type { Page } from "@playwright/test";
+
+/**
+ * Navigate to Training and start a minigame.
+ * Flow: Menu → TRAINING (picker) → pick minigame → briefing → select difficulty → BEGIN TRAINING → countdown → GO
+ */
+export async function openTraining(page: Page, minigameDisplayName: string, difficulty = "NORMAL") {
   await page.goto("/");
+  // Picker phase: click TRAINING on main menu
   await page.getByText("TRAINING").click();
-  // Select difficulty
-  await page.getByText(difficulty).click();
-  // Pick minigame
+  // Picker: click the minigame name (shown as "> {NAME}" with "UNLIMITED" badge)
   await page.getByText(minigameDisplayName.toUpperCase()).click();
-  // Begin training
+  // Briefing phase: select difficulty (7 segmented buttons)
+  await page.getByText(difficulty).click();
+  // Click BEGIN TRAINING
   await page.getByText("BEGIN TRAINING").click();
-  // Wait for countdown to finish
-  await page.getByText("GO").waitFor();
-  // Small delay for phase transition
+  // Wait for countdown to finish (3-2-1-GO, ~2s total)
+  await page.getByText("GO").waitFor({ timeout: 5000 });
+  // Small delay for phase transition to active
   await page.waitForTimeout(800);
 }
 
-export async function quitTraining(page) {
-  await page.getByText("QUIT").click();
+/**
+ * Quit training via the quit button + confirmation modal.
+ * Active/countdown phase shows "QUIT" button (mobile) or "ESC — QUIT" (desktop).
+ * Clicking opens modal with "CONFIRM" and "CANCEL".
+ */
+export async function quitTraining(page: Page) {
+  await page.getByText("QUIT").first().click();
   await page.getByText("CONFIRM").click();
+}
+
+/**
+ * Inject purchased upgrades into localStorage so Training briefing shows them.
+ * Must be called BEFORE navigating to Training.
+ */
+export async function setMetaUpgrades(page: Page, upgrades: Record<string, number>) {
+  await page.evaluate((ups) => {
+    const raw = localStorage.getItem("icebreaker-meta");
+    const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
+    meta.state.purchasedUpgrades = { ...meta.state.purchasedUpgrades, ...ups };
+    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
+  }, upgrades);
+  await page.reload();
+}
+
+/**
+ * In briefing phase, enable specific upgrades via per-minigame checkboxes.
+ * Each owned upgrade has a checkbox + optional +/- tier controls.
+ * Call this AFTER navigating to briefing (after picking a minigame).
+ */
+export async function enableUpgradeInBriefing(page: Page, upgradeName: string) {
+  // Find the upgrade card by name and click its checkbox area
+  const card = page.locator(`text=${upgradeName}`).locator("..");
+  await card.locator('[class*="border"]').first().click();
+}
+
+/**
+ * Open Training with upgrades enabled at specific tiers.
+ * Flow: inject upgrades → Menu → TRAINING → pick game → briefing → check upgrades → select difficulty → BEGIN
+ */
+export async function openTrainingWithUpgrades(
+  page: Page,
+  minigameDisplayName: string,
+  upgrades: Record<string, number>,
+  upgradeNamesToEnable: string[],
+  difficulty = "NORMAL"
+) {
+  // Inject upgrades into localStorage
+  await setMetaUpgrades(page, upgrades);
+  await page.goto("/");
+  await page.getByText("TRAINING").click();
+  // Pick minigame → goes to briefing
+  await page.getByText(minigameDisplayName.toUpperCase()).click();
+  // In briefing: enable each upgrade checkbox
+  for (const name of upgradeNamesToEnable) {
+    await enableUpgradeInBriefing(page, name);
+  }
+  // Select difficulty
+  await page.getByText(difficulty).click();
+  // Begin
+  await page.getByText("BEGIN TRAINING").click();
+  await page.getByText("GO").waitFor({ timeout: 5000 });
+  await page.waitForTimeout(800);
 }
 ```
 
@@ -493,18 +653,16 @@ test.describe("Slash Timing", () => {
     // Wait for attack phase
     await page.waitForSelector('[data-phase="attack"]');
     await page.keyboard.press("Space");
-    // Should see success
+    // Should see success in round-result phase
     await expect(page.getByText("SUCCESS")).toBeVisible({ timeout: 5000 });
-    await quitTraining(page);
   });
 
   test("fail — press Space during guard phase", async ({ page }) => {
     await openTraining(page, "Slash Timing", "TRIVIAL");
     // Immediately press Space (guard phase is first)
     await page.keyboard.press("Space");
-    // Should see fail
+    // Should see fail in round-result phase
     await expect(page.getByText("FAILED")).toBeVisible({ timeout: 5000 });
-    await quitTraining(page);
   });
 });
 
@@ -512,25 +670,26 @@ test.describe("Slash Timing", () => {
 test.describe("Code Inject", () => {
   test("success — type correct closers", async ({ page }) => {
     await openTraining(page, "Code Inject", "TRIVIAL");
-    // Read expected closers one by one
-    for (let i = 0; i < 10; i++) {
-      const expected = await page.getAttribute('[data-testid="expected-closer"]', 'data-key');
+    // Read expected closers one by one from data-testid
+    for (let i = 0; i < 20; i++) {
+      const el = page.locator('[data-testid="expected-closer"]');
+      if (!(await el.isVisible().catch(() => false))) break;
+      const expected = await el.getAttribute("data-key");
       if (!expected) break;
       await page.keyboard.press(expected);
-      await page.waitForTimeout(100);
+      await page.waitForTimeout(50);
     }
     await expect(page.getByText("SUCCESS")).toBeVisible({ timeout: 5000 });
-    await quitTraining(page);
   });
 
   test("fail — type wrong closer", async ({ page }) => {
     await openTraining(page, "Code Inject", "TRIVIAL");
-    await page.keyboard.press(")"); // might be wrong
-    await page.keyboard.press(")");
-    await page.keyboard.press(")"); // eventually wrong
-    // Either success or fail — we just verify the game completes
+    // Spam wrong keys to trigger failure
+    for (let i = 0; i < 5; i++) {
+      await page.keyboard.press(")");
+      await page.waitForTimeout(50);
+    }
     await expect(page.getByText(/SUCCESS|FAILED/)).toBeVisible({ timeout: 10000 });
-    await quitTraining(page);
   });
 });
 ```
@@ -549,60 +708,57 @@ test.describe("Code Inject", () => {
 
 **Strategy:** Same as 7b but with meta upgrades enabled. For each minigame that has upgrades, test with upgrades ON.
 
-Uses the meta upgrades toggle in Training picker + localStorage hack to set purchased upgrades.
-
-```ts
-// e2e/helpers/training.ts — add helper
-export async function setMetaUpgrades(page, upgrades: Record<string, number>) {
-  await page.evaluate((ups) => {
-    const meta = JSON.parse(localStorage.getItem("icebreaker-meta") || '{"state":{}}');
-    meta.state.purchasedUpgrades = { ...meta.state.purchasedUpgrades, ...ups };
-    localStorage.setItem("icebreaker-meta", JSON.stringify(meta));
-  }, upgrades);
-  await page.reload();
-}
-
-export async function openTrainingWithUpgrades(page, name: string, difficulty: string) {
-  await page.goto("/");
-  await page.getByText("TRAINING").click();
-  await page.getByText(difficulty).click();
-  // Enable meta upgrades toggle
-  await page.getByText("APPLY META UPGRADES").click();
-  await page.getByText(name.toUpperCase()).click();
-  await page.getByText("BEGIN TRAINING").click();
-  await page.getByText("GO").waitFor();
-  await page.waitForTimeout(800);
-}
-```
+Uses localStorage injection to set purchased upgrades, then enables them via per-minigame checkboxes in the Training briefing phase. No global toggle exists — each upgrade has its own checkbox.
 
 Test examples:
 ```ts
+import { test, expect } from "@playwright/test";
+import { openTrainingWithUpgrades, quitTraining } from "../helpers/training";
+
 test("Bracket Reducer tier 3 — only ( { < remain", async ({ page }) => {
-  await setMetaUpgrades(page, { "bracket-reducer": 3 });
-  await openTrainingWithUpgrades(page, "Code Inject", "NORMAL");
-  // Verify removed bracket buttons are hidden
-  await expect(page.getByText("/")).not.toBeVisible(); // slash removed
-  await expect(page.getByText("|")).not.toBeVisible(); // pipe removed
-  await expect(page.getByText("]")).not.toBeVisible(); // square removed
+  await openTrainingWithUpgrades(
+    page, "Code Inject",
+    { "bracket-reducer": 3 },       // inject purchased tier 3
+    ["Bracket Reducer"],              // enable checkbox in briefing
+    "NORMAL"
+  );
+  // Verify removed bracket buttons are hidden (\ | [ removed at tier 3)
+  await expect(page.getByText("\\")).not.toBeVisible();
+  await expect(page.getByText("|")).not.toBeVisible();
+  await expect(page.getByText("]")).not.toBeVisible();
   await quitTraining(page);
 });
 
-test("Mine Radar shows counts", async ({ page }) => {
-  await setMetaUpgrades(page, { "mine-radar": 4 }); // 100% timer
-  await openTrainingWithUpgrades(page, "Defrag", "TRIVIAL");
-  // Click a cell to place mines
+test("Mine Radar shows row/col counts", async ({ page }) => {
+  await openTrainingWithUpgrades(
+    page, "Defrag",
+    { "mine-radar": 4 },            // inject purchased tier 4 (100% timer)
+    ["Mine Radar"],                   // enable checkbox in briefing
+    "TRIVIAL"
+  );
+  // Click a cell to place mines (Defrag places after first click)
   await page.locator('[data-testid="cell"]').first().click();
-  // Radar should show — check for orange count indicators
-  await expect(page.locator('.text-cyber-orange\\/70').first()).toBeVisible();
+  // Radar should show row/column mine count indicators
+  await expect(page.locator('[data-testid="mine-radar-row"]').first()).toBeVisible();
+  await quitTraining(page);
+});
+
+test("Arrow Preview shows upcoming arrows", async ({ page }) => {
+  await openTrainingWithUpgrades(
+    page, "Packet Route",
+    { "arrow-preview": 3 },          // 40% preview
+    ["Arrow Preview"],
+    "EASY"
+  );
+  // Preview arrows should be visible as dimmed indicators
+  await expect(page.locator('[data-testid="preview-arrow"]').first()).toBeVisible();
   await quitTraining(page);
 });
 ```
 
-- [ ] **Step 1:** Extend training helpers with upgrade injection
+- [ ] **Step 1:** Write power-up variant tests for minigames with upgrades (~20 tests)
 
-- [ ] **Step 2:** Write power-up variant tests for minigames with upgrades (~20 tests)
-
-- [ ] **Step 3:** Run + commit
+- [ ] **Step 2:** Run + commit
 
 ---
 
@@ -733,13 +889,13 @@ If time-constrained, implement in this order:
 
 | File/Suite | Tests | Coverage Target |
 |------------|-------|-----------------|
-| balancing.test.ts | ~25 | All 12+ exported functions |
-| power-up-effects.test.ts | ~15 | applyShield + checkSkip all paths |
-| minigame-registry.test.ts | ~15 | Registry integrity + buildMetaPowerUps |
-| upgrade-registry.test.ts | ~10 | Pool integrity + license generation |
+| balancing.test.ts | ~30 | All 14 exported functions (incl. getRunShopPrice, getTimeLimit) |
+| power-up-effects.test.ts | ~15 | applyShield + checkSkip + getMetaBonus all paths |
+| minigame-registry.test.ts | ~15 | Registry integrity + buildMetaPowerUps (with overrides) |
+| upgrade-registry.test.ts | ~10 | Pool integrity + license auto-generation |
 | run-slice.test.ts | ~25 | All actions + edge cases |
-| meta-slice.test.ts | ~8 | Purchase + stats |
+| meta-slice.test.ts | ~8 | Purchase + stats + recordMinigameResult |
 | E2E minigame success/fail (7b) | ~30 | 15 minigames × success + fail |
-| E2E minigame power-ups (7c) | ~20 | Upgrade variants per minigame |
+| E2E minigame power-ups (7c) | ~20 | Upgrade variants per minigame (via per-minigame checkboxes) |
 | E2E run economy (7d) | ~15 | Credits, data, HP, shop, skips |
-| **Total** | **~163** | |
+| **Total** | **~168** | |
