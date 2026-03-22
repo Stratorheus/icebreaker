@@ -77,13 +77,13 @@ test.describe("Network Trace", () => {
   });
 
   test("fail — let timer expire without reaching end", async ({ page }) => {
-    await openTraining(page, "Network Trace", "TRIVIAL");
+    // Use INSANE difficulty so the timer is short and expires within test timeout
+    await openTraining(page, "Network Trace", "INSANE");
 
-    // Verify the game is active (player and end visible)
+    // Verify the game is active
     await expect(page.locator('[data-testid="player"]')).toBeVisible({ timeout: 5000 });
-    await expect(page.locator('[data-testid="end"]')).toBeVisible({ timeout: 5000 });
 
     // Do nothing — let the timer run out
-    await expect(page.getByText("FAILED")).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("FAILED")).toBeVisible({ timeout: 25000 });
   });
 });

@@ -187,8 +187,7 @@ test.describe("mine-echo — Memory Scan", () => {
 
     // Wait for the mark phase (after preview phase ends)
     // In mark phase, mine-echo keeps some mines visible
-    const markPhaseText = page.getByText("MARK", { exact: false });
-    await expect(markPhaseText).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText("marked", { exact: false }).first()).toBeVisible({ timeout: 10000 });
 
     // Cells should still be visible — some with mine indicators due to echo
     const cells = page.locator('[data-testid="cell"]');
@@ -483,8 +482,8 @@ test.describe("upgrade checkbox UI", () => {
     // Begin training and verify both effects are active
     await page.getByText("TRIVIAL").click();
     await page.getByText("BEGIN TRAINING").click();
-    await page.getByText("GO").waitFor({ timeout: 5000 });
-    await page.waitForTimeout(800);
+    await page.locator('[data-testid="minigame-active"]').waitFor({ timeout: 8000 });
+    await page.waitForTimeout(300);
 
     await expect(page.getByText("tolerance active", { exact: false })).toBeVisible({ timeout: 5000 });
     await expect(page.getByText("Answer is between", { exact: false })).toBeVisible({ timeout: 5000 });

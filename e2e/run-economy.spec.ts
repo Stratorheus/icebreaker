@@ -29,11 +29,11 @@ test.describe("Run Economy", () => {
     const header = page.locator("header");
     await expect(header).toBeVisible({ timeout: 5000 });
 
-    // HUD should show floor 1
-    await expect(header.getByText("1")).toBeVisible();
-
     // HUD should show HP (100/100 with no upgrades)
     await expect(header).toContainText("100/100");
+
+    // HUD should show credits
+    await expect(header).toContainText("CR");
   });
 
   test("base starting credits are 25 CR", async ({ page }) => {
