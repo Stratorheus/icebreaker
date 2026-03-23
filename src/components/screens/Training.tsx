@@ -252,7 +252,7 @@ export function Training() {
       )}
 
       {phase === "active" && (
-        <div className="flex-1 flex items-center justify-center px-4">
+        <div data-testid="minigame-active" className="flex-1 flex items-center justify-center px-4">
           <ActiveRound
             type={type}
             settings={currentSettings}
@@ -285,6 +285,7 @@ export function Training() {
       {showQuitButton && (
         <button
           type="button"
+          data-testid="quit-training-button"
           onClick={() => setShowQuitConfirm(true)}
           className="
             absolute top-3 right-3 z-40
@@ -315,6 +316,7 @@ export function Training() {
             <div className="flex items-center gap-4">
               <button
                 type="button"
+                data-testid="confirm-quit"
                 onClick={handleQuitConfirm}
                 className="
                   py-2.5 px-8
@@ -385,6 +387,8 @@ function PickerPhase({
             <button
               key={type}
               type="button"
+              data-testid="minigame-picker-item"
+              data-name={getMinigameDisplayName(type)}
               onClick={() => onPick(type)}
               className="
                 w-full flex items-center justify-between
@@ -521,6 +525,8 @@ function BriefingPhase({
               <button
                 key={opt.label}
                 type="button"
+                data-testid="difficulty-option"
+                data-value={opt.label}
                 onClick={() => onSettingsChange({ ...settings, difficulty: opt.value })}
                 className={`
                   py-1.5 px-2
@@ -599,6 +605,8 @@ function BriefingPhase({
                 return (
                   <div
                     key={upgrade.id}
+                    data-testid="upgrade-card"
+                    data-upgrade-id={upgrade.id}
                     className={`
                       border px-3 py-2.5 flex items-start gap-3 transition-colors duration-150
                       ${isActive
@@ -610,6 +618,8 @@ function BriefingPhase({
                     {/* Checkbox */}
                     <button
                       type="button"
+                      data-testid="upgrade-checkbox"
+                      data-checked={isActive}
                       onClick={() => handleToggleUpgrade(upgrade.id)}
                       className={`
                         mt-0.5 w-4 h-4 shrink-0 border flex items-center justify-center
@@ -732,6 +742,7 @@ function BriefingPhase({
 
         <button
           type="button"
+          data-testid="begin-training"
           onClick={() => onBeginRef.current()}
           className="
             py-3 px-10

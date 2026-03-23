@@ -319,6 +319,9 @@ export function TypeBackward(props: MinigameProps) {
         )}
       </div>
 
+      {/* Hidden test helper: expected word */}
+      <span data-testid="expected-word" data-word={currentAnswer} className="hidden" />
+
       {/* Hidden input for mobile keyboard */}
       <input
         ref={hiddenInputRef}

@@ -7,6 +7,8 @@ import {
   type MetaSlice,
 } from "./meta-slice";
 import { createShopSlice, type ShopSlice } from "./shop-slice";
+import { STARTING_MINIGAMES } from "@/data/minigames/registry";
+import type { MinigameType } from "@/types/game";
 
 // ---------------------------------------------------------------------------
 // Combined store type
@@ -37,6 +39,21 @@ export const useGameStore = create<GameStore>()(
         }
         return persisted;
       },
+      merge: (persisted, current) => {
+        const merged = { ...current, ...(persisted as Record<string, unknown>) };
+        // Guarantee starting minigames are always present after hydration.
+        // Prevents data loss if localStorage is corrupted, manually edited,
+        // or if a new starting minigame is added in an update.
+        const saved = (merged as unknown as { unlockedMinigames: MinigameType[] }).unlockedMinigames ?? [];
+        const guaranteed = [...new Set([...STARTING_MINIGAMES, ...saved])];
+        (merged as unknown as { unlockedMinigames: MinigameType[] }).unlockedMinigames = guaranteed;
+        return merged as GameStore;
+      },
     },
   ),
 );
+
+// Expose store on window for E2E testing (Playwright store manipulation)
+if (typeof window !== "undefined") {
+  (window as unknown as Record<string, unknown>).__GAME_STORE__ = useGameStore;
+}

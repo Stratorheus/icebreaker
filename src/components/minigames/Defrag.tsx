@@ -405,6 +405,8 @@ export function Defrag(props: MinigameProps) {
                 return (
                   <div
                     key={`col-${c}`}
+                    data-testid="mine-radar-indicator"
+                    data-count={count}
                     className={`
                       flex items-center justify-center
                       ${widthClasses} h-5 font-mono font-bold text-[10px]
@@ -426,6 +428,8 @@ export function Defrag(props: MinigameProps) {
                 {mineRowCounts.map((count, r) => (
                   <div
                     key={`row-${r}`}
+                    data-testid="mine-radar-indicator"
+                    data-count={count}
                     className={`
                       flex items-center justify-center
                       w-5 font-mono font-bold text-[10px]
@@ -462,6 +466,9 @@ export function Defrag(props: MinigameProps) {
                 return (
                   <button
                     key={cell.id}
+                    data-testid="cell"
+                    data-mine={cell.isMine}
+                    data-index={i}
                     type="button"
                     disabled={!isActive || resolvedRef.current}
                     onClick={() => flagMode ? toggleFlag(i) : uncoverCell(i)}

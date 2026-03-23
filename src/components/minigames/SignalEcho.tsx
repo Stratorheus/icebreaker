@@ -295,6 +295,7 @@ export function SignalEcho(props: MinigameProps) {
     return (
       <button
         key={panel.dir}
+        data-testid="echo-panel"
         type="button"
         onClick={() => handlePress(panel.dir)}
         disabled={!isActive || phase !== "input"}
@@ -327,7 +328,7 @@ export function SignalEcho(props: MinigameProps) {
   const leftPanel = PANELS[DIR_INDEX.left];
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+    <div data-testid="echo-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
 
@@ -395,6 +396,9 @@ export function SignalEcho(props: MinigameProps) {
           </div>
         </div>
       </div>
+
+      {/* Hidden test helper: echo sequence */}
+      <span data-testid="echo-sequence" data-sequence={JSON.stringify(sequence)} className="hidden" />
 
       {/* Arrow key hints — desktop */}
       <div className="desktop-only mt-4 text-center">

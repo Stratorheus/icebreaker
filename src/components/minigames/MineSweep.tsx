@@ -248,7 +248,7 @@ export function MineSweep(props: MinigameProps) {
   const previewProgress = previewMs > 0 ? previewLeft / previewMs : 0;
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+    <div data-testid="mine-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Overall timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
 
@@ -310,6 +310,10 @@ export function MineSweep(props: MinigameProps) {
             return (
               <button
                 key={cell.id}
+                data-testid="cell"
+                data-mine={cell.isMine}
+                data-visible-mine={isVisibleMine}
+                data-index={i}
                 type="button"
                 disabled={
                   !isActive || resolvedRef.current || phase === "preview"

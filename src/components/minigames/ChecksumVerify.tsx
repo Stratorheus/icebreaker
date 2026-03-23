@@ -360,6 +360,9 @@ export function ChecksumVerify(props: MinigameProps) {
         </div>
       </div>
 
+      {/* Hidden test helper: expected answer */}
+      <span data-testid="expected-answer" data-answer={expr.answer} className="hidden" />
+
       {/* Hidden input for mobile keyboard */}
       <input
         ref={hiddenInputRef}

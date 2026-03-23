@@ -209,12 +209,14 @@ export function MinigameScreen() {
         )}
 
         {phase === "active" && (
-          <MinigameRouter
-            type={currentMinigame}
-            floor={floor}
-            purchasedUpgrades={purchasedUpgrades}
-            onComplete={handleComplete}
-          />
+          <div data-testid="minigame-active">
+            <MinigameRouter
+              type={currentMinigame}
+              floor={floor}
+              purchasedUpgrades={purchasedUpgrades}
+              onComplete={handleComplete}
+            />
+          </div>
         )}
 
         {phase === "result" && (

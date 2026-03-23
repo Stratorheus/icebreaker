@@ -38,3 +38,7 @@ dist-ssr/
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Playwright test artifacts
+test-results/
+playwright-report/

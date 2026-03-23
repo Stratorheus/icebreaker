@@ -341,7 +341,7 @@ export function PortScan(props: MinigameProps) {
 
   // -- Render --
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+    <div data-testid="port-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
       {/* Timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
 
@@ -441,6 +441,8 @@ export function PortScan(props: MinigameProps) {
             return (
               <button
                 key={idx}
+                data-testid="port-cell"
+                data-open={isOpen}
                 type="button"
                 onClick={() => handleToggle(idx)}
                 disabled={phase !== "select" || !isActive || resolvedRef.current}

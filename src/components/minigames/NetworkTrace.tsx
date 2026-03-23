@@ -227,6 +227,9 @@ export function NetworkTrace(props: MinigameProps) {
                 bgClass = "bg-cyber-cyan/25";
                 content = (
                   <span
+                    data-testid="player"
+                    data-row={r}
+                    data-col={c}
                     className="text-cyber-cyan font-bold drop-shadow-[0_0_6px_rgba(0,255,255,0.8)]"
                     style={{ fontSize: cellPx * 0.5 }}
                   >
@@ -237,6 +240,9 @@ export function NetworkTrace(props: MinigameProps) {
                 bgClass = "bg-cyber-magenta/15 animate-pulse";
                 content = (
                   <span
+                    data-testid="end"
+                    data-row={r}
+                    data-col={c}
                     className="text-cyber-magenta font-bold drop-shadow-[0_0_6px_rgba(255,0,102,0.6)]"
                     style={{ fontSize: cellPx * 0.4 }}
                   >
@@ -269,6 +275,22 @@ export function NetworkTrace(props: MinigameProps) {
             }),
           )}
         </div>
+
+        {/* Hidden test helper: maze wall data for E2E pathfinding */}
+        <span
+          data-testid="maze-data"
+          data-rows={rows}
+          data-cols={cols}
+          data-start={JSON.stringify(start)}
+          data-end={JSON.stringify(end)}
+          data-walls={JSON.stringify(cells.map(row => row.map(cell => ({
+            n: cell.north ? 1 : 0,
+            s: cell.south ? 1 : 0,
+            e: cell.east ? 1 : 0,
+            w: cell.west ? 1 : 0,
+          }))))}
+          className="hidden"
+        />
 
         {/* Legend */}
         <div className="flex items-center gap-6 text-xs uppercase tracking-widest font-mono">
