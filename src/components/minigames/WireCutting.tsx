@@ -413,11 +413,11 @@ export function WireCutting(props: MinigameProps) {
                   style={{
                     width: 32,
                     height: 140,
-                    borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : hexToRgba(streamColor, 0.45)}`,
-                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : hexToRgba(streamColor, 0.25)}`,
+                    borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
+                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? hexToRgba(streamColor, 0.7) : hexToRgba(streamColor, 0.25)}`,
                     borderLeft: "none",
                     borderRight: "none",
-                    boxShadow: isNext ? `0 0 18px ${streamColor}` : "none",
+                    boxShadow: isNext ? `0 4px 12px -2px ${hexToRgba(streamColor, 0.5)}, 0 -4px 12px -2px ${hexToRgba(streamColor, 0.3)}` : "none",
                     transition: "border-color 0.3s, box-shadow 0.3s",
                   }}
                 >
