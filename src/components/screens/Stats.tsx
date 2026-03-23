@@ -111,20 +111,20 @@ function AchievementCard({
       <div className="border border-cyber-cyan/20 bg-cyber-cyan/[0.03] p-3 flex items-start gap-3">
         <Hexagon size={14} className="text-cyber-cyan shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider">
-                {achievement.name}
-              </span>
-              <CategoryBadge category={achievement.category} />
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider truncate">
+              {achievement.name}
+            </span>
             <span className="text-[10px] uppercase tracking-widest font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.7 }}>
               <Hexagon size={8} /> +{achievement.reward}
             </span>
           </div>
-          <p className="text-white/40 text-[10px] mt-0.5 leading-relaxed">
-            {achievement.description}
-          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <CategoryBadge category={achievement.category} />
+            <p className="text-white/40 text-[10px] leading-relaxed truncate">
+              {achievement.description}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -136,20 +136,20 @@ function AchievementCard({
       <div className="border border-white/10 bg-white/[0.02] p-3 flex items-start gap-3 opacity-70">
         <span className="text-white/30 text-base select-none mt-0.5">◇</span>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-white/50 text-xs font-heading uppercase tracking-wider">
-                {achievement.name}
-              </span>
-              <CategoryBadge category={achievement.category} />
-            </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-white/50 text-xs font-heading uppercase tracking-wider truncate">
+              {achievement.name}
+            </span>
             <span className="text-white/30 text-[10px] uppercase tracking-widest font-mono shrink-0">
               NEAR MISS
             </span>
           </div>
-          <p className="text-white/30 text-[10px] mt-0.5 leading-relaxed">
-            {achievement.description}
-          </p>
+          <div className="flex items-center gap-2 mt-0.5">
+            <CategoryBadge category={achievement.category} />
+            <p className="text-white/30 text-[10px] leading-relaxed truncate">
+              {achievement.description}
+            </p>
+          </div>
           {progress && (
             <div className="mt-1">
               <ProgressBar current={progress.current} max={progress.max} />
