@@ -1,4 +1,4 @@
-# PR: full test suite before merge to main
+# PR: full test suite + version bump check before merge to main
 name: PR
 
 on:
@@ -21,3 +21,20 @@ jobs:
       - run: npm test
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  version-check:
+    name: Version Bump Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check version was bumped
+        run: |
+          BASE_VERSION=$(git show origin/main:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version")
+          PR_VERSION=$(node -p "require('./package.json').version")
+          echo "main: $BASE_VERSION → PR: $PR_VERSION"
+          if [ "$BASE_VERSION" = "$PR_VERSION" ]; then
+            echo "::error::Version not bumped. Run 'npm version patch', 'npm version minor', or 'npm version major' before merging."
+            exit 1
+          fi
