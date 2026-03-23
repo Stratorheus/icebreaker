@@ -12,7 +12,7 @@ test.describe("Wire Cutting", () => {
 
     // Cut wires one by one by finding the one with data-next="true"
     for (let i = 0; i < 10; i++) {
-      const nextWire = page.locator('[data-testid="wire"][data-next="true"]');
+      const nextWire = page.locator('[data-testid="stream"][data-next="true"]');
       const count = await nextWire.count();
       if (count === 0) break;
 
@@ -31,7 +31,7 @@ test.describe("Wire Cutting", () => {
     await openTraining(page, "Wire Cutting", "TRIVIAL");
 
     // Click a wire where data-next="false"
-    const wrongWire = page.locator('[data-testid="wire"][data-next="false"]');
+    const wrongWire = page.locator('[data-testid="stream"][data-next="false"]');
     await wrongWire.first().click();
 
     await expect(page.getByText("FAILED")).toBeVisible({ timeout: 10000 });

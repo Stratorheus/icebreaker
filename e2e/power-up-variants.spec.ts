@@ -471,7 +471,7 @@ test.describe("wire-labels — Wire Cutting", () => {
     await beginWithUpgrade(page, ["wire-labels"]);
 
     // data-next="true" should exist on the wire to cut
-    const nextWire = page.locator('[data-testid="wire"][data-next="true"]');
+    const nextWire = page.locator('[data-testid="stream"][data-next="true"]');
     await expect(nextWire).toBeVisible({ timeout: 5000 });
 
     // Click it to cut
@@ -479,7 +479,7 @@ test.describe("wire-labels — Wire Cutting", () => {
     await page.waitForTimeout(200);
 
     // Game should still be running or completed successfully
-    const cells = page.locator('[data-testid="wire"]');
+    const cells = page.locator('[data-testid="stream"]');
     await expect(cells.first()).toBeAttached();
   });
 });

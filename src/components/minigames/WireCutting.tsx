@@ -4,7 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 
-// -- Wire colors ---------------------------------------------------------------
+// -- Stream colors -------------------------------------------------------------
 
 const ALL_COLORS = [
   "RED",
@@ -19,7 +19,7 @@ const ALL_COLORS = [
 
 type WireColor = (typeof ALL_COLORS)[number];
 
-/** CSS color value for each wire */
+/** CSS color value for each stream */
 const COLOR_CSS: Record<WireColor, string> = {
   RED: "#ff3333",
   BLUE: "#3388ff",
@@ -31,6 +31,35 @@ const COLOR_CSS: Record<WireColor, string> = {
   CYAN: "#00ffff",
 };
 
+// -- Rain config ---------------------------------------------------------------
+
+const COL_POSITIONS = [0, 6, 12] as const;
+const CHARS_PER_COL = 9;
+const HEX_CHARS = "0123456789ABCDEF";
+const randomHex = () =>
+  HEX_CHARS[Math.floor(Math.random() * 16)] +
+  HEX_CHARS[Math.floor(Math.random() * 16)];
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** Pre-generate rain animation params for one stream */
+function generateRainParams() {
+  const params: { duration: number; delay: number; text: string }[] = [];
+  for (let c = 0; c < COL_POSITIONS.length; c++) {
+    for (let r = 0; r < CHARS_PER_COL; r++) {
+      const duration = 1.6 + Math.random() * 1.4;
+      const delay = Math.random() * duration;
+      params.push({ duration, delay, text: randomHex() });
+    }
+  }
+  return params;
+}
+
 // -- Rule types ----------------------------------------------------------------
 
 interface Rule {
@@ -38,9 +67,9 @@ interface Rule {
 }
 
 interface Puzzle {
-  /** Wire colors in display order (position 1..N) */
+  /** Stream colors in display order (position 1..N) */
   wires: WireColor[];
-  /** The correct sequence of wire indices (0-based) to cut */
+  /** The correct sequence of stream indices (0-based) to terminate */
   correctOrder: number[];
   /** Human-readable rules */
   rules: Rule[];
@@ -91,7 +120,7 @@ function buildRules(
   const rules: Rule[] = [];
 
   for (const idx of skippedIndices) {
-    rules.push({ text: `DO NOT CUT ${wires[idx]}` });
+    rules.push({ text: `DO NOT TERMINATE ${wires[idx]}` });
   }
 
   const orderLength = correctOrder.length;
@@ -122,30 +151,30 @@ function buildRules(
     orderLength >= 3;
 
   if (isAlphabetical && difficulty >= 0.5 && Math.random() < 0.4) {
-    rules.push({ text: "Cut wires in alphabetical order" });
+    rules.push({ text: "Terminate processes in alphabetical order" });
     return rules;
   }
 
   const ruleSet: Rule[] = [];
 
   ruleSet.push({
-    text: `Cut ${wires[correctOrder[0]]} first`,
+    text: `Terminate ${wires[correctOrder[0]]} first`,
   });
 
   if (orderLength >= 2) {
     ruleSet.push({
-      text: `Cut ${wires[correctOrder[orderLength - 1]]} last`,
+      text: `Terminate ${wires[correctOrder[orderLength - 1]]} last`,
     });
   }
 
   for (let i = 1; i < orderLength - 1; i++) {
     if (Math.random() < 0.5 || difficulty < 0.4) {
       ruleSet.push({
-        text: `Cut ${wires[correctOrder[i]]} before ${wires[correctOrder[i + 1]]}`,
+        text: `Terminate ${wires[correctOrder[i]]} before ${wires[correctOrder[i + 1]]}`,
       });
     } else {
       ruleSet.push({
-        text: `Cut ${wires[correctOrder[i]]} ${positionLabels[i] ?? `at position ${i + 1}`}`,
+        text: `Terminate ${wires[correctOrder[i]]} ${positionLabels[i] ?? `at position ${i + 1}`}`,
       });
     }
   }
@@ -171,7 +200,7 @@ function buildRules(
     if (!constrainedWires.has(i)) {
       const label = positionLabels[i] ?? `at position ${i + 1}`;
       selectedRules.push({
-        text: `Cut ${wires[correctOrder[i]]} ${label}`,
+        text: `Terminate ${wires[correctOrder[i]]} ${label}`,
       });
     }
   }
@@ -183,13 +212,13 @@ function buildRules(
 // -- Component -----------------------------------------------------------------
 
 /**
- * WireCutting -- rule-based deduction minigame (redesigned).
+ * WireCutting -- rule-based deduction minigame with matrix rain visuals.
  *
- * Displays N colored wires and a set of rules. The player must read
- * the rules and deduce the correct cut order. No default highlighting
- * of the next wire — that's a meta upgrade.
+ * Displays N colored data streams and a set of rules. The player must read
+ * the rules and deduce the correct termination order. No default highlighting
+ * of the next stream -- that's a meta upgrade.
  *
- * Wrong key = immediate fail. All correct cuts = success.
+ * Wrong key = immediate fail. All correct kills = success.
  */
 export function WireCutting(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
@@ -207,7 +236,7 @@ export function WireCutting(props: MinigameProps) {
     );
   }, [activePowerUps]);
 
-  // Wire count: 3 (d=0) -> 7 (d=1)
+  // Stream count: 3 (d=0) -> 7 (d=1)
   const wireCount = Math.round(3 + difficulty * 4);
 
   // Generate puzzle on mount
@@ -216,17 +245,49 @@ export function WireCutting(props: MinigameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Current position in the correct cut order
+  // Pre-generate rain params per stream (stable across renders)
+  const rainParams = useMemo(
+    () => puzzle.wires.map(() => generateRainParams()),
+    [puzzle.wires],
+  );
+
+  // Current position in the correct termination order
   const [cutIndex, setCutIndex] = useState(0);
   const cutIndexRef = useRef(0);
 
-  // Track which wires have been cut (by wire index)
+  // Track which streams have been killed (by stream index)
   const [cutWires, setCutWires] = useState<Set<number>>(new Set());
+  const cutWiresRef = useRef<Set<number>>(new Set());
 
-  // Sync ref with state
+  // Refs for rain character mutation (avoid re-renders)
+  // rainRefs[streamIndex][charIndex] = span element
+  const rainRefs = useRef<(HTMLSpanElement | null)[][]>([]);
+
+  // Sync refs with state
   useEffect(() => {
     cutIndexRef.current = cutIndex;
   }, [cutIndex]);
+
+  useEffect(() => {
+    cutWiresRef.current = cutWires;
+  }, [cutWires]);
+
+  // Character mutation interval — mutate ~12% of visible rain chars every 150ms
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const killed = cutWiresRef.current;
+      rainRefs.current.forEach((chars, streamIdx) => {
+        if (killed.has(streamIdx)) return; // skip killed streams
+        if (!chars) return;
+        chars.forEach((span) => {
+          if (span && Math.random() < 0.12) {
+            span.textContent = randomHex();
+          }
+        });
+      });
+    }, 150);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleNumberPress = useCallback(
     (wireNumber: number) => {
@@ -269,18 +330,40 @@ export function WireCutting(props: MinigameProps) {
 
   useKeyboard(keyMap);
 
-  // The next wire to cut (for conditional highlighting)
+  // The next stream to kill (for conditional highlighting)
   const nextWireIndex =
     cutIndex < puzzle.correctOrder.length ? puzzle.correctOrder[cutIndex] : -1;
 
+  // Helper to register rain span refs
+  const setRainRef = useCallback(
+    (streamIdx: number, charIdx: number, el: HTMLSpanElement | null) => {
+      if (!rainRefs.current[streamIdx]) {
+        rainRefs.current[streamIdx] = [];
+      }
+      rainRefs.current[streamIdx][charIdx] = el;
+    },
+    [],
+  );
+
   return (
     <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+      {/* Keyframes for matrix rain animation */}
+      <style>{`
+        @keyframes stream-fall {
+          0% { transform: translateY(-14px); opacity: 0; }
+          8% { opacity: 0.8; }
+          70% { opacity: 0.5; }
+          95% { opacity: 0.15; }
+          100% { transform: translateY(140px); opacity: 0; }
+        }
+      `}</style>
+
       {/* Timer */}
       <TimerBar progress={timer.progress} className="w-full max-w-md mb-6" />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-2xl">
-        {/* Rules panel -- cleaner styling */}
+        {/* Rules panel */}
         <div className="w-full max-w-md">
           <p className="text-white/40 text-xs uppercase tracking-widest mb-3 text-center">
             Instructions
@@ -299,77 +382,112 @@ export function WireCutting(props: MinigameProps) {
 
         {/* Progress */}
         <p className="text-white/40 text-xs uppercase tracking-widest">
-          CUT {cutIndex} OF {puzzle.correctOrder.length} WIRES
+          TERMINATED {cutIndex} OF {puzzle.correctOrder.length} PROCESSES
           <span className="text-white/25 ml-2">({puzzle.wires.length} total)</span>
         </p>
 
-        {/* Wires display -- cleaner design */}
-        <div className="flex items-end justify-center gap-4 sm:gap-5">
+        {/* Streams display -- matrix rain */}
+        <div className="flex items-end justify-center gap-5">
           {puzzle.wires.map((color, i) => {
             const isCut = cutWires.has(i);
             const isNext = hasWireOrderHint && i === nextWireIndex;
-            // When hint is active, dim non-target wires instead of highlighting target
             const isDimmed = hasWireOrderHint && !isNext && !isCut;
-            const wireColor = COLOR_CSS[color];
+            const streamColor = COLOR_CSS[color];
 
             return (
               <div
                 key={i}
-                data-testid="wire"
+                data-testid="stream"
                 data-index={i}
                 data-next={i === nextWireIndex}
-                className={`
-                  flex flex-col items-center gap-2 cursor-pointer group
-                  transition-opacity duration-200
-                  ${isDimmed ? "opacity-40" : "opacity-100"}
-                `}
+                className="flex flex-col items-center cursor-pointer group"
+                style={{
+                  transition: "opacity 0.2s",
+                  opacity: isDimmed ? 0.35 : 1,
+                }}
                 onClick={() => handleNumberPress(i + 1)}
               >
-                {/* Wire number */}
+                {/* Stream box with matrix rain */}
+                <div
+                  className="relative overflow-hidden"
+                  style={{
+                    width: 32,
+                    height: 140,
+                    borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : hexToRgba(streamColor, 0.45)}`,
+                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : hexToRgba(streamColor, 0.25)}`,
+                    borderLeft: "none",
+                    borderRight: "none",
+                    boxShadow: isNext ? `0 0 18px ${streamColor}` : "none",
+                    transition: "border-color 0.3s, box-shadow 0.3s",
+                  }}
+                >
+                  {/* Rain columns */}
+                  {COL_POSITIONS.map((leftPx, colIdx) => (
+                    <div
+                      key={colIdx}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        bottom: 0,
+                        left: leftPx,
+                        width: 20,
+                      }}
+                    >
+                      {Array.from({ length: CHARS_PER_COL }, (_, rowIdx) => {
+                        const charIdx = colIdx * CHARS_PER_COL + rowIdx;
+                        const p = rainParams[i][charIdx];
+                        return (
+                          <span
+                            key={rowIdx}
+                            ref={(el) => setRainRef(i, charIdx, el)}
+                            style={{
+                              position: "absolute",
+                              width: "100%",
+                              textAlign: "center",
+                              fontSize: 10,
+                              fontFamily: "monospace",
+                              color: isCut
+                                ? "rgba(255,255,255,0.12)"
+                                : streamColor,
+                              opacity: 0,
+                              animation: `stream-fall ${p.duration}s linear infinite`,
+                              animationDelay: `-${p.delay}s`,
+                              animationPlayState: isCut ? "paused" : "running",
+                            }}
+                          >
+                            {p.text}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Stream number */}
                 <span
-                  className={`
-                    text-xs font-mono font-bold transition-colors duration-200
-                    ${isCut ? "text-white/20" : "text-white/50 group-hover:text-white/80"}
-                  `}
+                  className="font-mono font-bold transition-colors duration-200"
+                  style={{
+                    fontSize: 10,
+                    marginTop: 5,
+                    color: isCut
+                      ? "rgba(255,255,255,0.15)"
+                      : streamColor,
+                  }}
                 >
                   {i + 1}
                 </span>
 
-                {/* Wire body */}
-                <div
-                  className="relative flex items-center justify-center w-8 sm:w-10 rounded-sm transition-all duration-200"
-                  style={{ height: "120px" }}
-                >
-                  {/* Wire bar */}
-                  <div
-                    className={`
-                      w-3 sm:w-4 h-full rounded-sm transition-all duration-200
-                      ${!isCut ? "group-hover:shadow-[0_0_12px_var(--glow)]" : ""}
-                    `}
-                    style={
-                      {
-                        backgroundColor: isCut ? "#222" : wireColor,
-                        "--glow": wireColor,
-                        opacity: isCut ? 0.3 : 1,
-                      } as React.CSSProperties
-                    }
-                  />
-
-                  {/* Cut line overlay */}
-                  {isCut && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-full h-0.5 bg-white/30 rotate-12" />
-                    </div>
-                  )}
-                </div>
-
                 {/* Color label */}
                 <span
-                  className={`
-                    text-[10px] font-mono font-bold uppercase tracking-wide transition-colors duration-200
-                    ${isCut ? "text-white/20 line-through" : ""}
-                  `}
-                  style={!isCut ? { color: wireColor } : undefined}
+                  className="font-mono font-bold uppercase transition-colors duration-200"
+                  style={{
+                    fontSize: 8,
+                    letterSpacing: "0.5px",
+                    marginTop: 2,
+                    color: isCut
+                      ? "rgba(255,255,255,0.1)"
+                      : hexToRgba(streamColor, 0.35),
+                  }}
                 >
                   {color}
                 </span>
@@ -382,29 +500,33 @@ export function WireCutting(props: MinigameProps) {
       {/* Key hints */}
       <div className="mt-6 text-center">
         <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Press the wire number to cut
+          Press the process number to terminate
         </p>
         <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Tap a wire to cut
+          Tap a process to terminate
         </p>
         <div className="desktop-only inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          {puzzle.wires.map((_, i) => (
-            <kbd
-              key={i}
-              className={`
-                px-2 py-1 rounded text-xs font-bold font-mono transition-colors duration-200
-                ${
-                  cutWires.has(i)
-                    ? "bg-white/5 text-white/20"
-                    : hasWireOrderHint && i === nextWireIndex
-                      ? "bg-cyber-green/20 text-cyber-green"
-                      : "bg-white/10 text-white/70"
+          {puzzle.wires.map((color, i) => {
+            const isCut = cutWires.has(i);
+            const isNextKey = hasWireOrderHint && i === nextWireIndex;
+            const keyColor = COLOR_CSS[color];
+
+            return (
+              <kbd
+                key={i}
+                className="px-2 py-1 rounded text-xs font-bold font-mono transition-colors duration-200"
+                style={
+                  isCut
+                    ? { backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.2)" }
+                    : isNextKey
+                      ? { backgroundColor: hexToRgba(keyColor, 0.2), color: keyColor }
+                      : { backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }
                 }
-              `}
-            >
-              {i + 1}
-            </kbd>
-          ))}
+              >
+                {i + 1}
+              </kbd>
+            );
+          })}
         </div>
       </div>
     </div>
