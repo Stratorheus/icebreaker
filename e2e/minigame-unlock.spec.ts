@@ -140,7 +140,7 @@ test.describe("Minigame Unlock", () => {
       page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: "Defrag" }),
     ).toBeVisible();
     await expect(
-      page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: "Wire Cutting" }),
+      page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: "Process Kill" }),
     ).toBeVisible();
     await expect(
       page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: "Cipher Crack V1" }),

@@ -460,14 +460,14 @@ test.describe("port-scan-deep — Port Scan", () => {
 // WIRE LABELS — highlights next wire to cut in Wire Cutting
 // ===========================================================================
 
-test.describe("wire-labels — Wire Cutting", () => {
+test.describe("wire-labels — Process Kill", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await unlockMinigames(page, ["wire-cutting"]);
   });
 
   test("next wire is highlighted with data-next=true", async ({ page }) => {
-    await goToBriefing(page, "Wire Cutting", { "wire-labels": 1 }, ["wire-cutting"]);
+    await goToBriefing(page, "Process Kill", { "wire-labels": 1 }, ["wire-cutting"]);
     await beginWithUpgrade(page, ["wire-labels"]);
 
     // data-next="true" should exist on the wire to cut
