@@ -51,6 +51,10 @@ export interface RunSlice {
   timeSiphonBonus: number;
   /** Cascade Clock: accumulated % of base timer from consecutive wins. Resets on fail only. */
   cascadeClockPct: number;
+  /** Number of consecutive floors cleared without taking damage. */
+  consecutiveFloorsNoDamage: number;
+  /** Timestamps (Date.now()) recorded each time a floor is completed (advanceFloor). */
+  floorCompletionTimestamps: number[];
 
   // Actions
   startRun: () => void;
@@ -132,6 +136,8 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   creditsEarnedThisRun: 0,
   timeSiphonBonus: 0,
   cascadeClockPct: 0,
+  consecutiveFloorsNoDamage: 0,
+  floorCompletionTimestamps: [],
 };
 
 // Helper type: extract only action keys
@@ -209,6 +215,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       dataDripThisRun: 0,
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
+      consecutiveFloorsNoDamage: 0,
+      floorCompletionTimestamps: [],
     });
   },
 
@@ -347,6 +355,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         // Time Siphon resets on fail; Cascade Clock resets on fail
         timeSiphonBonus: 0,
         cascadeClockPct: 0,
+        consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
       });
       return;
     }
@@ -382,6 +391,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Time Siphon resets on fail; Cascade Clock resets on fail
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
+      consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
     });
   },
 
@@ -444,6 +454,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       newHp = Math.min(state.maxHp, state.hp + regenAmount);
     }
 
+    // Track consecutive no-damage floors: increment if this floor had no damage
+    const consecutiveFloorsNoDamage = state.floorDamageTaken
+      ? 0
+      : state.consecutiveFloorsNoDamage + 1;
+
     set({
       hp: newHp,
       floor: nextFloor,
@@ -458,6 +473,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Time Siphon resets at floor advance (floor-scoped).
       // Cascade Clock does NOT reset here — it persists across floors.
       timeSiphonBonus: 0,
+      consecutiveFloorsNoDamage,
+      floorCompletionTimestamps: [...state.floorCompletionTimestamps, Date.now()],
     });
   },
 

@@ -29,6 +29,8 @@ export function awardNewAchievements(
     inventorySize: state.inventory.length,
     hp: state.hp,
     runStartTime: state.runStartTime,
+    consecutiveFloorsNoDamage: state.consecutiveFloorsNoDamage,
+    floorCompletionTimestamps: state.floorCompletionTimestamps,
     earnedAchievements: state.achievements,
     stats: state.stats,
     lastMinigame,

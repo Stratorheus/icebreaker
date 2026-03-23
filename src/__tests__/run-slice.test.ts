@@ -439,3 +439,90 @@ describe("quitRun", () => {
     expect(store.getState().status).toBe("dead");
   });
 });
+
+// ---------------------------------------------------------------------------
+// consecutiveFloorsNoDamage
+// ---------------------------------------------------------------------------
+
+describe("consecutiveFloorsNoDamage", () => {
+  it("starts at 0 on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(0);
+  });
+
+  it("increments on advanceFloor when no damage taken", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    // floorDamageTaken is false by default after startRun
+    expect(store.getState().floorDamageTaken).toBe(false);
+
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(1);
+
+    // Advance again without damage
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(2);
+  });
+
+  it("resets to 0 on advanceFloor when damage was taken on floor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    // Advance one clean floor
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(1);
+
+    // Take damage on the new floor
+    store.setState({ floorDamageTaken: true });
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(0);
+  });
+
+  it("resets to 0 on failMinigame when damage is taken", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ hp: 200, maxHp: 200, consecutiveFloorsNoDamage: 3 });
+
+    store.getState().failMinigame();
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(0);
+  });
+
+  it("does NOT reset on failMinigame when shield absorbs all damage", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    const shield = makePowerUp("firewall-patch", "shield", 1);
+    store.setState({ hp: 100, maxHp: 100, inventory: [shield], consecutiveFloorsNoDamage: 3 });
+
+    store.getState().failMinigame();
+    // Shield absorbed all damage, so consecutiveFloorsNoDamage should NOT reset
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// floorCompletionTimestamps
+// ---------------------------------------------------------------------------
+
+describe("floorCompletionTimestamps", () => {
+  it("starts empty on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().floorCompletionTimestamps).toEqual([]);
+  });
+
+  it("accumulates timestamps on advanceFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    store.getState().advanceFloor();
+    expect(store.getState().floorCompletionTimestamps).toHaveLength(1);
+
+    store.getState().advanceFloor();
+    expect(store.getState().floorCompletionTimestamps).toHaveLength(2);
+
+    // Timestamps should be increasing
+    const [t1, t2] = store.getState().floorCompletionTimestamps;
+    expect(t2).toBeGreaterThanOrEqual(t1);
+  });
+});

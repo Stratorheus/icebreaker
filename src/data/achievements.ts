@@ -13,7 +13,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "First Breach",
     description: "Clear floor 1 of any run.",
     condition: { type: "floor-reached", floor: 1 },
-    reward: 10,
+    reward: 15,
     icon: "door-open",
   },
   {
@@ -21,7 +21,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Script Kiddie",
     description: "Reach floor 5 in a single run.",
     condition: { type: "floor-reached", floor: 5 },
-    reward: 30,
+    reward: 50,
     icon: "terminal",
   },
   {
@@ -29,7 +29,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Zero Day",
     description: "Reach floor 10 in a single run.",
     condition: { type: "floor-reached", floor: 10 },
-    reward: 75,
+    reward: 100,
     icon: "bug",
   },
   {
@@ -37,7 +37,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Mid-Stack",
     description: "Reach floor 15 in a single run.",
     condition: { type: "floor-reached", floor: 15 },
-    reward: 150,
+    reward: 200,
     icon: "layers",
   },
   {
@@ -45,7 +45,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "APT",
     description: "Reach floor 20 — Advanced Persistent Threat.",
     condition: { type: "floor-reached", floor: 20 },
-    reward: 300,
+    reward: 400,
     icon: "skull",
   },
   {
@@ -53,7 +53,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Deep Dive",
     description: "Reach floor 30 in a single run.",
     condition: { type: "floor-reached", floor: 30 },
-    reward: 500,
+    reward: 700,
     icon: "arrow-down-to-line",
   },
   {
@@ -61,7 +61,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Core Meltdown",
     description: "Reach floor 50 in a single run.",
     condition: { type: "floor-reached", floor: 50 },
-    reward: 1000,
+    reward: 1500,
     icon: "flame",
   },
   {
@@ -69,7 +69,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Singularity",
     description: "Reach floor 100 in a single run.",
     condition: { type: "floor-reached", floor: 100 },
-    reward: 5000,
+    reward: 7500,
     icon: "atom",
   },
 
@@ -77,25 +77,25 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   {
     id: "ghost-run",
     name: "Ghost Run",
-    description: "Clear floors 1–5 without taking any damage.",
-    condition: { type: "floor-no-damage", floor: 5 },
-    reward: 50,
+    description: "Clear 5 floors in a row without taking damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 5 },
+    reward: 75,
     icon: "ghost",
   },
   {
     id: "phantom",
     name: "Phantom",
-    description: "Clear floors 1–10 without taking any damage.",
-    condition: { type: "floor-no-damage", floor: 10 },
-    reward: 200,
+    description: "Clear 10 floors in a row without taking damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 10 },
+    reward: 300,
     icon: "eye-off",
   },
   {
     id: "speedrunner",
     name: "Speedrunner",
-    description: "Complete floors 1–5 in under 60 seconds total.",
-    condition: { type: "speed-run", floors: [1, 5], maxTimeMs: 60_000 },
-    reward: 75,
+    description: "Clear 5 consecutive floors in under 2 minutes.",
+    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 120_000 },
+    reward: 100,
     icon: "timer",
   },
   {
@@ -103,7 +103,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Cipher Punk",
     description: "Solve Cipher Crack V1 in under 3 seconds.",
     condition: { type: "minigame-speed", minigame: "cipher-crack", maxTimeMs: 3_000 },
-    reward: 50,
+    reward: 75,
     icon: "key",
   },
   {
@@ -111,7 +111,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Bracket Master",
     description: "Win Code Inject 10 times in a row.",
     condition: { type: "minigame-streak", minigame: "close-brackets", count: 10 },
-    reward: 40,
+    reward: 60,
     icon: "code",
   },
   {
@@ -119,7 +119,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Slash Surgeon",
     description: "Win Slash Timing 5 times in a row.",
     condition: { type: "minigame-streak", minigame: "slash-timing", count: 5 },
-    reward: 30,
+    reward: 50,
     icon: "sword",
   },
   {
@@ -127,7 +127,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Memory Walker",
     description: "Clear Memory Scan in under 4 seconds.",
     condition: { type: "minigame-speed", minigame: "mine-sweep", maxTimeMs: 4_000 },
-    reward: 50,
+    reward: 75,
     icon: "crosshair",
   },
   {
@@ -135,7 +135,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Arrow Perfect",
     description: "Win Packet Route in under 2 seconds.",
     condition: { type: "minigame-speed", minigame: "match-arrows", maxTimeMs: 2_000 },
-    reward: 50,
+    reward: 75,
     icon: "move",
   },
   {
@@ -143,7 +143,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Warp Typist",
     description: "Win Decrypt Signal 8 times in a row.",
     condition: { type: "minigame-streak", minigame: "type-backward", count: 8 },
-    reward: 40,
+    reward: 60,
     icon: "keyboard",
   },
   {
@@ -151,7 +151,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Process Killer",
     description: "Win Process Kill 6 times in a row.",
     condition: { type: "minigame-streak", minigame: "wire-cutting", count: 6 },
-    reward: 40,
+    reward: 60,
     icon: "cable",
   },
 
@@ -161,7 +161,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Hoarder",
     description: "Hold 5 or more power-ups simultaneously.",
     condition: { type: "inventory-count", count: 5 },
-    reward: 25,
+    reward: 40,
     icon: "package",
   },
   {
@@ -169,7 +169,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "No Shortcuts",
     description: "Clear a full floor without using any power-ups.",
     condition: { type: "floor-no-powerups" },
-    reward: 30,
+    reward: 50,
     icon: "ban",
   },
 
@@ -179,7 +179,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Rookie",
     description: "Complete 3 total runs.",
     condition: { type: "total-runs", count: 3 },
-    reward: 15,
+    reward: 25,
     icon: "user",
   },
   {
@@ -187,7 +187,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Veteran",
     description: "Complete 10 total runs.",
     condition: { type: "total-runs", count: 10 },
-    reward: 40,
+    reward: 60,
     icon: "badge",
   },
   {
@@ -195,7 +195,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Grinder",
     description: "Complete 50 total runs.",
     condition: { type: "total-runs", count: 50 },
-    reward: 150,
+    reward: 200,
     icon: "medal",
   },
   {
@@ -203,7 +203,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Obsessed",
     description: "Complete 200 total runs.",
     condition: { type: "total-runs", count: 200 },
-    reward: 500,
+    reward: 750,
     icon: "brain",
   },
   {
@@ -211,7 +211,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Protocol Centurion",
     description: "Play 100 protocols total.",
     condition: { type: "total-minigames", count: 100 },
-    reward: 30,
+    reward: 50,
     icon: "hash",
   },
   {
@@ -219,7 +219,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Protocol Millwright",
     description: "Play 500 protocols total.",
     condition: { type: "total-minigames", count: 500 },
-    reward: 100,
+    reward: 150,
     icon: "infinity",
   },
   {
@@ -227,7 +227,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Protocol Legend",
     description: "Play 2000 protocols total.",
     condition: { type: "total-minigames", count: 2000 },
-    reward: 400,
+    reward: 600,
     icon: "crown",
   },
   {
@@ -235,7 +235,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Slash Veteran",
     description: "Win Slash Timing 50 times total.",
     condition: { type: "minigame-streak", minigame: "slash-timing", count: 50 },
-    reward: 50,
+    reward: 75,
     icon: "swords",
   },
   {
@@ -243,7 +243,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Symbol Stalker",
     description: "Win Address Lookup 30 times total.",
     condition: { type: "minigame-streak", minigame: "find-symbol", count: 30 },
-    reward: 50,
+    reward: 75,
     icon: "search",
   },
   {
@@ -251,7 +251,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Cipher Scholar",
     description: "Win Cipher Crack V1 25 times total.",
     condition: { type: "minigame-streak", minigame: "cipher-crack", count: 25 },
-    reward: 50,
+    reward: 75,
     icon: "scroll",
   },
   {
@@ -259,7 +259,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Demolitions Expert",
     description: "Win Memory Scan 40 times total.",
     condition: { type: "minigame-streak", minigame: "mine-sweep", count: 40 },
-    reward: 50,
+    reward: 75,
     icon: "bomb",
   },
   {
@@ -267,7 +267,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Defrag Expert",
     description: "Win Defrag 30 times total.",
     condition: { type: "minigame-streak", minigame: "defrag", count: 30 },
-    reward: 50,
+    reward: 75,
     icon: "hard-drive",
   },
   {
@@ -275,7 +275,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Maze Runner",
     description: "Win Network Trace 30 times total.",
     condition: { type: "minigame-streak", minigame: "network-trace", count: 30 },
-    reward: 50,
+    reward: 75,
     icon: "network",
   },
   {
@@ -283,7 +283,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Echo Chamber",
     description: "Win Signal Echo 30 times total.",
     condition: { type: "minigame-streak", minigame: "signal-echo", count: 30 },
-    reward: 50,
+    reward: 75,
     icon: "radio",
   },
   {
@@ -291,7 +291,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Math Wizard",
     description: "Win Checksum Verify 40 times total.",
     condition: { type: "minigame-streak", minigame: "checksum-verify", count: 40 },
-    reward: 50,
+    reward: 75,
     icon: "calculator",
   },
   {
@@ -299,7 +299,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Port Authority",
     description: "Win Port Scan 30 times total.",
     condition: { type: "minigame-streak", minigame: "port-scan", count: 30 },
-    reward: 50,
+    reward: 75,
     icon: "plug",
   },
   {
@@ -307,7 +307,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     name: "Subnet Admin",
     description: "Win Subnet Scan 25 times total.",
     condition: { type: "minigame-streak", minigame: "subnet-scan", count: 25 },
-    reward: 50,
+    reward: 75,
     icon: "network",
   },
 ];

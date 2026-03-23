@@ -15,6 +15,8 @@ export interface AchievementCheckContext {
   inventorySize: number;
   hp: number;
   runStartTime: number;
+  consecutiveFloorsNoDamage: number;
+  floorCompletionTimestamps: number[];
   // Meta state
   earnedAchievements: string[];
   stats: PlayerStats;
@@ -86,6 +88,23 @@ function evaluateCondition(
 
     case "total-minigames":
       return ctx.stats.totalMinigamesPlayed >= condition.count;
+
+    case "consecutive-floors-no-damage":
+      return ctx.consecutiveFloorsNoDamage >= condition.count;
+
+    case "speed-consecutive-floors": {
+      const timestamps = ctx.floorCompletionTimestamps;
+      if (timestamps.length < condition.count) return false;
+      // Check any window of `count` consecutive floor completions
+      for (let i = condition.count - 1; i < timestamps.length; i++) {
+        const windowStart = i === condition.count - 1
+          ? ctx.runStartTime
+          : timestamps[i - condition.count];
+        const windowEnd = timestamps[i];
+        if (windowEnd - windowStart <= condition.maxTimeMs) return true;
+      }
+      return false;
+    }
 
     default:
       return false;

@@ -40,4 +40,6 @@ export type AchievementCondition =
   | { type: "inventory-count"; count: number }
   | { type: "floor-no-powerups" }
   | { type: "total-runs"; count: number }
-  | { type: "total-minigames"; count: number };
+  | { type: "total-minigames"; count: number }
+  | { type: "consecutive-floors-no-damage"; count: number }
+  | { type: "speed-consecutive-floors"; count: number; maxTimeMs: number };
