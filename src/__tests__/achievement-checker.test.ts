@@ -34,7 +34,6 @@ function makeCtx(overrides: Partial<AchievementCheckContext> = {}): AchievementC
     inventorySize: 0,
     hp: 100,
     maxHp: 100,
-    runStartTime: Date.now(),
     earnedAchievements: [],
     stats: makeStats(),
     consecutiveFloorsNoDamage: 0,
@@ -311,13 +310,13 @@ describe("evaluateNearMiss — consecutive-floors-no-damage", () => {
 
 describe("evaluateNearMiss — speed-consecutive-floors", () => {
   // quick-dash: count=3, maxTimeMs=45_000 → near miss: window <= 45_000 * 1.3 = 58_500
-  // Set up 3 timestamps with runStartTime such that window is within 1.3x but not within 1x
+  // timestamps[0] is floor-0 marker; timestamps[1..3] are floor completions.
+  // Window for first 3 floors: timestamps[3] - timestamps[0].
   it("returns near miss when time is within 1.3x limit", () => {
     const now = Date.now();
-    // Window from runStartTime to timestamps[2] = 50_000ms (within 1.3x of 45_000)
+    // Window from floor-0 marker to 3rd completion = 50_000ms (within 1.3x of 45_000)
     const ctx = makeCtx({
-      runStartTime: now - 50_000,
-      floorCompletionTimestamps: [now - 40_000, now - 20_000, now],
+      floorCompletionTimestamps: [now - 50_000, now - 40_000, now - 20_000, now],
     });
     const result = checkNearMisses(ctx);
     expect(hasAchievement(result, "quick-dash")).toBe(true);
@@ -327,8 +326,7 @@ describe("evaluateNearMiss — speed-consecutive-floors", () => {
     const now = Date.now();
     // Window = 70_000ms — exceeds 58_500
     const ctx = makeCtx({
-      runStartTime: now - 70_000,
-      floorCompletionTimestamps: [now - 50_000, now - 30_000, now],
+      floorCompletionTimestamps: [now - 70_000, now - 50_000, now - 30_000, now],
     });
     const result = checkNearMisses(ctx);
     expect(hasAchievement(result, "quick-dash")).toBe(false);
@@ -338,8 +336,7 @@ describe("evaluateNearMiss — speed-consecutive-floors", () => {
     const now = Date.now();
     // Window = 40_000ms — within 45_000ms limit, so condition is met → not a near miss
     const ctx = makeCtx({
-      runStartTime: now - 40_000,
-      floorCompletionTimestamps: [now - 30_000, now - 15_000, now],
+      floorCompletionTimestamps: [now - 40_000, now - 30_000, now - 15_000, now],
     });
     const result = checkNearMisses(ctx);
     expect(hasAchievement(result, "quick-dash")).toBe(false);
@@ -382,8 +379,8 @@ describe("evaluateNearMiss — minigame-streak (consecutive)", () => {
   });
 });
 
-describe("evaluateNearMiss — minigame-streak (cumulative ≥ 15)", () => {
-  // slash-veteran: minigame="slash-timing", count=50 (>= 15 → cumulative)
+describe("evaluateNearMiss — minigame-total-wins", () => {
+  // slash-veteran: type="minigame-total-wins", minigame="slash-timing", count=50
   // Near miss: total >= count * 0.8 = 40
   it("returns near miss when total is at 80% threshold", () => {
     const ctx = makeCtx({

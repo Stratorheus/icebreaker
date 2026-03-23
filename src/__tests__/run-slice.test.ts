@@ -451,31 +451,50 @@ describe("consecutiveFloorsNoDamage", () => {
     expect(store.getState().consecutiveFloorsNoDamage).toBe(0);
   });
 
-  it("increments on advanceFloor when no damage taken", () => {
+  it("increments on completeMinigame when last minigame and no damage taken", () => {
     const store = createTestStore();
     store.getState().startRun();
-    // floorDamageTaken is false by default after startRun
-    expect(store.getState().floorDamageTaken).toBe(false);
+    // Set up a single-minigame floor so completeMinigame triggers floor completion
+    store.setState({
+      floorMinigames: ["slash-timing"],
+      currentMinigameIndex: 0,
+      floor: 1,
+      floorDamageTaken: false,
+    });
 
-    store.getState().advanceFloor();
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().consecutiveFloorsNoDamage).toBe(1);
+  });
+
+  it("accumulates across multiple floor completions without damage", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    // Complete floor 1 (no damage)
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, floorDamageTaken: false });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoDamage).toBe(1);
 
-    // Advance again without damage
+    // Advance and complete floor 2 (no damage)
     store.getState().advanceFloor();
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floorDamageTaken: false });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoDamage).toBe(2);
   });
 
-  it("resets to 0 on advanceFloor when damage was taken on floor", () => {
+  it("resets to 0 on completeMinigame when last minigame and damage was taken on floor", () => {
     const store = createTestStore();
     store.getState().startRun();
 
-    // Advance one clean floor
-    store.getState().advanceFloor();
+    // Complete floor 1 clean
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, floorDamageTaken: false });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoDamage).toBe(1);
 
-    // Take damage on the new floor
-    store.setState({ floorDamageTaken: true });
+    // Advance then take damage on floor 2
     store.getState().advanceFloor();
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floorDamageTaken: true });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoDamage).toBe(0);
   });
 
@@ -505,25 +524,32 @@ describe("consecutiveFloorsNoDamage", () => {
 // ---------------------------------------------------------------------------
 
 describe("floorCompletionTimestamps", () => {
-  it("starts empty on new run", () => {
+  it("starts with one marker timestamp on new run", () => {
     const store = createTestStore();
     store.getState().startRun();
-    expect(store.getState().floorCompletionTimestamps).toEqual([]);
+    // Floor-0 marker is pushed at startRun
+    expect(store.getState().floorCompletionTimestamps).toHaveLength(1);
   });
 
-  it("accumulates timestamps on advanceFloor", () => {
+  it("accumulates timestamps on floor completion (completeMinigame last)", () => {
     const store = createTestStore();
     store.getState().startRun();
 
-    store.getState().advanceFloor();
-    expect(store.getState().floorCompletionTimestamps).toHaveLength(1);
-
-    store.getState().advanceFloor();
+    // Complete floor 1 (single minigame)
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().floorCompletionTimestamps).toHaveLength(2);
 
+    // Advance and complete floor 2
+    store.getState().advanceFloor();
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().floorCompletionTimestamps).toHaveLength(3);
+
     // Timestamps should be increasing
-    const [t1, t2] = store.getState().floorCompletionTimestamps;
-    expect(t2).toBeGreaterThanOrEqual(t1);
+    const ts = store.getState().floorCompletionTimestamps;
+    expect(ts[2]).toBeGreaterThanOrEqual(ts[1]);
+    expect(ts[1]).toBeGreaterThanOrEqual(ts[0]);
   });
 });
 
@@ -559,39 +585,45 @@ describe("consecutiveFloorsNoShop", () => {
     expect(store.getState().consecutiveFloorsNoShop).toBe(0);
   });
 
-  it("increments on advanceFloor when no items bought", () => {
+  it("increments on completeMinigame (last) when no credits spent", () => {
     const store = createTestStore();
     store.getState().startRun();
-    expect(store.getState().boughtItemThisFloor).toBe(false);
 
-    store.getState().advanceFloor();
+    // Complete floor with no shop spending
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, creditsSpentThisShop: 0 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoShop).toBe(1);
 
+    // Advance and complete another floor without spending
     store.getState().advanceFloor();
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, creditsSpentThisShop: 0 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoShop).toBe(2);
   });
 
-  it("resets to 0 on advanceFloor when items were bought", () => {
+  it("resets to 0 on completeMinigame (last) when credits were spent", () => {
     const store = createTestStore();
     store.getState().startRun();
 
-    // Advance without buying — count goes to 1
-    store.getState().advanceFloor();
+    // Complete floor 1 without spending
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, creditsSpentThisShop: 0 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoShop).toBe(1);
 
-    // Simulate buying on the next floor
-    store.setState({ boughtItemThisFloor: true });
+    // Advance, simulate buying, complete floor 2
     store.getState().advanceFloor();
+    store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, creditsSpentThisShop: 100 });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
     expect(store.getState().consecutiveFloorsNoShop).toBe(0);
   });
 
-  it("resets boughtItemThisFloor to false on advanceFloor", () => {
+  it("resets creditsSpentThisShop to 0 on advanceFloor", () => {
     const store = createTestStore();
     store.getState().startRun();
-    store.setState({ boughtItemThisFloor: true });
+    store.setState({ creditsSpentThisShop: 500 });
 
     store.getState().advanceFloor();
-    expect(store.getState().boughtItemThisFloor).toBe(false);
+    expect(store.getState().creditsSpentThisShop).toBe(0);
   });
 });
 

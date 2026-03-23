@@ -120,7 +120,6 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
         runShopOffers: newOffers,
         itemsBoughtThisRun: newItemsBought,
         creditsSpentThisShop: newCreditsSpentThisShop,
-        boughtItemThisFloor: true,
       });
       state.heal(powerUp.effect.value);
       return true;
@@ -133,7 +132,6 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       inventory: [...state.inventory, powerUp],
       itemsBoughtThisRun: newItemsBought,
       creditsSpentThisShop: newCreditsSpentThisShop,
-      boughtItemThisFloor: true,
     });
 
     return true;

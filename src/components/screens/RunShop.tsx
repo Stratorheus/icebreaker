@@ -182,8 +182,8 @@ export function RunShop() {
   useEffect(() => {
     if (achievementCheckedRef.current) return;
     achievementCheckedRef.current = true;
-    // Floor was just cleared — evaluate floor-reached, floor-no-damage,
-    // floor-no-powerups, and speed-run conditions.
+    // Floor was just cleared — evaluate floor-reached, floor-no-powerups,
+    // speed-consecutive-floors, and other floor-scoped conditions.
     evaluateAndAwardAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

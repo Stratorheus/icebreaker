@@ -28,7 +28,6 @@ export function evaluateAndAwardAchievements(): void {
     inventorySize: state.inventory.length,
     hp: state.hp,
     maxHp: state.maxHp,
-    runStartTime: state.runStartTime,
     consecutiveFloorsNoDamage: state.consecutiveFloorsNoDamage,
     floorCompletionTimestamps: state.floorCompletionTimestamps,
     creditsSpentThisShop: state.creditsSpentThisShop,

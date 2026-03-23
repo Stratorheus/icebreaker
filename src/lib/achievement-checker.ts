@@ -1,6 +1,7 @@
 import { ACHIEVEMENT_POOL } from "@/data/achievements";
 import type { Achievement, AchievementCondition } from "@/types/shop";
 import type { MinigameType, PlayerStats } from "@/types/game";
+import { ALL_MINIGAMES } from "@/data/minigames/registry";
 
 // ---------------------------------------------------------------------------
 // Check context — snapshot of game state at the time of evaluation
@@ -15,7 +16,6 @@ export interface AchievementCheckContext {
   inventorySize: number;
   hp: number;
   maxHp: number;
-  runStartTime: number;
   consecutiveFloorsNoDamage: number;
   floorCompletionTimestamps: number[];
   creditsSpentThisShop: number;
@@ -45,31 +45,16 @@ function evaluateCondition(
       // just completed.
       return ctx.floor >= condition.floor;
 
-    case "floor-no-damage":
-      // True when the player cleared the given floor without taking damage
-      // in the entire run up to that point.
-      return ctx.floor >= condition.floor && !ctx.runDamageTaken;
-
-    case "speed-run": {
-      // True when floors [start, end] were completed within maxTimeMs.
-      const [start, end] = condition.floors;
-      if (ctx.floor < end) return false;
-      const elapsed = Date.now() - ctx.runStartTime;
-      return elapsed <= condition.maxTimeMs && ctx.floor >= start;
+    case "minigame-streak": {
+      // Consecutive win streak for a specific minigame (resets on failure).
+      const streak = ctx.stats.minigameWinStreaks[condition.minigame] ?? 0;
+      return streak >= condition.count;
     }
 
-    case "minigame-streak": {
-      // Checks the persisted win streak (consecutive) OR cumulative total.
-      // Streaks with large counts (>= 15) are treated as cumulative total wins.
-      // Streaks with smaller counts are consecutive (reset on failure).
-      const minigame = condition.minigame;
-      const streak = ctx.stats.minigameWinStreaks[minigame] ?? 0;
-      const total = ctx.stats.minigameWinsTotal[minigame] ?? 0;
-      // Use total for cumulative achievements (count >= 15), streak otherwise
-      const isCumulative = condition.count >= 15;
-      return isCumulative
-        ? total >= condition.count
-        : streak >= condition.count;
+    case "minigame-total-wins": {
+      // Cumulative total wins for a specific minigame (never resets).
+      const total = ctx.stats.minigameWinsTotal[condition.minigame] ?? 0;
+      return total >= condition.count;
     }
 
     case "minigame-speed": {
@@ -99,15 +84,14 @@ function evaluateCondition(
       return ctx.consecutiveFloorsNoDamage >= condition.count;
 
     case "speed-consecutive-floors": {
+      // timestamps[0] is the "floor 0" marker pushed at startRun.
+      // Actual floor completions start at timestamps[1].
       const timestamps = ctx.floorCompletionTimestamps;
-      if (timestamps.length < condition.count) return false;
+      // Need at least count+1 entries (floor-0 marker + count completions)
+      if (timestamps.length < condition.count + 1) return false;
       // Check any window of `count` consecutive floor completions
-      for (let i = condition.count - 1; i < timestamps.length; i++) {
-        const windowStart = i === condition.count - 1
-          ? ctx.runStartTime
-          : timestamps[i - condition.count];
-        const windowEnd = timestamps[i];
-        if (windowEnd - windowStart <= condition.maxTimeMs) return true;
+      for (let i = condition.count; i < timestamps.length; i++) {
+        if (timestamps[i] - timestamps[i - condition.count] <= condition.maxTimeMs) return true;
       }
       return false;
     }
@@ -128,7 +112,7 @@ function evaluateCondition(
       return ctx.consecutiveFloorsNoShop >= condition.count;
 
     case "all-minigames-unlocked":
-      return ctx.unlockedMinigamesCount >= 15;
+      return ctx.unlockedMinigamesCount >= ALL_MINIGAMES.length;
 
     case "total-minigames-won":
       return ctx.stats.totalMinigamesWon >= condition.count;
@@ -159,26 +143,21 @@ function evaluateNearMiss(
     case "speed-consecutive-floors": {
       // Check if player completed enough floors but was too slow (within 30% of time)
       const timestamps = ctx.floorCompletionTimestamps;
-      if (timestamps.length < condition.count) return false;
-      for (let i = condition.count - 1; i < timestamps.length; i++) {
-        const windowStart = i === condition.count - 1
-          ? ctx.runStartTime
-          : timestamps[i - condition.count];
-        const windowEnd = timestamps[i];
-        if (windowEnd - windowStart <= condition.maxTimeMs * 1.3) return true;
+      if (timestamps.length < condition.count + 1) return false;
+      for (let i = condition.count; i < timestamps.length; i++) {
+        if (timestamps[i] - timestamps[i - condition.count] <= condition.maxTimeMs * 1.3) return true;
       }
       return false;
     }
 
     case "minigame-streak": {
-      const minigame = condition.minigame;
-      const isCumulative = condition.count >= 15;
-      if (isCumulative) {
-        const total = ctx.stats.minigameWinsTotal[minigame] ?? 0;
-        return total >= condition.count * 0.8;
-      }
-      const streak = ctx.stats.minigameWinStreaks[minigame] ?? 0;
+      const streak = ctx.stats.minigameWinStreaks[condition.minigame] ?? 0;
       return streak >= condition.count - 2;
+    }
+
+    case "minigame-total-wins": {
+      const total = ctx.stats.minigameWinsTotal[condition.minigame] ?? 0;
+      return total >= condition.count * 0.8;
     }
 
     case "minigame-speed":
@@ -217,10 +196,9 @@ function evaluateNearMiss(
       return ctx.consecutiveFloorsNoShop >= condition.count - 1;
 
     case "minigame-win-streak":
-      return ctx.currentWinStreak >= condition.count - 3;
+      return ctx.currentWinStreak >= condition.count - 2;
 
     // These don't have meaningful near-miss
-    case "floor-no-damage":
     case "floor-no-powerups":
     case "all-minigames-unlocked":
       return false;

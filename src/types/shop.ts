@@ -36,9 +36,8 @@ export interface Achievement {
 
 export type AchievementCondition =
   | { type: "floor-reached"; floor: number }
-  | { type: "floor-no-damage"; floor: number }
-  | { type: "speed-run"; floors: [number, number]; maxTimeMs: number }
   | { type: "minigame-streak"; minigame: MinigameType; count: number }
+  | { type: "minigame-total-wins"; minigame: MinigameType; count: number }
   | { type: "minigame-speed"; minigame: MinigameType; maxTimeMs: number }
   | { type: "inventory-count"; count: number }
   | { type: "floor-no-powerups" }
