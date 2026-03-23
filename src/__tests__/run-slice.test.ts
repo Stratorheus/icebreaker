@@ -158,6 +158,29 @@ describe("completeMinigame — credits and scoring", () => {
     expect(store.getState().runScore).toBeGreaterThan(scoreBefore);
   });
 
+  it("tracks creditsEarnedThisRun (excludes Head Start)", () => {
+    const store = createTestStore();
+    // Give Head Start tier 3 (+300 CR)
+    store.setState({ purchasedUpgrades: { "head-start": 3 } });
+    store.getState().startRun();
+
+    // Starting credits include Head Start, but creditsEarnedThisRun starts at 0
+    expect(store.getState().credits).toBeGreaterThan(25); // has head start bonus
+    expect(store.getState().creditsEarnedThisRun).toBe(0);
+
+    // Win a minigame
+    store.getState().completeMinigame({
+      success: true,
+      timeMs: 5000,
+      minigame: "slash-timing",
+    });
+
+    const earned = store.getState().creditsEarnedThisRun;
+    expect(earned).toBeGreaterThan(0);
+    // credits = starting + earned, but creditsEarnedThisRun only tracks earned
+    expect(store.getState().credits).toBeGreaterThan(earned);
+  });
+
   it("accumulates dataDripThisRun on each win", () => {
     const store = createTestStore();
     store.getState().startRun();

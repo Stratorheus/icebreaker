@@ -45,6 +45,8 @@ export interface RunSlice {
   milestoneDataThisRun: number;
   /** Per-minigame data drip accumulated during the run (awarded on death/quit). */
   dataDripThisRun: number;
+  /** Credits earned through gameplay (minigame wins, skips). Excludes Head Start bonus. */
+  creditsEarnedThisRun: number;
   /** Time Siphon bonus: accumulated +0.2 s per consecutive win. Resets on fail and advanceFloor. */
   timeSiphonBonus: number;
   /** Cascade Clock: accumulated % of base timer from consecutive wins. Resets on fail only. */
@@ -127,6 +129,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   dataAtRunStart: 0,
   milestoneDataThisRun: 0,
   dataDripThisRun: 0,
+  creditsEarnedThisRun: 0,
   timeSiphonBonus: 0,
   cascadeClockPct: 0,
 };
@@ -293,6 +296,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     set({
       hp: newHp,
       credits: state.credits + earned,
+      creditsEarnedThisRun: state.creditsEarnedThisRun + earned,
       runScore: state.runScore + earned,
       minigamesWonThisRun: state.minigamesWonThisRun + 1,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
@@ -515,6 +519,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     set({
       hp: newHp,
       credits: state.credits + totalCredits,
+      creditsEarnedThisRun: state.creditsEarnedThisRun + totalCredits,
       runScore: state.runScore + totalCredits,
       minigamesWonThisRun: state.minigamesWonThisRun + remaining,
       minigamesPlayedThisRun: state.minigamesPlayedThisRun + remaining,

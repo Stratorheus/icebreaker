@@ -271,20 +271,43 @@ describe("getDataDrip", () => {
 // getCreditsSaved
 // ---------------------------------------------------------------------------
 describe("getCreditsSaved", () => {
-  it("returns 0 for 0 credits", () => {
-    expect(getCreditsSaved(0)).toBe(0);
+  it("returns 0 when no credits earned (Head Start only)", () => {
+    // Start 300, earn 0 → min(0, 300) = 0
+    expect(getCreditsSaved(300, 0)).toBe(0);
   });
 
-  it("returns 8% (floor) for 100 credits → 8", () => {
-    expect(getCreditsSaved(100)).toBe(8);
+  it("uses earned credits when current > earned", () => {
+    // Start 300, earn 200, spend 0 → current=500, earned=200 → min(200, 500) = 200 → 16
+    expect(getCreditsSaved(500, 200)).toBe(16);
   });
 
-  it("floors partial results (e.g., 50 credits → floor(4.0) = 4)", () => {
-    expect(getCreditsSaved(50)).toBe(4);
+  it("uses current credits when current < earned (spent some earned)", () => {
+    // Start 300, earn 200, spend 400 → current=100, earned=200 → min(200, 100) = 100 → 8
+    expect(getCreditsSaved(100, 200)).toBe(8);
   });
 
-  it("floors partial results (e.g., 13 credits → floor(1.04) = 1)", () => {
-    expect(getCreditsSaved(13)).toBe(Math.floor(13 * 0.08));
+  it("no Head Start: earned = current → full 8%", () => {
+    // Start 0 (base 25 is also earned? No — base 25 is starting), earn 100 → current=125, earned=100 → min(100, 125) = 100 → 8
+    expect(getCreditsSaved(125, 100)).toBe(8);
+  });
+
+  it("returns 0 when both are 0", () => {
+    expect(getCreditsSaved(0, 0)).toBe(0);
+  });
+
+  it("floors partial results", () => {
+    // earned=13, current=13 → min(13,13) = 13 → floor(1.04) = 1
+    expect(getCreditsSaved(13, 13)).toBe(Math.floor(13 * 0.08));
+  });
+
+  it("Head Start tier 5: start 1025, earn 1000, spend 800 → bonus from 1000", () => {
+    // current = 1025 + 1000 - 800 = 1225, earned = 1000 → min(1000, 1225) = 1000 → 80
+    expect(getCreditsSaved(1225, 1000)).toBe(80);
+  });
+
+  it("Head Start tier 5: start 1025, earn 1000, spend 1100 → bonus from 925", () => {
+    // current = 1025 + 1000 - 1100 = 925, earned = 1000 → min(1000, 925) = 925 → 74
+    expect(getCreditsSaved(925, 1000)).toBe(74);
   });
 });
 

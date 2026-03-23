@@ -110,9 +110,14 @@ export function getDataDrip(floor: number): number {
   return Math.round(1 + floor * 0.8);
 }
 
-/** Credits-to-data conversion rate (8% of leftover credits). */
-export function getCreditsSaved(credits: number): number {
-  return Math.floor(credits * 0.08);
+/**
+ * Credits-to-data conversion rate (8% of eligible credits).
+ * Only credits earned during gameplay count — Head Start bonus credits
+ * are excluded. Starting credits are spent first, so eligible credits
+ * = min(earnedThisRun, currentCredits).
+ */
+export function getCreditsSaved(currentCredits: number, earnedThisRun: number): number {
+  return Math.floor(Math.min(earnedThisRun, currentCredits) * 0.08);
 }
 
 /**
