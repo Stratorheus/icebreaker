@@ -85,7 +85,7 @@ function CategoryBadge({ category }: { category: AchievementCategory }) {
   const color = ACHIEVEMENT_CATEGORY_COLORS[category];
   return (
     <span
-      className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border"
+      className="text-[7px] uppercase tracking-wider px-1 py-px rounded border leading-none"
       style={{ color, borderColor: color + "40", backgroundColor: color + "10" }}
     >
       {category}
@@ -119,12 +119,12 @@ function AchievementCard({
               <Hexagon size={10} /> +{achievement.reward}
             </span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="-mt-1">
             <CategoryBadge category={achievement.category} />
-            <p className="text-white/40 text-[10px] leading-relaxed truncate">
-              {achievement.description}
-            </p>
           </div>
+          <p className="text-white/40 text-[10px] mt-0.5 leading-relaxed">
+            {achievement.description}
+          </p>
         </div>
       </div>
     );
@@ -144,12 +144,12 @@ function AchievementCard({
               NEAR MISS
             </span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="-mt-1">
             <CategoryBadge category={achievement.category} />
-            <p className="text-white/30 text-[10px] leading-relaxed truncate">
-              {achievement.description}
-            </p>
           </div>
+          <p className="text-white/30 text-[10px] mt-0.5 leading-relaxed">
+            {achievement.description}
+          </p>
           {progress && (
             <div className="mt-1">
               <ProgressBar current={progress.current} max={progress.max} />
