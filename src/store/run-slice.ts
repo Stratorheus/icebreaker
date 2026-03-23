@@ -55,6 +55,8 @@ export interface RunSlice {
   consecutiveFloorsNoDamage: number;
   /** Timestamps (Date.now()) recorded each time a floor is completed (advanceFloor). */
   floorCompletionTimestamps: number[];
+  /** Result of the last completed/failed minigame (for achievement evaluation). Reset on startRun. */
+  lastMinigameResult: { success: boolean; timeMs: number; type: MinigameType } | null;
 
   // Actions
   startRun: () => void;
@@ -138,6 +140,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   cascadeClockPct: 0,
   consecutiveFloorsNoDamage: 0,
   floorCompletionTimestamps: [],
+  lastMinigameResult: null,
 };
 
 // Helper type: extract only action keys
@@ -217,6 +220,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       cascadeClockPct: 0,
       consecutiveFloorsNoDamage: 0,
       floorCompletionTimestamps: [],
+      lastMinigameResult: null,
     });
   },
 
@@ -317,11 +321,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       dataDripThisRun: state.dataDripThisRun + minigameDataDrip,
       timeSiphonBonus,
       cascadeClockPct,
+      lastMinigameResult: { success: true, timeMs: result.timeMs, type: result.minigame },
     });
   },
 
   failMinigame: () => {
     const state = get();
+    const currentType = state.floorMinigames[state.currentMinigameIndex];
     const baseDamage = getEffectiveDamage(state.floor, state.purchasedUpgrades["thicker-armor"] ?? 0);
 
     // Apply the strongest shield / damage-reduction power-up
@@ -356,6 +362,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         timeSiphonBonus: 0,
         cascadeClockPct: 0,
         consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
+        lastMinigameResult: { success: false, timeMs: 0, type: currentType },
       });
       return;
     }
@@ -376,8 +383,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Ensure the re-rolled game is different from the current one.
     const newFloorMinigames = [...state.floorMinigames];
     const pool = state.unlockedMinigames;
-    const currentType = newFloorMinigames[state.currentMinigameIndex];
-    const alternatives = pool.length > 1 ? pool.filter((m) => m !== currentType) : pool;
+    const rerollCurrentType = newFloorMinigames[state.currentMinigameIndex];
+    const alternatives = pool.length > 1 ? pool.filter((m) => m !== rerollCurrentType) : pool;
     newFloorMinigames[state.currentMinigameIndex] =
       alternatives[Math.floor(Math.random() * alternatives.length)];
 
@@ -392,6 +399,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
       consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
+      lastMinigameResult: { success: false, timeMs: 0, type: currentType },
     });
   },
 

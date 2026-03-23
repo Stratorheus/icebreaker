@@ -4,21 +4,19 @@ import {
   checkAchievements,
   type AchievementCheckContext,
 } from "@/lib/achievement-checker";
-import type { MinigameType } from "@/types/game";
 
 // ---------------------------------------------------------------------------
-// Award helper — call after state is already updated in the store
+// Centralized achievement evaluator — reads everything from the store
 // ---------------------------------------------------------------------------
 
 /**
- * Reads current store state, checks for newly earned achievements,
- * awards data and shows toasts for each.
+ * Evaluate and award achievements based on current store state.
+ * Call this once — it reads everything it needs from the store,
+ * including `lastMinigameResult` (set by completeMinigame / failMinigame).
  *
- * `lastMinigame` is optional — pass only when checking after a minigame.
+ * No parameters needed.
  */
-export function awardNewAchievements(
-  lastMinigame?: { success: boolean; timeMs: number; type: MinigameType },
-): void {
+export function evaluateAndAwardAchievements(): void {
   const state = useGameStore.getState();
 
   const ctx: AchievementCheckContext = {
@@ -33,7 +31,7 @@ export function awardNewAchievements(
     floorCompletionTimestamps: state.floorCompletionTimestamps,
     earnedAchievements: state.achievements,
     stats: state.stats,
-    lastMinigame,
+    lastMinigame: state.lastMinigameResult ?? undefined,
   };
 
   const earned = checkAchievements(ctx);
@@ -57,5 +55,5 @@ export function awardNewAchievements(
  * to evaluate and award achievements.
  */
 export function useAchievementCheck() {
-  return { awardNewAchievements };
+  return { evaluateAndAwardAchievements };
 }

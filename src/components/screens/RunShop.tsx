@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
-import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import {
@@ -168,7 +168,7 @@ export function RunShop() {
     achievementCheckedRef.current = true;
     // Floor was just cleared — evaluate floor-reached, floor-no-damage,
     // floor-no-powerups, and speed-run conditions.
-    awardNewAchievements();
+    evaluateAndAwardAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
