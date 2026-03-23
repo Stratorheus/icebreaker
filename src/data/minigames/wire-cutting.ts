@@ -3,7 +3,7 @@ import type { MinigameConfig } from "./types";
 
 export const wireCuttingConfig: MinigameConfig = {
   id: "wire-cutting",
-  displayName: "Wire Cutting",
+  displayName: "Process Kill",
   component: WireCutting,
   baseTimeLimit: 12,
   starting: false,
@@ -11,29 +11,29 @@ export const wireCuttingConfig: MinigameConfig = {
   licenseId: "wire-cutting-toolkit",
   briefing: {
     rules: [
-      "A set of coloured wires and a rule panel are displayed",
-      "Read the rules carefully to deduce the correct cutting order",
-      "Press the number key matching a wire to cut it",
-      "Wrong order = immediate failure; cut all required wires to succeed",
+      "A set of coloured processes and a rule panel are displayed",
+      "Read the rules carefully to deduce the correct termination order",
+      "Press the number key matching a process to terminate it",
+      "Wrong order = immediate failure; terminate all required processes to succeed",
     ],
     controls: {
-      desktop: "Number keys 1\u20139 to cut wires, or click a wire",
-      touch: "TAP a wire to cut it",
+      desktop: "Number keys 1\u20139 to terminate processes, or click a process",
+      touch: "TAP a process to terminate it",
     },
     tips: [
-      "Some wires are marked DO NOT CUT \u2014 leave those alone",
-      "Work out the full order mentally before making the first cut",
+      "Some processes are marked DO NOT TERMINATE \u2014 leave those alone",
+      "Work out the full order mentally before making the first termination",
     ],
     hint: {
-      desktop: "Cut wires in the order shown by the sequence.",
-      touch: "Cut wires in the order shown by the sequence.",
+      desktop: "Terminate processes in the order shown by the sequence.",
+      touch: "Terminate processes in the order shown by the sequence.",
     },
   },
   metaUpgrades: [
     {
       id: "wire-labels",
-      name: "Wire Guide",
-      description: "Dims non-target wires and highlights the next wire to cut.",
+      name: "Stream Monitor",
+      description: "Dims non-target processes and highlights the next process to terminate.",
       category: "game-specific",
       maxTier: 1,
       prices: [200],
