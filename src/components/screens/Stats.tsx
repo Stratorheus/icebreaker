@@ -115,8 +115,8 @@ function AchievementCard({
             <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider truncate">
               {achievement.name}
             </span>
-            <span className="text-[10px] uppercase tracking-widest font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.7 }}>
-              <Hexagon size={8} /> +{achievement.reward}
+            <span className="text-xs font-bold font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
+              <Hexagon size={10} /> +{achievement.reward}
             </span>
           </div>
           <div className="flex items-center gap-2 mt-0.5">
