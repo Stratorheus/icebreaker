@@ -414,7 +414,7 @@ export function WireCutting(props: MinigameProps) {
                     width: 32,
                     height: 140,
                     borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
-                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? hexToRgba(streamColor, 0.7) : hexToRgba(streamColor, 0.25)}`,
+                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
                     borderLeft: "none",
                     borderRight: "none",
                     transition: "border-color 0.3s",
@@ -424,13 +424,13 @@ export function WireCutting(props: MinigameProps) {
                   {isNext && (
                     <>
                       <div style={{
-                        position: "absolute", top: 0, left: 0, right: 0, height: 20,
-                        background: `linear-gradient(180deg, ${hexToRgba(streamColor, 0.4)}, transparent)`,
+                        position: "absolute", top: 0, left: 0, right: 0, height: 12,
+                        background: `linear-gradient(180deg, ${hexToRgba(streamColor, 0.35)}, transparent)`,
                         pointerEvents: "none", zIndex: 1,
                       }} />
                       <div style={{
-                        position: "absolute", bottom: 0, left: 0, right: 0, height: 14,
-                        background: `linear-gradient(0deg, ${hexToRgba(streamColor, 0.25)}, transparent)`,
+                        position: "absolute", bottom: 0, left: 0, right: 0, height: 10,
+                        background: `linear-gradient(0deg, ${hexToRgba(streamColor, 0.3)}, transparent)`,
                         pointerEvents: "none", zIndex: 1,
                       }} />
                     </>
