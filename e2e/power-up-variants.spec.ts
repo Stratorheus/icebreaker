@@ -183,10 +183,11 @@ test.describe("mine-radar — Defrag", () => {
     // Click the first cell to place mines (defrag places mines after first click)
     const cells = page.locator('[data-testid="cell"]');
     await cells.first().click();
-    await page.waitForTimeout(300);
 
-    // Mine radar at tier 4 (100% of timer) shows row/column indicators with mine counts
+    // Wait for radar indicators to render (mines placed → radar visible on next frame)
     const radarIndicators = page.locator('[data-testid="mine-radar-indicator"]');
+    await radarIndicators.first().waitFor({ timeout: 3000 });
+
     const indicatorCount = await radarIndicators.count();
 
     // Should have indicators for rows + columns (e.g. 5x5 grid = 5 col + 5 row = 10)
