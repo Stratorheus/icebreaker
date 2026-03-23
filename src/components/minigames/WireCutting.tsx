@@ -417,10 +417,24 @@ export function WireCutting(props: MinigameProps) {
                     borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? hexToRgba(streamColor, 0.7) : hexToRgba(streamColor, 0.25)}`,
                     borderLeft: "none",
                     borderRight: "none",
-                    boxShadow: isNext ? `inset 0 8px 12px -6px ${hexToRgba(streamColor, 0.5)}, inset 0 -8px 12px -6px ${hexToRgba(streamColor, 0.35)}` : "none",
-                    transition: "border-color 0.3s, box-shadow 0.3s",
+                    transition: "border-color 0.3s",
                   }}
                 >
+                  {/* Edge glow — gradient overlays from top/bottom borders (next target only) */}
+                  {isNext && (
+                    <>
+                      <div style={{
+                        position: "absolute", top: 0, left: 0, right: 0, height: 20,
+                        background: `linear-gradient(180deg, ${hexToRgba(streamColor, 0.4)}, transparent)`,
+                        pointerEvents: "none", zIndex: 1,
+                      }} />
+                      <div style={{
+                        position: "absolute", bottom: 0, left: 0, right: 0, height: 14,
+                        background: `linear-gradient(0deg, ${hexToRgba(streamColor, 0.25)}, transparent)`,
+                        pointerEvents: "none", zIndex: 1,
+                      }} />
+                    </>
+                  )}
                   {/* Rain columns */}
                   {COL_POSITIONS.map((leftPx, colIdx) => (
                     <div
