@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { useGameStore } from "@/store/game-store";
 import {
   checkAchievements,
+  checkNearMisses,
   type AchievementCheckContext,
 } from "@/lib/achievement-checker";
 
@@ -41,7 +42,6 @@ export function evaluateAndAwardAchievements(): void {
   };
 
   const earned = checkAchievements(ctx);
-  if (earned.length === 0) return;
 
   for (const achievement of earned) {
     state.unlockAchievement(achievement.id);
@@ -49,6 +49,14 @@ export function evaluateAndAwardAchievements(): void {
     toast(`\u{1F3C6} Achievement Unlocked!`, {
       description: `${achievement.name} — +${achievement.reward} \u25C6`,
     });
+  }
+
+  // Check near-misses and reveal achievements the player almost earned
+  const nearMisses = checkNearMisses(ctx);
+  for (const achievement of nearMisses) {
+    if (!state.revealedAchievements.includes(achievement.id)) {
+      state.revealAchievement(achievement.id);
+    }
   }
 }
 

@@ -2,8 +2,22 @@ import { useGameStore } from "@/store/game-store";
 import { ACHIEVEMENT_POOL } from "@/data/achievements";
 import { getMinigameDisplayName } from "@/data/minigames/registry";
 import type { PlayerStats } from "@/types/game";
-import type { Achievement } from "@/types/shop";
+import type { Achievement, AchievementCategory } from "@/types/shop";
 import { Hexagon } from "lucide-react";
+
+// ---------------------------------------------------------------------------
+// Achievement category colors
+// ---------------------------------------------------------------------------
+
+const ACHIEVEMENT_CATEGORY_COLORS: Record<AchievementCategory, string> = {
+  progression: "#22d3ee", // cyan
+  skill: "#4ade80",       // green
+  speed: "#facc15",       // yellow
+  economy: "#fb923c",     // orange
+  survival: "#e879f9",    // magenta
+  playstyle: "#a78bfa",   // purple
+  cumulative: "#94a3b8",  // grey
+};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -67,13 +81,27 @@ function ProgressBar({ current, max }: { current: number; max: number }) {
   );
 }
 
+function CategoryBadge({ category }: { category: AchievementCategory }) {
+  const color = ACHIEVEMENT_CATEGORY_COLORS[category];
+  return (
+    <span
+      className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded border"
+      style={{ color, borderColor: color + "40", backgroundColor: color + "10" }}
+    >
+      {category}
+    </span>
+  );
+}
+
 function AchievementCard({
   achievement,
   earned,
+  revealed,
   stats,
 }: {
   achievement: Achievement;
   earned: boolean;
+  revealed: boolean;
   stats: PlayerStats;
 }) {
   const progress = getAchievementProgress(achievement, stats);
@@ -84,9 +112,12 @@ function AchievementCard({
         <Hexagon size={14} className="text-cyber-cyan shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider">
-              {achievement.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider">
+                {achievement.name}
+              </span>
+              <CategoryBadge category={achievement.category} />
+            </div>
             <span className="text-[10px] uppercase tracking-widest font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)", opacity: 0.7 }}>
               <Hexagon size={8} /> +{achievement.reward}
             </span>
@@ -99,13 +130,46 @@ function AchievementCard({
     );
   }
 
+  // Revealed but not earned: show name and description, but still locked appearance
+  if (revealed) {
+    return (
+      <div className="border border-white/10 bg-white/[0.02] p-3 flex items-start gap-3 opacity-70">
+        <span className="text-white/30 text-base select-none mt-0.5">◇</span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-white/50 text-xs font-heading uppercase tracking-wider">
+                {achievement.name}
+              </span>
+              <CategoryBadge category={achievement.category} />
+            </div>
+            <span className="text-white/30 text-[10px] uppercase tracking-widest font-mono shrink-0">
+              NEAR MISS
+            </span>
+          </div>
+          <p className="text-white/30 text-[10px] mt-0.5 leading-relaxed">
+            {achievement.description}
+          </p>
+          {progress && (
+            <div className="mt-1">
+              <ProgressBar current={progress.current} max={progress.max} />
+              <p className="text-white/20 text-[10px] mt-0.5 tabular-nums">
+                {progress.current} / {progress.max}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-white/5 bg-white/[0.01] p-3 flex items-start gap-3 opacity-50">
       <span className="text-white/20 text-base select-none mt-0.5">◇</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <span className="text-white/30 text-xs font-heading uppercase tracking-wider">
-            {achievement.name}
+            ???
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest font-mono shrink-0">
             LOCKED
@@ -134,17 +198,19 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
   const stats = useGameStore((s) => s.stats);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
   const earnedIds = useGameStore((s) => s.achievements);
+  const revealedIds = useGameStore((s) => s.revealedAchievements);
   const handleBack = onBack ?? (() => setStatus("menu"));
 
   const earnedSet = new Set(earnedIds);
+  const revealedSet = new Set(revealedIds);
   const earnedCount = earnedIds.length;
   const totalCount = ACHIEVEMENT_POOL.length;
 
-  // Sort: earned first, then locked
+  // Sort: earned first, then revealed, then locked
   const sortedAchievements = [...ACHIEVEMENT_POOL].sort((a, b) => {
-    const aEarned = earnedSet.has(a.id) ? 0 : 1;
-    const bEarned = earnedSet.has(b.id) ? 0 : 1;
-    return aEarned - bEarned;
+    const aOrder = earnedSet.has(a.id) ? 0 : revealedSet.has(a.id) ? 1 : 2;
+    const bOrder = earnedSet.has(b.id) ? 0 : revealedSet.has(b.id) ? 1 : 2;
+    return aOrder - bOrder;
   });
 
   return (
@@ -227,6 +293,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
               key={achievement.id}
               achievement={achievement}
               earned={earnedSet.has(achievement.id)}
+              revealed={revealedSet.has(achievement.id)}
               stats={stats}
             />
           ))}

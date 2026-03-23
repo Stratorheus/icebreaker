@@ -150,6 +150,22 @@ export function RunShop() {
   const [view, setView] = useState<VendorView>("shop");
   const [confirmQuit, setConfirmQuit] = useState(false);
 
+  // Keyboard shortcuts: Space = continue, Escape = toggle quit confirmation
+  useEffect(() => {
+    if (view !== "shop") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        e.preventDefault();
+        advanceFloor();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setConfirmQuit((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [view, advanceFloor]);
+
   // Generate shop if it hasn't been generated yet
   const generatedRef = useRef(false);
   useEffect(() => {

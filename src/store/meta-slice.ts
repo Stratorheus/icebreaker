@@ -14,6 +14,7 @@ export interface MetaSlice {
   unlockedMinigames: MinigameType[];
   purchasedUpgrades: Record<string, number>;
   achievements: string[];
+  revealedAchievements: string[];
   stats: PlayerStats;
   seenBriefings: MinigameType[];
 
@@ -23,6 +24,7 @@ export interface MetaSlice {
   unlockMinigame: (type: MinigameType) => void;
   purchaseUpgrade: (id: string) => void;
   unlockAchievement: (id: string) => void;
+  revealAchievement: (id: string) => void;
   markBriefingSeen: (type: MinigameType) => void;
   updateStats: (partial: Partial<PlayerStats>) => void;
   /** Update win streak + cumulative wins for a minigame result. */
@@ -53,6 +55,7 @@ export const initialMetaState = {
   unlockedMinigames: [...STARTING_MINIGAMES],
   purchasedUpgrades: {} as Record<string, number>,
   achievements: [] as string[],
+  revealedAchievements: [] as string[],
   stats: { ...initialStats },
   seenBriefings: [] as MinigameType[],
 };
@@ -66,6 +69,7 @@ export const META_PERSIST_KEYS = [
   "unlockedMinigames",
   "purchasedUpgrades",
   "achievements",
+  "revealedAchievements",
   "stats",
   "seenBriefings",
 ] as const;
@@ -112,6 +116,12 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
     const state = get();
     if (state.achievements.includes(id)) return;
     set({ achievements: [...state.achievements, id] });
+  },
+
+  revealAchievement: (id: string) => {
+    const state = get();
+    if (state.revealedAchievements.includes(id)) return;
+    set({ revealedAchievements: [...state.revealedAchievements, id] });
   },
 
   markBriefingSeen: (type: MinigameType) => {

@@ -22,6 +22,8 @@ export interface MetaUpgrade {
   stackable?: boolean; // if true, can be purchased infinitely with scaling price
 }
 
+export type AchievementCategory = "progression" | "skill" | "speed" | "economy" | "survival" | "playstyle" | "cumulative";
+
 export interface Achievement {
   id: string;
   name: string;
@@ -29,6 +31,7 @@ export interface Achievement {
   condition: AchievementCondition;
   reward: number; // data
   icon: string;
+  category: AchievementCategory;
 }
 
 export type AchievementCondition =

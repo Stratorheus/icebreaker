@@ -142,6 +142,95 @@ function evaluateCondition(
 }
 
 // ---------------------------------------------------------------------------
+// Near-miss evaluator — checks if player is close to earning an achievement
+// ---------------------------------------------------------------------------
+
+function evaluateNearMiss(
+  condition: AchievementCondition,
+  ctx: AchievementCheckContext,
+): boolean {
+  switch (condition.type) {
+    case "floor-reached":
+      return ctx.floor >= condition.floor - 1;
+
+    case "consecutive-floors-no-damage":
+      return ctx.consecutiveFloorsNoDamage >= condition.count - 2;
+
+    case "speed-consecutive-floors": {
+      // Check if player completed enough floors but was too slow (within 30% of time)
+      const timestamps = ctx.floorCompletionTimestamps;
+      if (timestamps.length < condition.count) return false;
+      for (let i = condition.count - 1; i < timestamps.length; i++) {
+        const windowStart = i === condition.count - 1
+          ? ctx.runStartTime
+          : timestamps[i - condition.count];
+        const windowEnd = timestamps[i];
+        if (windowEnd - windowStart <= condition.maxTimeMs * 1.3) return true;
+      }
+      return false;
+    }
+
+    case "minigame-streak": {
+      const minigame = condition.minigame;
+      const isCumulative = condition.count >= 15;
+      if (isCumulative) {
+        const total = ctx.stats.minigameWinsTotal[minigame] ?? 0;
+        return total >= condition.count * 0.8;
+      }
+      const streak = ctx.stats.minigameWinStreaks[minigame] ?? 0;
+      return streak >= condition.count - 2;
+    }
+
+    case "minigame-speed":
+      if (!ctx.lastMinigame) return false;
+      return (
+        ctx.lastMinigame.type === condition.minigame &&
+        ctx.lastMinigame.success &&
+        ctx.lastMinigame.timeMs <= condition.maxTimeMs * 1.3
+      );
+
+    case "total-runs":
+      return ctx.stats.totalRuns >= condition.count * 0.8;
+
+    case "total-minigames":
+      return ctx.stats.totalMinigamesPlayed >= condition.count * 0.8;
+
+    case "total-data-earned":
+      return ctx.stats.totalDataEarned >= condition.amount * 0.8;
+
+    case "total-minigames-won":
+      return ctx.stats.totalMinigamesWon >= condition.count * 0.8;
+
+    case "shop-spending":
+      return ctx.creditsSpentThisShop >= condition.amount * 0.7;
+
+    case "survive-low-hp":
+      return ctx.lastDamageTaken > 0 && ctx.hp > 0 && ctx.hp <= condition.maxHp * 2;
+
+    case "survive-low-hp-pct":
+      return ctx.lastDamageTaken > 0 && ctx.hp > 0 && (ctx.hp / ctx.maxHp) <= condition.maxPct * 2;
+
+    case "inventory-count":
+      return ctx.inventorySize >= condition.count - 1;
+
+    case "consecutive-floors-no-shop":
+      return ctx.consecutiveFloorsNoShop >= condition.count - 1;
+
+    case "minigame-win-streak":
+      return ctx.currentWinStreak >= condition.count - 3;
+
+    // These don't have meaningful near-miss
+    case "floor-no-damage":
+    case "floor-no-powerups":
+    case "all-minigames-unlocked":
+      return false;
+
+    default:
+      return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main checker
 // ---------------------------------------------------------------------------
 
@@ -156,5 +245,22 @@ export function checkAchievements(
     // Skip already-earned
     if (ctx.earnedAchievements.includes(achievement.id)) return false;
     return evaluateCondition(achievement.condition, ctx);
+  });
+}
+
+/**
+ * Checks for achievements the player nearly earned but didn't quite meet.
+ * Returns achievements that are close to being earned but not yet unlocked.
+ */
+export function checkNearMisses(
+  ctx: AchievementCheckContext,
+): Achievement[] {
+  return ACHIEVEMENT_POOL.filter((achievement) => {
+    // Skip already-earned
+    if (ctx.earnedAchievements.includes(achievement.id)) return false;
+    // Skip if actually earned this check
+    if (evaluateCondition(achievement.condition, ctx)) return false;
+    // Check near miss
+    return evaluateNearMiss(achievement.condition, ctx);
   });
 }

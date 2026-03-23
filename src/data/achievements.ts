@@ -15,6 +15,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 1 },
     reward: 15,
     icon: "door-open",
+    category: "progression",
   },
   {
     id: "script-kiddie",
@@ -23,6 +24,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 5 },
     reward: 50,
     icon: "terminal",
+    category: "progression",
   },
   {
     id: "zero-day",
@@ -31,6 +33,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 10 },
     reward: 100,
     icon: "bug",
+    category: "progression",
   },
   {
     id: "mid-stack",
@@ -39,6 +42,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 15 },
     reward: 200,
     icon: "layers",
+    category: "progression",
   },
   {
     id: "apt",
@@ -47,6 +51,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 20 },
     reward: 400,
     icon: "skull",
+    category: "progression",
   },
   {
     id: "deep-dive",
@@ -55,6 +60,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 30 },
     reward: 700,
     icon: "arrow-down-to-line",
+    category: "progression",
   },
   {
     id: "core-meltdown",
@@ -63,6 +69,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 50 },
     reward: 1500,
     icon: "flame",
+    category: "progression",
   },
   {
     id: "singularity",
@@ -71,6 +78,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-reached", floor: 100 },
     reward: 7500,
     icon: "atom",
+    category: "progression",
   },
 
   // ── SPEED — per-minigame speedruns ─────────────────────────────────────
@@ -81,6 +89,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "defrag", maxTimeMs: 6_000 },
     reward: 75,
     icon: "hard-drive",
+    category: "speed",
   },
   {
     id: "trace-speedrun",
@@ -89,6 +98,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "network-trace", maxTimeMs: 5_000 },
     reward: 75,
     icon: "route",
+    category: "speed",
   },
   {
     id: "echo-speedrun",
@@ -97,6 +107,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "signal-echo", maxTimeMs: 4_000 },
     reward: 75,
     icon: "audio-lines",
+    category: "speed",
   },
   {
     id: "checksum-speedrun",
@@ -105,6 +116,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "checksum-verify", maxTimeMs: 5_000 },
     reward: 75,
     icon: "brain",
+    category: "speed",
   },
   {
     id: "port-speedrun",
@@ -113,6 +125,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "port-scan", maxTimeMs: 5_000 },
     reward: 75,
     icon: "scan",
+    category: "speed",
   },
   {
     id: "subnet-speedrun",
@@ -121,6 +134,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "subnet-scan", maxTimeMs: 5_000 },
     reward: 75,
     icon: "globe",
+    category: "speed",
   },
   {
     id: "process-speedrun",
@@ -129,42 +143,18 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "wire-cutting", maxTimeMs: 6_000 },
     reward: 75,
     icon: "terminal",
+    category: "speed",
   },
 
   // ── SPEED — consecutive floor tiers ──────────────────────────────────
   {
-    id: "blitz",
-    name: "Blitz",
-    description: "Clear 5 consecutive floors in under 90 seconds.",
-    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 90_000 },
-    reward: 200,
-    icon: "zap",
-  },
-  {
-    id: "lightspeed",
-    name: "Lightspeed",
-    description: "Clear 5 consecutive floors in under 60 seconds.",
-    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 60_000 },
-    reward: 500,
-    icon: "rocket",
-  },
-
-  // ── SKILL ───────────────────────────────────────────────────────────────
-  {
-    id: "ghost-run",
-    name: "Ghost Run",
-    description: "Clear 5 floors in a row without taking damage.",
-    condition: { type: "consecutive-floors-no-damage", count: 5 },
+    id: "quick-dash",
+    name: "Quick Dash",
+    description: "Clear 3 consecutive floors in under 45 seconds.",
+    condition: { type: "speed-consecutive-floors", count: 3, maxTimeMs: 45_000 },
     reward: 75,
-    icon: "ghost",
-  },
-  {
-    id: "phantom",
-    name: "Phantom",
-    description: "Clear 10 floors in a row without taking damage.",
-    condition: { type: "consecutive-floors-no-damage", count: 10 },
-    reward: 300,
-    icon: "eye-off",
+    icon: "timer",
+    category: "speed",
   },
   {
     id: "speedrunner",
@@ -173,6 +163,43 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 120_000 },
     reward: 100,
     icon: "timer",
+    category: "speed",
+  },
+  {
+    id: "blitz",
+    name: "Blitz",
+    description: "Clear 5 consecutive floors in under 90 seconds.",
+    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 90_000 },
+    reward: 200,
+    icon: "zap",
+    category: "speed",
+  },
+  {
+    id: "lightspeed",
+    name: "Lightspeed",
+    description: "Clear 5 consecutive floors in under 60 seconds.",
+    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 60_000 },
+    reward: 500,
+    icon: "rocket",
+    category: "speed",
+  },
+  {
+    id: "marathon-runner",
+    name: "Marathon Runner",
+    description: "Clear 10 consecutive floors in under 5 minutes.",
+    condition: { type: "speed-consecutive-floors", count: 10, maxTimeMs: 300_000 },
+    reward: 300,
+    icon: "map",
+    category: "speed",
+  },
+  {
+    id: "hyperdrive",
+    name: "Hyperdrive",
+    description: "Clear 10 consecutive floors in under 3 minutes.",
+    condition: { type: "speed-consecutive-floors", count: 10, maxTimeMs: 180_000 },
+    reward: 750,
+    icon: "rocket",
+    category: "speed",
   },
   {
     id: "cipher-punk",
@@ -181,22 +208,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "cipher-crack", maxTimeMs: 3_000 },
     reward: 75,
     icon: "key",
-  },
-  {
-    id: "bracket-master",
-    name: "Bracket Master",
-    description: "Win Code Inject 10 times in a row.",
-    condition: { type: "minigame-streak", minigame: "close-brackets", count: 10 },
-    reward: 60,
-    icon: "code",
-  },
-  {
-    id: "slash-surgeon",
-    name: "Slash Surgeon",
-    description: "Win Slash Timing 5 times in a row.",
-    condition: { type: "minigame-streak", minigame: "slash-timing", count: 5 },
-    reward: 50,
-    icon: "sword",
+    category: "speed",
   },
   {
     id: "mine-walker",
@@ -205,6 +217,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "mine-sweep", maxTimeMs: 4_000 },
     reward: 75,
     icon: "crosshair",
+    category: "speed",
   },
   {
     id: "arrow-perfect",
@@ -213,6 +226,27 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-speed", minigame: "match-arrows", maxTimeMs: 2_000 },
     reward: 75,
     icon: "move",
+    category: "speed",
+  },
+
+  // ── SKILL ───────────────────────────────────────────────────────────────
+  {
+    id: "bracket-master",
+    name: "Bracket Master",
+    description: "Win Code Inject 10 times in a row.",
+    condition: { type: "minigame-streak", minigame: "close-brackets", count: 10 },
+    reward: 60,
+    icon: "code",
+    category: "skill",
+  },
+  {
+    id: "slash-surgeon",
+    name: "Slash Surgeon",
+    description: "Win Slash Timing 5 times in a row.",
+    condition: { type: "minigame-streak", minigame: "slash-timing", count: 5 },
+    reward: 50,
+    icon: "sword",
+    category: "skill",
   },
   {
     id: "warp-typist",
@@ -221,6 +255,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "type-backward", count: 8 },
     reward: 60,
     icon: "keyboard",
+    category: "skill",
   },
   {
     id: "wire-ace",
@@ -229,32 +264,36 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "wire-cutting", count: 6 },
     reward: 60,
     icon: "cable",
+    category: "skill",
+  },
+  {
+    id: "streak-master",
+    name: "Streak Master",
+    description: "Win 15 protocols in a row without failing.",
+    condition: { type: "minigame-win-streak", count: 15 },
+    reward: 100,
+    icon: "trophy",
+    category: "skill",
   },
 
   // ── SURVIVAL ──────────────────────────────────────────────────────────
   {
-    id: "clutch",
-    name: "Clutch",
-    description: "Survive a hit with 10% HP or less remaining.",
-    condition: { type: "survive-low-hp-pct", maxPct: 0.10 },
-    reward: 50,
-    icon: "heart-pulse",
+    id: "ghost-run",
+    name: "Ghost Run",
+    description: "Clear 5 floors in a row without taking damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 5 },
+    reward: 75,
+    icon: "ghost",
+    category: "survival",
   },
   {
-    id: "on-the-edge",
-    name: "On The Edge",
-    description: "Survive a hit with 5% HP or less remaining.",
-    condition: { type: "survive-low-hp-pct", maxPct: 0.05 },
-    reward: 100,
-    icon: "alert-triangle",
-  },
-  {
-    id: "one-hp",
-    name: "One HP",
-    description: "Survive a hit with 5 HP or less remaining.",
-    condition: { type: "survive-low-hp", maxHp: 5 },
-    reward: 200,
-    icon: "shield-alert",
+    id: "phantom",
+    name: "Phantom",
+    description: "Clear 10 floors in a row without taking damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 10 },
+    reward: 300,
+    icon: "eye-off",
+    category: "survival",
   },
   {
     id: "untouchable",
@@ -263,6 +302,34 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "consecutive-floors-no-damage", count: 20 },
     reward: 500,
     icon: "shield-check",
+    category: "survival",
+  },
+  {
+    id: "clutch",
+    name: "Clutch",
+    description: "Survive a hit with 10% HP or less remaining.",
+    condition: { type: "survive-low-hp-pct", maxPct: 0.10 },
+    reward: 50,
+    icon: "heart-pulse",
+    category: "survival",
+  },
+  {
+    id: "on-the-edge",
+    name: "On The Edge",
+    description: "Survive a hit with 5% HP or less remaining.",
+    condition: { type: "survive-low-hp-pct", maxPct: 0.05 },
+    reward: 100,
+    icon: "alert-triangle",
+    category: "survival",
+  },
+  {
+    id: "one-hp",
+    name: "One HP",
+    description: "Survive a hit with 5 HP or less remaining.",
+    condition: { type: "survive-low-hp", maxHp: 5 },
+    reward: 200,
+    icon: "shield-alert",
+    category: "survival",
   },
 
   // ── PLAYSTYLE ───────────────────────────────────────────────────────────
@@ -273,6 +340,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "inventory-count", count: 5 },
     reward: 40,
     icon: "package",
+    category: "playstyle",
   },
   {
     id: "no-shortcuts",
@@ -281,6 +349,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-no-powerups" },
     reward: 50,
     icon: "ban",
+    category: "playstyle",
   },
   {
     id: "first-blood",
@@ -289,14 +358,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-minigames-won", count: 1 },
     reward: 10,
     icon: "play",
-  },
-  {
-    id: "streak-master",
-    name: "Streak Master",
-    description: "Win 15 protocols in a row without failing.",
-    condition: { type: "minigame-win-streak", count: 15 },
-    reward: 100,
-    icon: "trophy",
+    category: "playstyle",
   },
   {
     id: "ascetic",
@@ -305,6 +367,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "consecutive-floors-no-shop", count: 3 },
     reward: 100,
     icon: "leaf",
+    category: "playstyle",
   },
   {
     id: "monk",
@@ -313,6 +376,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "consecutive-floors-no-shop", count: 5 },
     reward: 200,
     icon: "mountain",
+    category: "playstyle",
   },
   {
     id: "purist",
@@ -321,6 +385,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "consecutive-floors-no-shop", count: 10 },
     reward: 500,
     icon: "diamond",
+    category: "playstyle",
   },
   {
     id: "collector",
@@ -329,6 +394,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "all-minigames-unlocked" },
     reward: 200,
     icon: "library",
+    category: "economy",
   },
 
   // ── CUMULATIVE ──────────────────────────────────────────────────────────
@@ -339,6 +405,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-runs", count: 3 },
     reward: 25,
     icon: "user",
+    category: "cumulative",
   },
   {
     id: "veteran",
@@ -347,6 +414,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-runs", count: 10 },
     reward: 60,
     icon: "badge",
+    category: "cumulative",
   },
   {
     id: "grinder",
@@ -355,6 +423,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-runs", count: 50 },
     reward: 200,
     icon: "medal",
+    category: "cumulative",
   },
   {
     id: "obsessed",
@@ -363,6 +432,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-runs", count: 200 },
     reward: 750,
     icon: "brain",
+    category: "cumulative",
   },
   {
     id: "minigame-centurion",
@@ -371,6 +441,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-minigames", count: 100 },
     reward: 50,
     icon: "hash",
+    category: "cumulative",
   },
   {
     id: "minigame-millwright",
@@ -379,6 +450,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-minigames", count: 500 },
     reward: 150,
     icon: "infinity",
+    category: "cumulative",
   },
   {
     id: "minigame-legend",
@@ -387,6 +459,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-minigames", count: 2000 },
     reward: 600,
     icon: "crown",
+    category: "cumulative",
   },
   {
     id: "slash-veteran",
@@ -395,6 +468,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "slash-timing", count: 50 },
     reward: 75,
     icon: "swords",
+    category: "cumulative",
   },
   {
     id: "symbol-stalker",
@@ -403,6 +477,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "find-symbol", count: 30 },
     reward: 75,
     icon: "search",
+    category: "cumulative",
   },
   {
     id: "cipher-scholar",
@@ -411,6 +486,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "cipher-crack", count: 25 },
     reward: 75,
     icon: "scroll",
+    category: "cumulative",
   },
   {
     id: "demolitions-expert",
@@ -419,6 +495,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "mine-sweep", count: 40 },
     reward: 75,
     icon: "bomb",
+    category: "cumulative",
   },
   {
     id: "defrag-expert",
@@ -427,6 +504,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "defrag", count: 30 },
     reward: 75,
     icon: "hard-drive",
+    category: "cumulative",
   },
   {
     id: "maze-runner",
@@ -435,6 +513,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "network-trace", count: 30 },
     reward: 75,
     icon: "network",
+    category: "cumulative",
   },
   {
     id: "echo-chamber",
@@ -443,6 +522,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "signal-echo", count: 30 },
     reward: 75,
     icon: "radio",
+    category: "cumulative",
   },
   {
     id: "math-wizard",
@@ -451,6 +531,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "checksum-verify", count: 40 },
     reward: 75,
     icon: "calculator",
+    category: "cumulative",
   },
   {
     id: "port-authority",
@@ -459,6 +540,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "port-scan", count: 30 },
     reward: 75,
     icon: "plug",
+    category: "cumulative",
   },
   {
     id: "subnet-admin",
@@ -467,6 +549,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "subnet-scan", count: 25 },
     reward: 75,
     icon: "network",
+    category: "cumulative",
   },
 
   // ── ECONOMY — shop spending tiers ────────────────────────────────────
@@ -477,6 +560,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "shop-spending", amount: 200 },
     reward: 30,
     icon: "shopping-cart",
+    category: "economy",
   },
   {
     id: "big-spender",
@@ -485,6 +569,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "shop-spending", amount: 500 },
     reward: 75,
     icon: "credit-card",
+    category: "economy",
   },
   {
     id: "whale",
@@ -493,6 +578,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "shop-spending", amount: 1_000 },
     reward: 150,
     icon: "gem",
+    category: "economy",
   },
   {
     id: "burn-rate",
@@ -501,6 +587,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "shop-spending", amount: 2_000 },
     reward: 300,
     icon: "flame",
+    category: "economy",
   },
 
   // ── ECONOMY — lifetime data tiers ────────────────────────────────────
@@ -511,6 +598,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 1_000 },
     reward: 50,
     icon: "pickaxe",
+    category: "economy",
   },
   {
     id: "data-hoarder",
@@ -519,6 +607,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 5_000 },
     reward: 100,
     icon: "database",
+    category: "economy",
   },
   {
     id: "data-broker",
@@ -527,6 +616,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 25_000 },
     reward: 250,
     icon: "bar-chart",
+    category: "economy",
   },
   {
     id: "data-baron",
@@ -535,6 +625,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 100_000 },
     reward: 500,
     icon: "building",
+    category: "economy",
   },
   {
     id: "data-overlord",
@@ -543,6 +634,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 500_000 },
     reward: 1_500,
     icon: "castle",
+    category: "economy",
   },
   {
     id: "data-singularity",
@@ -551,6 +643,7 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "total-data-earned", amount: 2_000_000 },
     reward: 5_000,
     icon: "orbit",
+    category: "economy",
   },
 
   // ── CRAZY ────────────────────────────────────────────────────────────
@@ -561,5 +654,6 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "consecutive-floors-no-damage", count: 100 },
     reward: 100_000,
     icon: "crown",
+    category: "survival",
   },
 ];
