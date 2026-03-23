@@ -32,13 +32,15 @@ export function DeathScreen() {
 
   const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
   const dataDripThisRun = useGameStore((s) => s.dataDripThisRun);
+  const creditsEarnedThisRun = useGameStore((s) => s.creditsEarnedThisRun);
 
   // Base run data reward (Data Siphon meta upgrade applied inside getEffectiveDataReward)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
   const baseDataEarned = getEffectiveDataReward(floor, dataTier);
 
-  // Credits → Data conversion: leftover credits convert at 8% rate
-  const creditsSaved = getCreditsSaved(credits);
+  // Credits → Data conversion: only earned credits count, Head Start bonus excluded.
+  // Starting credits are spent first → eligible = min(earned, current).
+  const creditsSaved = getCreditsSaved(credits, creditsEarnedThisRun);
 
   // Milestones earned this run (now subject to death penalty)
   const milestoneData = milestoneDataThisRun;

@@ -145,6 +145,7 @@ export function RunShop() {
   const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
   const dataDripThisRun = useGameStore((s) => s.dataDripThisRun);
   const milestoneDataThisRun = useGameStore((s) => s.milestoneDataThisRun);
+  const creditsEarnedThisRun = useGameStore((s) => s.creditsEarnedThisRun);
 
   const [view, setView] = useState<VendorView>("shop");
   const [confirmQuit, setConfirmQuit] = useState(false);
@@ -184,7 +185,7 @@ export function RunShop() {
   // Compute data reward preview for quit button (total projected: base + drip + milestones + credits)
   const dataTier = purchasedUpgrades["data-siphon"] ?? 0;
   const baseDataReward = getEffectiveDataReward(floor, dataTier);
-  const creditsSavedPreview = getCreditsSaved(credits);
+  const creditsSavedPreview = getCreditsSaved(credits, creditsEarnedThisRun);
   const dataReward = baseDataReward + dataDripThisRun + milestoneDataThisRun + creditsSavedPreview;
 
   // Sub-views: Codex and Stats with back button returning to shop
