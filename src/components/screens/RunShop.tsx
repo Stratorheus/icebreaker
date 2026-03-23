@@ -151,10 +151,12 @@ export function RunShop() {
   const [confirmQuit, setConfirmQuit] = useState(false);
 
   // Keyboard shortcuts: Space = continue, Escape = toggle quit confirmation
+  const confirmQuitRef = useRef(confirmQuit);
+  confirmQuitRef.current = confirmQuit;
   useEffect(() => {
     if (view !== "shop") return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === " ") {
+      if (e.key === " " && !confirmQuitRef.current) {
         e.preventDefault();
         advanceFloor();
       } else if (e.key === "Escape") {
@@ -361,7 +363,7 @@ export function RunShop() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => buyRunShopItem(index)}
+                    onClick={() => { buyRunShopItem(index); evaluateAndAwardAchievements(); }}
                     disabled={!available}
                     className={cn(
                       "px-4 py-1 text-xs uppercase tracking-widest font-mono border transition-colors duration-150",
