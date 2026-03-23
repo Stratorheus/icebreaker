@@ -183,10 +183,11 @@ test.describe("mine-radar — Defrag", () => {
     // Click the first cell to place mines (defrag places mines after first click)
     const cells = page.locator('[data-testid="cell"]');
     await cells.first().click();
-    await page.waitForTimeout(300);
 
-    // Mine radar at tier 4 (100% of timer) shows row/column indicators with mine counts
+    // Wait for radar indicators to render (mines placed → radar visible on next frame)
     const radarIndicators = page.locator('[data-testid="mine-radar-indicator"]');
+    await radarIndicators.first().waitFor({ timeout: 3000 });
+
     const indicatorCount = await radarIndicators.count();
 
     // Should have indicators for rows + columns (e.g. 5x5 grid = 5 col + 5 row = 10)
@@ -460,18 +461,18 @@ test.describe("port-scan-deep — Port Scan", () => {
 // WIRE LABELS — highlights next wire to cut in Wire Cutting
 // ===========================================================================
 
-test.describe("wire-labels — Wire Cutting", () => {
+test.describe("wire-labels — Process Kill", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await unlockMinigames(page, ["wire-cutting"]);
   });
 
   test("next wire is highlighted with data-next=true", async ({ page }) => {
-    await goToBriefing(page, "Wire Cutting", { "wire-labels": 1 }, ["wire-cutting"]);
+    await goToBriefing(page, "Process Kill", { "wire-labels": 1 }, ["wire-cutting"]);
     await beginWithUpgrade(page, ["wire-labels"]);
 
     // data-next="true" should exist on the wire to cut
-    const nextWire = page.locator('[data-testid="wire"][data-next="true"]');
+    const nextWire = page.locator('[data-testid="stream"][data-next="true"]');
     await expect(nextWire).toBeVisible({ timeout: 5000 });
 
     // Click it to cut
@@ -479,7 +480,7 @@ test.describe("wire-labels — Wire Cutting", () => {
     await page.waitForTimeout(200);
 
     // Game should still be running or completed successfully
-    const cells = page.locator('[data-testid="wire"]');
+    const cells = page.locator('[data-testid="stream"]');
     await expect(cells.first()).toBeAttached();
   });
 });

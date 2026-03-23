@@ -148,8 +148,8 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
   },
   {
     id: "wire-ace",
-    name: "Wire Ace",
-    description: "Win Wire Cutting 6 times in a row.",
+    name: "Process Killer",
+    description: "Win Process Kill 6 times in a row.",
     condition: { type: "minigame-streak", minigame: "wire-cutting", count: 6 },
     reward: 40,
     icon: "cable",
