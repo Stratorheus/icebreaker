@@ -5,7 +5,7 @@ import type { MinigameType } from "@/types/game";
 import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
-import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -92,7 +92,7 @@ export function MinigameScreen() {
           setPhase("result");
           setTimeout(() => {
             skipRemainingFloor(skipResult.rewardFraction);
-            awardNewAchievements();
+            evaluateAndAwardAchievements();
           }, 1000);
           return;
         }
@@ -183,12 +183,8 @@ export function MinigameScreen() {
         }
 
         // Check achievements after store state is updated
-        // (Zustand set() is synchronous so state is fresh here)
-        awardNewAchievements({
-          success: result.success,
-          timeMs: result.timeMs,
-          type: result.minigame,
-        });
+        // (Zustand set() is synchronous — lastMinigameResult is already in store)
+        evaluateAndAwardAchievements();
       }, 1000);
     },
     [completeMinigame, failMinigame, recordMinigameResult, purchasedUpgrades, floor, usePowerUp],

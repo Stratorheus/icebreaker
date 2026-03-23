@@ -2,23 +2,22 @@ import { toast } from "sonner";
 import { useGameStore } from "@/store/game-store";
 import {
   checkAchievements,
+  checkNearMisses,
   type AchievementCheckContext,
 } from "@/lib/achievement-checker";
-import type { MinigameType } from "@/types/game";
 
 // ---------------------------------------------------------------------------
-// Award helper — call after state is already updated in the store
+// Centralized achievement evaluator — reads everything from the store
 // ---------------------------------------------------------------------------
 
 /**
- * Reads current store state, checks for newly earned achievements,
- * awards data and shows toasts for each.
+ * Evaluate and award achievements based on current store state.
+ * Call this once — it reads everything it needs from the store,
+ * including `lastMinigameResult` (set by completeMinigame / failMinigame).
  *
- * `lastMinigame` is optional — pass only when checking after a minigame.
+ * No parameters needed.
  */
-export function awardNewAchievements(
-  lastMinigame?: { success: boolean; timeMs: number; type: MinigameType },
-): void {
+export function evaluateAndAwardAchievements(): void {
   const state = useGameStore.getState();
 
   const ctx: AchievementCheckContext = {
@@ -28,14 +27,20 @@ export function awardNewAchievements(
     powerUpsUsedThisFloor: state.powerUpsUsedThisFloor,
     inventorySize: state.inventory.length,
     hp: state.hp,
-    runStartTime: state.runStartTime,
+    maxHp: state.maxHp,
+    consecutiveFloorsNoDamage: state.consecutiveFloorsNoDamage,
+    floorCompletionTimestamps: state.floorCompletionTimestamps,
+    creditsSpentThisShop: state.creditsSpentThisShop,
+    consecutiveFloorsNoShop: state.consecutiveFloorsNoShop,
+    lastDamageTaken: state.lastDamageTaken,
+    currentWinStreak: state.currentWinStreak,
+    unlockedMinigamesCount: state.unlockedMinigames.length,
     earnedAchievements: state.achievements,
     stats: state.stats,
-    lastMinigame,
+    lastMinigame: state.lastMinigameResult ?? undefined,
   };
 
   const earned = checkAchievements(ctx);
-  if (earned.length === 0) return;
 
   for (const achievement of earned) {
     state.unlockAchievement(achievement.id);
@@ -43,6 +48,14 @@ export function awardNewAchievements(
     toast(`\u{1F3C6} Achievement Unlocked!`, {
       description: `${achievement.name} — +${achievement.reward} \u25C6`,
     });
+  }
+
+  // Check near-misses and reveal achievements the player almost earned
+  const nearMisses = checkNearMisses(ctx);
+  for (const achievement of nearMisses) {
+    if (!state.revealedAchievements.includes(achievement.id)) {
+      state.revealAchievement(achievement.id);
+    }
   }
 }
 
@@ -55,5 +68,5 @@ export function awardNewAchievements(
  * to evaluate and award achievements.
  */
 export function useAchievementCheck() {
-  return { awardNewAchievements };
+  return { evaluateAndAwardAchievements };
 }

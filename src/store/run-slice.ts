@@ -51,6 +51,20 @@ export interface RunSlice {
   timeSiphonBonus: number;
   /** Cascade Clock: accumulated % of base timer from consecutive wins. Resets on fail only. */
   cascadeClockPct: number;
+  /** Number of consecutive floors cleared without taking damage. */
+  consecutiveFloorsNoDamage: number;
+  /** Timestamps (Date.now()) recorded each time a floor is completed (advanceFloor). */
+  floorCompletionTimestamps: number[];
+  /** Result of the last completed/failed minigame (for achievement evaluation). Reset on startRun. */
+  lastMinigameResult: { success: boolean; timeMs: number; type: MinigameType } | null;
+  /** Credits spent in the current shop visit. Reset on advanceFloor. */
+  creditsSpentThisShop: number;
+  /** Number of consecutive floors where the player bought nothing from shop. */
+  consecutiveFloorsNoShop: number;
+  /** Actual damage dealt in the last failMinigame (0 = no damage this round). Reset on completeMinigame/startRun. */
+  lastDamageTaken: number;
+  /** Current consecutive minigame win streak (across all types). Reset on failMinigame. */
+  currentWinStreak: number;
 
   // Actions
   startRun: () => void;
@@ -132,6 +146,13 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   creditsEarnedThisRun: 0,
   timeSiphonBonus: 0,
   cascadeClockPct: 0,
+  consecutiveFloorsNoDamage: 0,
+  floorCompletionTimestamps: [],
+  lastMinigameResult: null,
+  creditsSpentThisShop: 0,
+  consecutiveFloorsNoShop: 0,
+  lastDamageTaken: 0,
+  currentWinStreak: 0,
 };
 
 // Helper type: extract only action keys
@@ -209,6 +230,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       dataDripThisRun: 0,
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
+      consecutiveFloorsNoDamage: 0,
+      floorCompletionTimestamps: [Date.now()],
+      lastMinigameResult: null,
+      creditsSpentThisShop: 0,
+      consecutiveFloorsNoShop: 0,
+      lastDamageTaken: 0,
+      currentWinStreak: 0,
     });
   },
 
@@ -293,6 +321,18 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       cascadeClockPct = Math.min(tierCap, cascadeClockPct + 0.02);
     }
 
+    // Floor-completion bookkeeping — computed when floor is done (isLastMinigame)
+    // so achievement checks in RunShop see up-to-date counters.
+    const floorCompletionTimestamps = isLastMinigame
+      ? [...state.floorCompletionTimestamps, Date.now()]
+      : state.floorCompletionTimestamps;
+    const consecutiveFloorsNoDamage = isLastMinigame
+      ? (state.floorDamageTaken ? 0 : state.consecutiveFloorsNoDamage + 1)
+      : state.consecutiveFloorsNoDamage;
+    const consecutiveFloorsNoShop = isLastMinigame
+      ? (state.creditsSpentThisShop > 0 ? 0 : state.consecutiveFloorsNoShop + 1)
+      : state.consecutiveFloorsNoShop;
+
     set({
       hp: newHp,
       credits: state.credits + earned,
@@ -309,11 +349,18 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       dataDripThisRun: state.dataDripThisRun + minigameDataDrip,
       timeSiphonBonus,
       cascadeClockPct,
+      lastMinigameResult: { success: true, timeMs: result.timeMs, type: result.minigame },
+      lastDamageTaken: 0,
+      currentWinStreak: state.currentWinStreak + 1,
+      floorCompletionTimestamps,
+      consecutiveFloorsNoDamage,
+      consecutiveFloorsNoShop,
     });
   },
 
   failMinigame: () => {
     const state = get();
+    const currentType = state.floorMinigames[state.currentMinigameIndex];
     const baseDamage = getEffectiveDamage(state.floor, state.purchasedUpgrades["thicker-armor"] ?? 0);
 
     // Apply the strongest shield / damage-reduction power-up
@@ -347,6 +394,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         // Time Siphon resets on fail; Cascade Clock resets on fail
         timeSiphonBonus: 0,
         cascadeClockPct: 0,
+        consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
+        lastMinigameResult: { success: false, timeMs: 0, type: currentType },
+        lastDamageTaken: damage,
+        currentWinStreak: 0,
       });
       return;
     }
@@ -367,8 +418,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     // Ensure the re-rolled game is different from the current one.
     const newFloorMinigames = [...state.floorMinigames];
     const pool = state.unlockedMinigames;
-    const currentType = newFloorMinigames[state.currentMinigameIndex];
-    const alternatives = pool.length > 1 ? pool.filter((m) => m !== currentType) : pool;
+    const rerollCurrentType = newFloorMinigames[state.currentMinigameIndex];
+    const alternatives = pool.length > 1 ? pool.filter((m) => m !== rerollCurrentType) : pool;
     newFloorMinigames[state.currentMinigameIndex] =
       alternatives[Math.floor(Math.random() * alternatives.length)];
 
@@ -382,6 +433,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Time Siphon resets on fail; Cascade Clock resets on fail
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
+      consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
+      lastMinigameResult: { success: false, timeMs: 0, type: currentType },
+      lastDamageTaken: damage,
+      currentWinStreak: 0,
     });
   },
 
@@ -458,6 +513,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Time Siphon resets at floor advance (floor-scoped).
       // Cascade Clock does NOT reset here — it persists across floors.
       timeSiphonBonus: 0,
+      // Floor-completion counters were already updated in completeMinigame/skipRemainingFloor.
+      // Reset per-floor shop tracking for the new floor.
+      creditsSpentThisShop: 0,
+      lastDamageTaken: 0,
     });
   },
 
@@ -516,6 +575,16 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       milestoneFloor = state.floor;
     }
 
+    // Floor-completion bookkeeping (same as completeMinigame when isLastMinigame)
+    // Skip counts remaining minigames as auto-completed wins, so keep streak.
+    const floorCompletionTimestamps = [...state.floorCompletionTimestamps, Date.now()];
+    const consecutiveFloorsNoDamage = state.floorDamageTaken
+      ? 0
+      : state.consecutiveFloorsNoDamage + 1;
+    const consecutiveFloorsNoShop = state.creditsSpentThisShop > 0
+      ? 0
+      : state.consecutiveFloorsNoShop + 1;
+
     set({
       hp: newHp,
       credits: state.credits + totalCredits,
@@ -531,6 +600,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       milestoneDataThisRun,
       // Fix 6: Reset Time Siphon bonus (floor-scoped)
       timeSiphonBonus: 0,
+      floorCompletionTimestamps,
+      consecutiveFloorsNoDamage,
+      consecutiveFloorsNoShop,
+      creditsSpentThisShop: 0,
     });
   },
 

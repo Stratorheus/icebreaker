@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { getCreditsSaved, getDeathPenaltyPct, getEffectiveDataReward } from "@/data/balancing";
-import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 import { Hexagon } from "lucide-react";
 
 /**
@@ -89,10 +89,10 @@ export function DeathScreen() {
       totalPlayTimeMs: stats.totalPlayTimeMs + playTimeMs,
     });
 
-    // Check run-end achievements — skip on voluntary quit (#12)
-    if (!quitVoluntarily) {
-      awardNewAchievements();
-    }
+    // Check run-end achievements (always run — cumulative stats like
+    // totalRuns are already updated above, so count-based achievements
+    // must be evaluated even on voluntary quit)
+    evaluateAndAwardAchievements();
 
     // Calculate total data actually added (base - penalty + achievement bonuses)
     const dataAfterAll = useGameStore.getState().data;
@@ -150,7 +150,7 @@ export function DeathScreen() {
             className="text-cyber-cyan/70"
           />
         )}
-        {!quitVoluntarily && achievementBonus > 0 && (
+        {achievementBonus > 0 && (
           <BreakdownRow
             label="ACHIEVEMENT BONUS"
             value={`+${achievementBonus}`}

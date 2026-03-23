@@ -108,6 +108,9 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
 
     const newItemsBought = (state.itemsBoughtThisRun ?? 0) + 1;
 
+    // Track shop spending and purchase flag for achievements
+    const newCreditsSpentThisShop = (state.creditsSpentThisShop ?? 0) + offer.price;
+
     // Immediate-effect items are consumed on purchase (not added to inventory)
     const effectType = powerUp.effect.type;
     if (effectType === "heal") {
@@ -116,6 +119,7 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
         credits: newCredits,
         runShopOffers: newOffers,
         itemsBoughtThisRun: newItemsBought,
+        creditsSpentThisShop: newCreditsSpentThisShop,
       });
       state.heal(powerUp.effect.value);
       return true;
@@ -127,6 +131,7 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
       runShopOffers: newOffers,
       inventory: [...state.inventory, powerUp],
       itemsBoughtThisRun: newItemsBought,
+      creditsSpentThisShop: newCreditsSpentThisShop,
     });
 
     return true;

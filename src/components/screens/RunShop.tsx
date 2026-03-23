@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
-import { awardNewAchievements } from "@/hooks/use-achievement-check";
+import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import {
@@ -150,6 +150,24 @@ export function RunShop() {
   const [view, setView] = useState<VendorView>("shop");
   const [confirmQuit, setConfirmQuit] = useState(false);
 
+  // Keyboard shortcuts: Space = continue, Escape = toggle quit confirmation
+  const confirmQuitRef = useRef(confirmQuit);
+  confirmQuitRef.current = confirmQuit;
+  useEffect(() => {
+    if (view !== "shop") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " " && !confirmQuitRef.current) {
+        e.preventDefault();
+        advanceFloor();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setConfirmQuit((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [view, advanceFloor]);
+
   // Generate shop if it hasn't been generated yet
   const generatedRef = useRef(false);
   useEffect(() => {
@@ -166,9 +184,9 @@ export function RunShop() {
   useEffect(() => {
     if (achievementCheckedRef.current) return;
     achievementCheckedRef.current = true;
-    // Floor was just cleared — evaluate floor-reached, floor-no-damage,
-    // floor-no-powerups, and speed-run conditions.
-    awardNewAchievements();
+    // Floor was just cleared — evaluate floor-reached, floor-no-powerups,
+    // speed-consecutive-floors, and other floor-scoped conditions.
+    evaluateAndAwardAchievements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -345,7 +363,7 @@ export function RunShop() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => buyRunShopItem(index)}
+                    onClick={() => { buyRunShopItem(index); evaluateAndAwardAchievements(); }}
                     disabled={!available}
                     className={cn(
                       "px-4 py-1 text-xs uppercase tracking-widest font-mono border transition-colors duration-150",
