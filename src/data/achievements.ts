@@ -73,6 +73,82 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     icon: "atom",
   },
 
+  // ── SPEED — per-minigame speedruns ─────────────────────────────────────
+  {
+    id: "defrag-speedrun",
+    name: "Disk Wipe",
+    description: "Win Defrag in under 6 seconds.",
+    condition: { type: "minigame-speed", minigame: "defrag", maxTimeMs: 6_000 },
+    reward: 75,
+    icon: "hard-drive",
+  },
+  {
+    id: "trace-speedrun",
+    name: "Shortcut",
+    description: "Win Network Trace in under 5 seconds.",
+    condition: { type: "minigame-speed", minigame: "network-trace", maxTimeMs: 5_000 },
+    reward: 75,
+    icon: "route",
+  },
+  {
+    id: "echo-speedrun",
+    name: "Perfect Echo",
+    description: "Win Signal Echo in under 4 seconds.",
+    condition: { type: "minigame-speed", minigame: "signal-echo", maxTimeMs: 4_000 },
+    reward: 75,
+    icon: "audio-lines",
+  },
+  {
+    id: "checksum-speedrun",
+    name: "Mental Math",
+    description: "Win Checksum Verify in under 5 seconds.",
+    condition: { type: "minigame-speed", minigame: "checksum-verify", maxTimeMs: 5_000 },
+    reward: 75,
+    icon: "brain",
+  },
+  {
+    id: "port-speedrun",
+    name: "Quick Scan",
+    description: "Win Port Scan in under 5 seconds.",
+    condition: { type: "minigame-speed", minigame: "port-scan", maxTimeMs: 5_000 },
+    reward: 75,
+    icon: "scan",
+  },
+  {
+    id: "subnet-speedrun",
+    name: "CIDR Master",
+    description: "Win Subnet Scan in under 5 seconds.",
+    condition: { type: "minigame-speed", minigame: "subnet-scan", maxTimeMs: 5_000 },
+    reward: 75,
+    icon: "globe",
+  },
+  {
+    id: "process-speedrun",
+    name: "Kill -9",
+    description: "Win Process Kill in under 6 seconds.",
+    condition: { type: "minigame-speed", minigame: "wire-cutting", maxTimeMs: 6_000 },
+    reward: 75,
+    icon: "terminal",
+  },
+
+  // ── SPEED — consecutive floor tiers ──────────────────────────────────
+  {
+    id: "blitz",
+    name: "Blitz",
+    description: "Clear 5 consecutive floors in under 90 seconds.",
+    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 90_000 },
+    reward: 200,
+    icon: "zap",
+  },
+  {
+    id: "lightspeed",
+    name: "Lightspeed",
+    description: "Clear 5 consecutive floors in under 60 seconds.",
+    condition: { type: "speed-consecutive-floors", count: 5, maxTimeMs: 60_000 },
+    reward: 500,
+    icon: "rocket",
+  },
+
   // ── SKILL ───────────────────────────────────────────────────────────────
   {
     id: "ghost-run",
@@ -155,6 +231,40 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     icon: "cable",
   },
 
+  // ── SURVIVAL ──────────────────────────────────────────────────────────
+  {
+    id: "clutch",
+    name: "Clutch",
+    description: "Survive a hit with 10% HP or less remaining.",
+    condition: { type: "survive-low-hp-pct", maxPct: 0.10 },
+    reward: 50,
+    icon: "heart-pulse",
+  },
+  {
+    id: "on-the-edge",
+    name: "On The Edge",
+    description: "Survive a hit with 5% HP or less remaining.",
+    condition: { type: "survive-low-hp-pct", maxPct: 0.05 },
+    reward: 100,
+    icon: "alert-triangle",
+  },
+  {
+    id: "one-hp",
+    name: "One HP",
+    description: "Survive a hit with 5 HP or less remaining.",
+    condition: { type: "survive-low-hp", maxHp: 5 },
+    reward: 200,
+    icon: "shield-alert",
+  },
+  {
+    id: "untouchable",
+    name: "Untouchable",
+    description: "Clear 20 consecutive floors without taking damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 20 },
+    reward: 500,
+    icon: "shield-check",
+  },
+
   // ── PLAYSTYLE ───────────────────────────────────────────────────────────
   {
     id: "hoarder",
@@ -171,6 +281,54 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "floor-no-powerups" },
     reward: 50,
     icon: "ban",
+  },
+  {
+    id: "first-blood",
+    name: "First Blood",
+    description: "Win your very first protocol.",
+    condition: { type: "total-minigames-won", count: 1 },
+    reward: 10,
+    icon: "play",
+  },
+  {
+    id: "streak-master",
+    name: "Streak Master",
+    description: "Win 15 protocols in a row without failing.",
+    condition: { type: "minigame-win-streak", count: 15 },
+    reward: 100,
+    icon: "trophy",
+  },
+  {
+    id: "ascetic",
+    name: "Ascetic",
+    description: "Clear 3 consecutive floors without buying from the shop.",
+    condition: { type: "consecutive-floors-no-shop", count: 3 },
+    reward: 100,
+    icon: "leaf",
+  },
+  {
+    id: "monk",
+    name: "Monk",
+    description: "Clear 5 consecutive floors without buying from the shop.",
+    condition: { type: "consecutive-floors-no-shop", count: 5 },
+    reward: 200,
+    icon: "mountain",
+  },
+  {
+    id: "purist",
+    name: "Purist",
+    description: "Clear 10 consecutive floors without buying from the shop.",
+    condition: { type: "consecutive-floors-no-shop", count: 10 },
+    reward: 500,
+    icon: "diamond",
+  },
+  {
+    id: "collector",
+    name: "Collector",
+    description: "Unlock all 15 protocols.",
+    condition: { type: "all-minigames-unlocked" },
+    reward: 200,
+    icon: "library",
   },
 
   // ── CUMULATIVE ──────────────────────────────────────────────────────────
@@ -309,5 +467,99 @@ export const ACHIEVEMENT_POOL: Achievement[] = [
     condition: { type: "minigame-streak", minigame: "subnet-scan", count: 25 },
     reward: 75,
     icon: "network",
+  },
+
+  // ── ECONOMY — shop spending tiers ────────────────────────────────────
+  {
+    id: "bargain-hunter",
+    name: "Bargain Hunter",
+    description: "Spend 200+ credits in a single shop visit.",
+    condition: { type: "shop-spending", amount: 200 },
+    reward: 30,
+    icon: "shopping-cart",
+  },
+  {
+    id: "big-spender",
+    name: "Big Spender",
+    description: "Spend 500+ credits in a single shop visit.",
+    condition: { type: "shop-spending", amount: 500 },
+    reward: 75,
+    icon: "credit-card",
+  },
+  {
+    id: "whale",
+    name: "Whale",
+    description: "Spend 1000+ credits in a single shop visit.",
+    condition: { type: "shop-spending", amount: 1_000 },
+    reward: 150,
+    icon: "gem",
+  },
+  {
+    id: "burn-rate",
+    name: "Burn Rate",
+    description: "Spend 2000+ credits in a single shop visit.",
+    condition: { type: "shop-spending", amount: 2_000 },
+    reward: 300,
+    icon: "flame",
+  },
+
+  // ── ECONOMY — lifetime data tiers ────────────────────────────────────
+  {
+    id: "data-miner",
+    name: "Data Miner",
+    description: "Earn 1,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 1_000 },
+    reward: 50,
+    icon: "pickaxe",
+  },
+  {
+    id: "data-hoarder",
+    name: "Data Hoarder",
+    description: "Earn 5,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 5_000 },
+    reward: 100,
+    icon: "database",
+  },
+  {
+    id: "data-broker",
+    name: "Data Broker",
+    description: "Earn 25,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 25_000 },
+    reward: 250,
+    icon: "bar-chart",
+  },
+  {
+    id: "data-baron",
+    name: "Data Baron",
+    description: "Earn 100,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 100_000 },
+    reward: 500,
+    icon: "building",
+  },
+  {
+    id: "data-overlord",
+    name: "Data Overlord",
+    description: "Earn 500,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 500_000 },
+    reward: 1_500,
+    icon: "castle",
+  },
+  {
+    id: "data-singularity",
+    name: "Data Singularity",
+    description: "Earn 2,000,000 data total (lifetime).",
+    condition: { type: "total-data-earned", amount: 2_000_000 },
+    reward: 5_000,
+    icon: "orbit",
+  },
+
+  // ── CRAZY ────────────────────────────────────────────────────────────
+  {
+    id: "god-mode",
+    name: "God Mode",
+    description: "Clear 100 consecutive floors without taking any damage.",
+    condition: { type: "consecutive-floors-no-damage", count: 100 },
+    reward: 100_000,
+    icon: "crown",
   },
 ];

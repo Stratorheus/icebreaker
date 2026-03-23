@@ -526,3 +526,171 @@ describe("floorCompletionTimestamps", () => {
     expect(t2).toBeGreaterThanOrEqual(t1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// creditsSpentThisShop
+// ---------------------------------------------------------------------------
+
+describe("creditsSpentThisShop", () => {
+  it("starts at 0 on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().creditsSpentThisShop).toBe(0);
+  });
+
+  it("resets to 0 on advanceFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ creditsSpentThisShop: 500 });
+
+    store.getState().advanceFloor();
+    expect(store.getState().creditsSpentThisShop).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// consecutiveFloorsNoShop
+// ---------------------------------------------------------------------------
+
+describe("consecutiveFloorsNoShop", () => {
+  it("starts at 0 on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().consecutiveFloorsNoShop).toBe(0);
+  });
+
+  it("increments on advanceFloor when no items bought", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().boughtItemThisFloor).toBe(false);
+
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoShop).toBe(1);
+
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoShop).toBe(2);
+  });
+
+  it("resets to 0 on advanceFloor when items were bought", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    // Advance without buying — count goes to 1
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoShop).toBe(1);
+
+    // Simulate buying on the next floor
+    store.setState({ boughtItemThisFloor: true });
+    store.getState().advanceFloor();
+    expect(store.getState().consecutiveFloorsNoShop).toBe(0);
+  });
+
+  it("resets boughtItemThisFloor to false on advanceFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ boughtItemThisFloor: true });
+
+    store.getState().advanceFloor();
+    expect(store.getState().boughtItemThisFloor).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// lastDamageTaken
+// ---------------------------------------------------------------------------
+
+describe("lastDamageTaken", () => {
+  it("starts at 0 on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().lastDamageTaken).toBe(0);
+  });
+
+  it("is set to actual damage on failMinigame (survive)", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ hp: 200, maxHp: 200 });
+
+    store.getState().failMinigame();
+    expect(store.getState().lastDamageTaken).toBeGreaterThan(0);
+  });
+
+  it("is set to damage on failMinigame (death)", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ hp: 1, maxHp: 100 });
+
+    store.getState().failMinigame();
+    expect(store.getState().lastDamageTaken).toBeGreaterThan(0);
+  });
+
+  it("is 0 when shield absorbs all damage", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    const shield = makePowerUp("firewall-patch", "shield", 1);
+    store.setState({ hp: 100, maxHp: 100, inventory: [shield] });
+
+    store.getState().failMinigame();
+    expect(store.getState().lastDamageTaken).toBe(0);
+  });
+
+  it("resets to 0 on completeMinigame", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ lastDamageTaken: 20 });
+
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().lastDamageTaken).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// currentWinStreak
+// ---------------------------------------------------------------------------
+
+describe("currentWinStreak", () => {
+  it("starts at 0 on new run", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().currentWinStreak).toBe(0);
+  });
+
+  it("increments on completeMinigame", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().currentWinStreak).toBe(1);
+  });
+
+  it("accumulates on consecutive wins", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({
+      floorMinigames: ["slash-timing", "slash-timing", "slash-timing"],
+      currentMinigameIndex: 0,
+    });
+
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().currentWinStreak).toBe(2);
+  });
+
+  it("resets to 0 on failMinigame", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ hp: 200, maxHp: 200, currentWinStreak: 5 });
+
+    store.getState().failMinigame();
+    expect(store.getState().currentWinStreak).toBe(0);
+  });
+
+  it("resets to 0 on failMinigame (death)", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    store.setState({ hp: 1, maxHp: 100, currentWinStreak: 5 });
+
+    store.getState().failMinigame();
+    expect(store.getState().currentWinStreak).toBe(0);
+  });
+});

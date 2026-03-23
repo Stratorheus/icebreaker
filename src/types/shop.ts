@@ -42,4 +42,12 @@ export type AchievementCondition =
   | { type: "total-runs"; count: number }
   | { type: "total-minigames"; count: number }
   | { type: "consecutive-floors-no-damage"; count: number }
-  | { type: "speed-consecutive-floors"; count: number; maxTimeMs: number };
+  | { type: "speed-consecutive-floors"; count: number; maxTimeMs: number }
+  | { type: "shop-spending"; amount: number }
+  | { type: "total-data-earned"; amount: number }
+  | { type: "survive-low-hp"; maxHp: number }
+  | { type: "survive-low-hp-pct"; maxPct: number }
+  | { type: "consecutive-floors-no-shop"; count: number }
+  | { type: "all-minigames-unlocked" }
+  | { type: "total-minigames-won"; count: number }
+  | { type: "minigame-win-streak"; count: number };

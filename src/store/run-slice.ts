@@ -57,6 +57,16 @@ export interface RunSlice {
   floorCompletionTimestamps: number[];
   /** Result of the last completed/failed minigame (for achievement evaluation). Reset on startRun. */
   lastMinigameResult: { success: boolean; timeMs: number; type: MinigameType } | null;
+  /** Credits spent in the current shop visit. Reset on advanceFloor. */
+  creditsSpentThisShop: number;
+  /** Number of consecutive floors where the player bought nothing from shop. */
+  consecutiveFloorsNoShop: number;
+  /** Whether the player bought any item during the current floor's shop visit. */
+  boughtItemThisFloor: boolean;
+  /** Actual damage dealt in the last failMinigame (0 = no damage this round). Reset on completeMinigame/startRun. */
+  lastDamageTaken: number;
+  /** Current consecutive minigame win streak (across all types). Reset on failMinigame. */
+  currentWinStreak: number;
 
   // Actions
   startRun: () => void;
@@ -141,6 +151,11 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   consecutiveFloorsNoDamage: 0,
   floorCompletionTimestamps: [],
   lastMinigameResult: null,
+  creditsSpentThisShop: 0,
+  consecutiveFloorsNoShop: 0,
+  boughtItemThisFloor: false,
+  lastDamageTaken: 0,
+  currentWinStreak: 0,
 };
 
 // Helper type: extract only action keys
@@ -221,6 +236,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       consecutiveFloorsNoDamage: 0,
       floorCompletionTimestamps: [],
       lastMinigameResult: null,
+      creditsSpentThisShop: 0,
+      consecutiveFloorsNoShop: 0,
+      boughtItemThisFloor: false,
+      lastDamageTaken: 0,
+      currentWinStreak: 0,
     });
   },
 
@@ -322,6 +342,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       timeSiphonBonus,
       cascadeClockPct,
       lastMinigameResult: { success: true, timeMs: result.timeMs, type: result.minigame },
+      lastDamageTaken: 0,
+      currentWinStreak: state.currentWinStreak + 1,
     });
   },
 
@@ -363,6 +385,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         cascadeClockPct: 0,
         consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
         lastMinigameResult: { success: false, timeMs: 0, type: currentType },
+        lastDamageTaken: damage,
+        currentWinStreak: 0,
       });
       return;
     }
@@ -400,6 +424,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       cascadeClockPct: 0,
       consecutiveFloorsNoDamage: tookDamage ? 0 : state.consecutiveFloorsNoDamage,
       lastMinigameResult: { success: false, timeMs: 0, type: currentType },
+      lastDamageTaken: damage,
+      currentWinStreak: 0,
     });
   },
 
@@ -467,6 +493,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       ? 0
       : state.consecutiveFloorsNoDamage + 1;
 
+    // Track consecutive floors without buying from shop
+    const consecutiveFloorsNoShop = state.boughtItemThisFloor
+      ? 0
+      : state.consecutiveFloorsNoShop + 1;
+
     set({
       hp: newHp,
       floor: nextFloor,
@@ -483,6 +514,9 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       timeSiphonBonus: 0,
       consecutiveFloorsNoDamage,
       floorCompletionTimestamps: [...state.floorCompletionTimestamps, Date.now()],
+      creditsSpentThisShop: 0,
+      consecutiveFloorsNoShop,
+      boughtItemThisFloor: false,
     });
   },
 

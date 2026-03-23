@@ -14,9 +14,15 @@ export interface AchievementCheckContext {
   powerUpsUsedThisFloor: boolean;
   inventorySize: number;
   hp: number;
+  maxHp: number;
   runStartTime: number;
   consecutiveFloorsNoDamage: number;
   floorCompletionTimestamps: number[];
+  creditsSpentThisShop: number;
+  consecutiveFloorsNoShop: number;
+  lastDamageTaken: number;
+  currentWinStreak: number;
+  unlockedMinigamesCount: number;
   // Meta state
   earnedAchievements: string[];
   stats: PlayerStats;
@@ -105,6 +111,30 @@ function evaluateCondition(
       }
       return false;
     }
+
+    case "shop-spending":
+      return ctx.creditsSpentThisShop >= condition.amount;
+
+    case "total-data-earned":
+      return ctx.stats.totalDataEarned >= condition.amount;
+
+    case "survive-low-hp":
+      return ctx.lastDamageTaken > 0 && ctx.hp > 0 && ctx.hp <= condition.maxHp;
+
+    case "survive-low-hp-pct":
+      return ctx.lastDamageTaken > 0 && ctx.hp > 0 && (ctx.hp / ctx.maxHp) <= condition.maxPct;
+
+    case "consecutive-floors-no-shop":
+      return ctx.consecutiveFloorsNoShop >= condition.count;
+
+    case "all-minigames-unlocked":
+      return ctx.unlockedMinigamesCount >= 15;
+
+    case "total-minigames-won":
+      return ctx.stats.totalMinigamesWon >= condition.count;
+
+    case "minigame-win-streak":
+      return ctx.currentWinStreak >= condition.count;
 
     default:
       return false;
