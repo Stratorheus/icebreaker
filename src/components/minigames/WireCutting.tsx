@@ -403,7 +403,7 @@ export function WireCutting(props: MinigameProps) {
                 className="flex flex-col items-center cursor-pointer group"
                 style={{
                   transition: "opacity 0.2s",
-                  opacity: isDimmed ? 0.35 : 1,
+                  opacity: isDimmed ? 0.7 : 1,
                 }}
                 onClick={() => handleNumberPress(i + 1)}
               >
@@ -417,7 +417,7 @@ export function WireCutting(props: MinigameProps) {
                     borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? hexToRgba(streamColor, 0.7) : hexToRgba(streamColor, 0.25)}`,
                     borderLeft: "none",
                     borderRight: "none",
-                    boxShadow: isNext ? `0 4px 12px -2px ${hexToRgba(streamColor, 0.5)}, 0 -4px 12px -2px ${hexToRgba(streamColor, 0.3)}` : "none",
+                    boxShadow: isNext ? `inset 0 8px 12px -6px ${hexToRgba(streamColor, 0.5)}, inset 0 -8px 12px -6px ${hexToRgba(streamColor, 0.35)}` : "none",
                     transition: "border-color 0.3s, box-shadow 0.3s",
                   }}
                 >
