@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 
 // ── Panel definitions ─────────────────────────────────────────────────
 
@@ -328,107 +328,105 @@ export function SignalEcho(props: MinigameProps) {
   const leftPanel = PANELS[DIR_INDEX.left];
 
   return (
-    <div data-testid="echo-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 w-full max-w-2xl">
-        {/* Header */}
-        <p className="text-cyber-cyan text-xs uppercase tracking-widest font-mono glitch-subtle">
-          Intercepting Signal...
-        </p>
-
-        {/* Round progress */}
-        <p className="text-white/50 text-sm font-mono tracking-wider">
-          ROUND {currentRound + 1}/{params.totalRounds}
-          <span className="text-white/30 ml-3">
-            SEQ {sequence.length}
-          </span>
-        </p>
-
-        {/* Phase indicator */}
-        <div className="h-6 flex items-center justify-center">
-          {phase === "display" && (
-            <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
-              Watch the sequence...
-            </p>
-          )}
-          {phase === "input" && (
-            <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
-              Your turn! Repeat the sequence
-            </p>
-          )}
-        </div>
-
-        {/* Input progress dots */}
-        {phase === "input" && (
-          <div className="flex items-center justify-center gap-1.5">
-            {sequence.map((dir, i) => {
-              const panel = PANELS[DIR_INDEX[dir]];
-              const isDone = i < inputIndex;
-              const isCurrent = i === inputIndex;
-              return (
-                <div
-                  key={i}
-                  className={`
-                    w-3 h-3 rounded-full transition-all duration-150
-                    ${isDone ? "bg-cyber-green" : isCurrent ? "bg-white/60 animate-pulse" : "bg-white/15"}
-                  `}
-                  style={isDone ? { boxShadow: `0 0 6px ${panel.glowColor}` } : undefined}
-                />
-              );
-            })}
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-4"
+      gap="gap-4"
+      maxWidth="max-w-2xl"
+      outerProps={{ "data-testid": "echo-phase", "data-phase": phase }}
+      desktopHint={
+        <>
+          <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
+            Arrow keys or click panels
+          </p>
+          <div className="inline-flex flex-col items-center gap-1">
+            <kbd className="px-3 py-1.5 bg-cyan-950/50 border border-cyan-800/30 rounded text-sm text-cyan-500/70 font-bold font-mono">
+              {"\u2191"}
+            </kbd>
+            <div className="flex items-center gap-1">
+              <kbd className="px-3 py-1.5 bg-orange-950/50 border border-orange-800/30 rounded text-sm text-orange-500/70 font-bold font-mono">
+                {"\u2190"}
+              </kbd>
+              <kbd className="px-3 py-1.5 bg-green-950/50 border border-green-800/30 rounded text-sm text-green-500/70 font-bold font-mono">
+                {"\u2193"}
+              </kbd>
+              <kbd className="px-3 py-1.5 bg-fuchsia-950/50 border border-fuchsia-800/30 rounded text-sm text-fuchsia-500/70 font-bold font-mono">
+                {"\u2192"}
+              </kbd>
+            </div>
           </div>
+        </>
+      }
+      touchHint={
+        <p className="text-white/30 text-xs uppercase tracking-widest">
+          TAP the panels to repeat the sequence
+        </p>
+      }
+    >
+      {/* Header */}
+      <p className="text-cyber-cyan text-xs uppercase tracking-widest font-mono glitch-subtle">
+        Intercepting Signal...
+      </p>
+
+      {/* Round progress */}
+      <p className="text-white/50 text-sm font-mono tracking-wider">
+        ROUND {currentRound + 1}/{params.totalRounds}
+        <span className="text-white/30 ml-3">
+          SEQ {sequence.length}
+        </span>
+      </p>
+
+      {/* Phase indicator */}
+      <div className="h-6 flex items-center justify-center">
+        {phase === "display" && (
+          <p className="text-cyber-orange text-xs uppercase tracking-widest animate-pulse font-mono">
+            Watch the sequence...
+          </p>
         )}
+        {phase === "input" && (
+          <p className="text-cyber-green text-xs uppercase tracking-widest animate-pulse font-mono">
+            Your turn! Repeat the sequence
+          </p>
+        )}
+      </div>
 
-        {/* Keyboard-style panel layout */}
-        <div className="flex flex-col items-center gap-2 sm:gap-3 mt-2">
-          {/* Top row: Up (centered) */}
-          <div className="flex justify-center">
-            {renderPanel(upPanel)}
-          </div>
-          {/* Bottom row: Left + Down + Right (like arrow keys) */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {renderPanel(leftPanel)}
-            {renderPanel(downPanel)}
-            {renderPanel(rightPanel)}
-          </div>
+      {/* Input progress dots */}
+      {phase === "input" && (
+        <div className="flex items-center justify-center gap-1.5">
+          {sequence.map((dir, i) => {
+            const panel = PANELS[DIR_INDEX[dir]];
+            const isDone = i < inputIndex;
+            const isCurrent = i === inputIndex;
+            return (
+              <div
+                key={i}
+                className={`
+                  w-3 h-3 rounded-full transition-all duration-150
+                  ${isDone ? "bg-cyber-green" : isCurrent ? "bg-white/60 animate-pulse" : "bg-white/15"}
+                `}
+                style={isDone ? { boxShadow: `0 0 6px ${panel.glowColor}` } : undefined}
+              />
+            );
+          })}
+        </div>
+      )}
+
+      {/* Keyboard-style panel layout */}
+      <div className="flex flex-col items-center gap-2 sm:gap-3 mt-2">
+        {/* Top row: Up (centered) */}
+        <div className="flex justify-center">
+          {renderPanel(upPanel)}
+        </div>
+        {/* Bottom row: Left + Down + Right (like arrow keys) */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {renderPanel(leftPanel)}
+          {renderPanel(downPanel)}
+          {renderPanel(rightPanel)}
         </div>
       </div>
 
       {/* Hidden test helper: echo sequence */}
       <span data-testid="echo-sequence" data-sequence={JSON.stringify(sequence)} className="hidden" />
-
-      {/* Arrow key hints — desktop */}
-      <div className="desktop-only mt-4 text-center">
-        <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
-          Arrow keys or click panels
-        </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1.5 bg-cyan-950/50 border border-cyan-800/30 rounded text-sm text-cyan-500/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1.5 bg-orange-950/50 border border-orange-800/30 rounded text-sm text-orange-500/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-green-950/50 border border-green-800/30 rounded text-sm text-green-500/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-fuchsia-950/50 border border-fuchsia-800/30 rounded text-sm text-fuchsia-500/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-        </div>
-      </div>
-
-      {/* Touch instruction */}
-      <div className="touch-only mt-4 text-center">
-        <p className="text-white/30 text-xs uppercase tracking-widest">
-          TAP the panels to repeat the sequence
-        </p>
-      </div>
-    </div>
+    </MinigameShell>
   );
 }

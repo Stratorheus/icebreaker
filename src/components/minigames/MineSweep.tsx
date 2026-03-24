@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
 import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
@@ -23,27 +23,17 @@ interface GeneratedGrid {
   previewMs: number;
 }
 
-/**
- * Generate a grid with randomly placed mines.
- *
- * Difficulty scaling (0–1):
- * - Grid size: 3×3 (d=0) → 6×6 (d=1)
- * - Mine count: 3 (d=0) → 10 (d=1), capped at ~40% of cells
- * - Preview duration: 3s (d=0) → 1s (d=1)
- */
 function generateGrid(difficulty: number): GeneratedGrid {
   const size = Math.round(3 + difficulty * 3);
   const cols = size;
   const rows = size;
   const totalCells = rows * cols;
 
-  // Cap mines at 40% of total cells
   const rawMines = Math.round(3 + difficulty * 7);
   const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.4));
 
   const previewMs = (3 - difficulty * 2) * 1000;
 
-  // Pick unique mine positions
   const minePositions = new Set<number>();
   while (minePositions.size < mineCount) {
     minePositions.add(Math.floor(Math.random() * totalCells));
@@ -59,12 +49,6 @@ function generateGrid(difficulty: number): GeneratedGrid {
 
 /**
  * MineSweep — memory-based mine marking minigame.
- *
- * Phase 1 (preview): Grid shown with mines highlighted. Sub-timer counts down.
- * Phase 2 (mark): Mines hidden. Player marks cells where they remember mines were.
- * Auto-checks when the player has marked exactly as many cells as there are mines.
- *
- * Supports both mouse click and arrow-key + Enter/Space navigation.
  */
 export function MineSweep(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
@@ -81,13 +65,12 @@ export function MineSweep(props: MinigameProps) {
     let pct = 0;
     for (const pu of activePowerUps) {
       if (pu.effect.type === "minigame-specific" && pu.effect.minigame === "mine-sweep") {
-        pct = Math.max(pct, pu.effect.value); // use highest tier value
+        pct = Math.max(pct, pu.effect.value);
       }
     }
     return pct;
   }, [activePowerUps]);
 
-  // Generate grid on mount (stable across re-renders)
   const grid = useMemo(
     () => generateGrid(difficulty),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,7 +99,6 @@ export function MineSweep(props: MinigameProps) {
     phaseRef.current = phase;
   }, [phase]);
 
-  // Preview sub-timer (counts down from previewMs to 0)
   const [previewLeft, setPreviewLeft] = useState(previewMs);
   const previewStartRef = useRef<number | null>(null);
   const previewRafRef = useRef<number>(0);
@@ -160,7 +142,7 @@ export function MineSweep(props: MinigameProps) {
     cursorColRef.current = cursorCol;
   }, [cursorCol]);
 
-  // ── Marked cells (initialized with auto-flagged mines from flag-mine power-up)
+  // ── Marked cells
   const [markedCells, setMarkedCells] = useState<Set<number>>(() => new Set());
   const markedCellsRef = useRef<Set<number>>(new Set());
 
@@ -168,7 +150,6 @@ export function MineSweep(props: MinigameProps) {
     markedCellsRef.current = markedCells;
   }, [markedCells]);
 
-  /** Toggle a cell's mark. Wrong mark = immediate fail. Auto-complete when all mines found. */
   const toggleMark = useCallback(
     (cellIndex: number) => {
       if (!isActive || resolvedRef.current) return;
@@ -176,7 +157,6 @@ export function MineSweep(props: MinigameProps) {
 
       const cell = cells[cellIndex];
 
-      // Un-marking is allowed
       if (markedCellsRef.current.has(cellIndex)) {
         setMarkedCells((prev) => {
           const next = new Set(prev);
@@ -186,17 +166,14 @@ export function MineSweep(props: MinigameProps) {
         return;
       }
 
-      // Don't allow marking more than mineCount
       if (markedCellsRef.current.size >= mineCount) return;
 
-      // Wrong mark = immediate fail
       if (!cell.isMine) {
         resolvedRef.current = true;
         fail();
         return;
       }
 
-      // Correct mark
       setMarkedCells((prev) => {
         const next = new Set(prev);
         next.add(cellIndex);
@@ -211,7 +188,6 @@ export function MineSweep(props: MinigameProps) {
     if (phase !== "mark" || resolvedRef.current) return;
     if (markedCells.size !== mineCount) return;
 
-    // All marks are guaranteed correct (wrong marks cause immediate fail above)
     resolvedRef.current = true;
     complete(true);
   }, [markedCells, mineCount, phase, complete]);
@@ -249,137 +225,135 @@ export function MineSweep(props: MinigameProps) {
   // ── Derived values ────────────────────────────────────────────────
   const previewProgress = previewMs > 0 ? previewLeft / previewMs : 0;
 
+  // Build instruction footer based on phase
+  const instructionFooter = phase === "preview" ? (
+    <p className="text-white/40 text-xs uppercase tracking-widest">
+      Remember the corrupted sector positions
+    </p>
+  ) : (
+    <>
+      <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
+        Click or arrow keys + Enter/Space to toggle mark
+      </p>
+      <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
+        TAP to mark corrupted sectors
+      </p>
+      <ArrowKeyHints />
+      <kbd className="desktop-only px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
+        Enter / Space
+      </kbd>
+    </>
+  );
+
   return (
-    <div data-testid="mine-phase" data-phase={phase} className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Overall timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-5 w-full max-w-lg">
-        {/* Phase indicator + mine counter */}
-        {phase === "preview" ? (
-          <div className="text-center">
-            <p className="text-cyber-magenta text-sm uppercase tracking-widest font-bold mb-2 animate-pulse">
-              Memorize targets
-            </p>
-            {/* Preview sub-timer bar */}
-            <div className="w-40 h-1 rounded-full bg-white/10 mx-auto">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${previewProgress * 100}%`,
-                  backgroundColor: "var(--color-cyber-magenta)",
-                  boxShadow:
-                    "0 0 8px var(--color-cyber-magenta), 0 0 16px var(--color-cyber-magenta)",
-                }}
-              />
-            </div>
-            <p className="text-white/40 text-xs mt-2">
-              {Math.ceil(previewLeft / 1000)}s
-            </p>
-          </div>
-        ) : (
-          <div className="text-center">
-            <p className="text-cyber-cyan text-sm uppercase tracking-widest font-bold mb-1">
-              Mark {mineCount} corrupted sectors
-            </p>
-            <p className="text-white/50 text-xs uppercase tracking-widest">
-              {markedCells.size}/{mineCount} marked
-            </p>
-          </div>
-        )}
-
-        {/* Divider */}
-        <div className="w-24 h-px bg-white/10" />
-
-        {/* Grid */}
-        <div
-          className="grid gap-1.5 sm:gap-2"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          }}
-        >
-          {cells.map((cell, i) => {
-            const cellRow = Math.floor(i / cols);
-            const cellCol = i % cols;
-            const isCursor =
-              !isTouch && phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
-            const isMarked = markedCells.has(cell.id);
-            const showMine = phase === "preview" && cell.isMine;
-            // mine-echo: keep certain mines visible even in mark phase
-            const isVisibleMine = phase === "mark" && visibleMines.has(cell.id) && !isMarked;
-
-            return (
-              <button
-                key={cell.id}
-                data-testid="cell"
-                data-mine={cell.isMine}
-                data-visible-mine={isVisibleMine}
-                data-index={i}
-                type="button"
-                disabled={
-                  !isActive || resolvedRef.current || phase === "preview"
-                }
-                onClick={() => toggleMark(i)}
-                onMouseEnter={() => {
-                  if (!isTouch) {
-                    setCursorRow(cellRow);
-                    setCursorCol(cellCol);
-                    cursorRowRef.current = cellRow;
-                    cursorColRef.current = cellCol;
-                  }
-                }}
-                className={`
-                  w-10 h-10 sm:w-12 sm:h-12 font-mono font-bold text-lg sm:text-xl
-                  ${
-                    showMine
-                      ? "flex items-center justify-center rounded-md border border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)] transition-all duration-150 focus:outline-none select-none"
-                      : isVisibleMine
-                        ? "flex items-center justify-center rounded-md border border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60 transition-all duration-150 focus:outline-none select-none"
-                        : isMarked
-                          ? "flex items-center justify-center rounded-md border border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_10px_rgba(0,255,255,0.25)] transition-all duration-150 focus:outline-none select-none"
-                          : phase === "mark"
-                            ? cellStyles({ isCursor, isTouch }) + " text-white/70"
-                            : "flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/30 transition-all duration-150 focus:outline-none select-none"
-                  }
-                `}
-              >
-                {showMine ? (
-                  <span className="text-base">⬟</span>
-                ) : isVisibleMine ? (
-                  <span className="text-base opacity-60">⬟</span>
-                ) : isMarked ? (
-                  <span className="text-base">⚑</span>
-                ) : (
-                  <span className="text-white/10">·</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Instructions */}
-      <div className="mt-6 text-center">
-        {phase === "preview" ? (
-          <p className="text-white/40 text-xs uppercase tracking-widest">
-            Remember the corrupted sector positions
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-4"
+      gap="gap-5"
+      outerProps={{ "data-testid": "mine-phase", "data-phase": phase }}
+      desktopHint={instructionFooter}
+      touchHint={instructionFooter}
+    >
+      {/* Phase indicator + mine counter */}
+      {phase === "preview" ? (
+        <div className="text-center">
+          <p className="text-cyber-magenta text-sm uppercase tracking-widest font-bold mb-2 animate-pulse">
+            Memorize targets
           </p>
-        ) : (
-          <>
-            <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
-              Click or arrow keys + Enter/Space to toggle mark
-            </p>
-            <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
-              TAP to mark corrupted sectors
-            </p>
-            <ArrowKeyHints />
-            <kbd className="desktop-only px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
-              Enter / Space
-            </kbd>
-          </>
-        )}
+          {/* Preview sub-timer bar */}
+          <div className="w-40 h-1 rounded-full bg-white/10 mx-auto">
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${previewProgress * 100}%`,
+                backgroundColor: "var(--color-cyber-magenta)",
+                boxShadow:
+                  "0 0 8px var(--color-cyber-magenta), 0 0 16px var(--color-cyber-magenta)",
+              }}
+            />
+          </div>
+          <p className="text-white/40 text-xs mt-2">
+            {Math.ceil(previewLeft / 1000)}s
+          </p>
+        </div>
+      ) : (
+        <div className="text-center">
+          <p className="text-cyber-cyan text-sm uppercase tracking-widest font-bold mb-1">
+            Mark {mineCount} corrupted sectors
+          </p>
+          <p className="text-white/50 text-xs uppercase tracking-widest">
+            {markedCells.size}/{mineCount} marked
+          </p>
+        </div>
+      )}
+
+      {/* Divider */}
+      <div className="w-24 h-px bg-white/10" />
+
+      {/* Grid */}
+      <div
+        className="grid gap-1.5 sm:gap-2"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        }}
+      >
+        {cells.map((cell, i) => {
+          const cellRow = Math.floor(i / cols);
+          const cellCol = i % cols;
+          const isCursor =
+            !isTouch && phase === "mark" && cellRow === cursorRow && cellCol === cursorCol;
+          const isMarked = markedCells.has(cell.id);
+          const showMine = phase === "preview" && cell.isMine;
+          const isVisibleMine = phase === "mark" && visibleMines.has(cell.id) && !isMarked;
+
+          return (
+            <button
+              key={cell.id}
+              data-testid="cell"
+              data-mine={cell.isMine}
+              data-visible-mine={isVisibleMine}
+              data-index={i}
+              type="button"
+              disabled={
+                !isActive || resolvedRef.current || phase === "preview"
+              }
+              onClick={() => toggleMark(i)}
+              onMouseEnter={() => {
+                if (!isTouch) {
+                  setCursorRow(cellRow);
+                  setCursorCol(cellCol);
+                  cursorRowRef.current = cellRow;
+                  cursorColRef.current = cellCol;
+                }
+              }}
+              className={`
+                w-10 h-10 sm:w-12 sm:h-12 font-mono font-bold text-lg sm:text-xl
+                ${
+                  showMine
+                    ? "flex items-center justify-center rounded-md border border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)] transition-all duration-150 focus:outline-none select-none"
+                    : isVisibleMine
+                      ? "flex items-center justify-center rounded-md border border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60 transition-all duration-150 focus:outline-none select-none"
+                      : isMarked
+                        ? "flex items-center justify-center rounded-md border border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_10px_rgba(0,255,255,0.25)] transition-all duration-150 focus:outline-none select-none"
+                        : phase === "mark"
+                          ? cellStyles({ isCursor, isTouch }) + " text-white/70"
+                          : "flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/30 transition-all duration-150 focus:outline-none select-none"
+                }
+              `}
+            >
+              {showMine ? (
+                <span className="text-base">⬟</span>
+              ) : isVisibleMine ? (
+                <span className="text-base opacity-60">⬟</span>
+              ) : isMarked ? (
+                <span className="text-base">⚑</span>
+              ) : (
+                <span className="text-white/10">·</span>
+              )}
+            </button>
+          );
+        })}
       </div>
-    </div>
+    </MinigameShell>
   );
 }

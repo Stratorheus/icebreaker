@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useTouchDevice } from "@/hooks/use-touch-device";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
+import { HiddenMobileInput } from "@/components/layout/HiddenMobileInput";
+import { ProgressDots } from "@/components/layout/ProgressDots";
 import { TECH_WORDS } from "@/data/words";
 
 /** Pick `count` random items from `pool` without repeats. */
@@ -194,173 +196,144 @@ export function TypeBackward(props: MinigameProps) {
     return () => window.removeEventListener("keydown", handleKey);
   }, [handleKey]);
 
+  // Hidden input handler
+  const handleHiddenInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    for (const char of target.value) {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
+    }
+    target.value = "";
+  }, []);
+
   // Current answer's typed/remaining for input display
   const currentAnswer = expectedAnswers[wordIndex] ?? "";
   const typedPortion = currentAnswer.slice(0, charIndex);
   const remainingPortion = currentAnswer.slice(charIndex);
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-6" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-lg">
-        {/* All mirrored words displayed in reverse order */}
-        <div className="text-center">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
-            Unscramble each mirrored word
-          </p>
-          <div className="flex items-center justify-center gap-4 flex-wrap">
-            {displayWords.map((word, i) => {
-              const isCompleted = i < wordIndex;
-              const isCurrent = i === wordIndex;
-              const isPending = i > wordIndex;
-              const isCorrected = correctedDisplayIndices.has(i);
-
-              return (
-                <div key={i} className="flex items-center gap-1.5">
-                  {isCompleted && (
-                    <span className="text-cyber-green text-sm">&#10003;</span>
-                  )}
-                  <span
-                    className={`
-                      text-2xl sm:text-3xl font-mono font-bold tracking-wider
-                      transition-all duration-200
-                      ${
-                        isCompleted
-                          ? "text-white/25 line-through decoration-white/20"
-                          : isCurrent
-                            ? "text-cyber-magenta"
-                            : isPending
-                              ? "text-white/40"
-                              : ""
-                      }
-                    `}
-                  >
-                    {word}
-                  </span>
-                  {isCorrected && !isCompleted && (
-                    <span className="text-cyber-green text-[10px]" title="Autocorrected">✓</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="w-24 h-px bg-white/10" />
-
-        {/* Word counter */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          Word {wordIndex + 1}/{displayWords.length}
-        </p>
-
-        {/* Autocorrect indicator */}
-        {autocorrectFraction > 0 && (
-          <p className="text-cyber-green/50 text-[10px] uppercase tracking-widest">
-            AUTOCORRECT ACTIVE — {Math.round(autocorrectFraction * 100)}% CORRECTED
-          </p>
-        )}
-
-        {/* Typed progress display */}
-        <div className="text-center">
-          <p className="text-white/30 text-xs uppercase tracking-widest mb-3">
-            Type the original word
-          </p>
-          <div className="flex items-center justify-center min-h-[3.5rem]">
-            <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl tracking-wider">
-              {/* Characters already typed */}
-              {typedPortion.split("").map((ch, i) => (
-                <span
-                  key={i}
-                  className="text-cyber-green font-bold transition-colors duration-100"
-                >
-                  {ch}
-                </span>
-              ))}
-
-              {/* Blinking cursor */}
-              <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
-
-              {/* Remaining slots shown as dim underscores */}
-              {remainingPortion.split("").map((_, i) => (
-                <span
-                  key={`r-${i}`}
-                  className="text-white/15 font-bold"
-                >
-                  _
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Completed words indicator dots */}
-        {displayWords.length > 1 && (
-          <div className="flex items-center gap-2 mt-2">
-            {displayWords.map((_, i) => (
-              <div
-                key={i}
-                className={`
-                  w-3 h-3 rounded-full transition-all duration-200
-                  ${
-                    i < wordIndex
-                      ? "bg-cyber-green shadow-[0_0_6px_rgba(0,255,65,0.5)]"
-                      : i === wordIndex
-                        ? "bg-cyber-cyan shadow-[0_0_6px_rgba(0,255,255,0.4)]"
-                        : "bg-white/15"
-                  }
-                `}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Hidden test helper: expected word */}
-      <span data-testid="expected-word" data-word={currentAnswer} className="hidden" />
-
-      {/* Hidden input for mobile keyboard */}
-      <input
-        ref={hiddenInputRef}
-        type="text"
-        inputMode="text"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        className="fixed -top-24 -left-24 w-px h-px opacity-0"
-        onInput={(e) => {
-          const target = e.target as HTMLInputElement;
-          for (const char of target.value) {
-            window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
-          }
-          target.value = "";
-        }}
-      />
-
-      {/* Instruction — desktop */}
-      <div className="desktop-only mt-6 text-center">
+    <MinigameShell
+      timer={timer}
+      desktopHint={
         <p className="text-white/40 text-xs uppercase tracking-widest">
           Read the mirrored word, type the original &mdash; wrong key = fail
         </p>
+      }
+      touchHint={
+        <>
+          <HiddenMobileInput
+            inputRef={hiddenInputRef}
+            onInput={handleHiddenInput}
+          />
+          <p className="text-white/40 text-xs uppercase tracking-widest mt-2">
+            Type the original word &mdash; wrong key = fail
+          </p>
+        </>
+      }
+    >
+      {/* All mirrored words displayed in reverse order */}
+      <div className="text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-4">
+          Unscramble each mirrored word
+        </p>
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          {displayWords.map((word, i) => {
+            const isCompleted = i < wordIndex;
+            const isCurrent = i === wordIndex;
+            const isPending = i > wordIndex;
+            const isCorrected = correctedDisplayIndices.has(i);
+
+            return (
+              <div key={i} className="flex items-center gap-1.5">
+                {isCompleted && (
+                  <span className="text-cyber-green text-sm">&#10003;</span>
+                )}
+                <span
+                  className={`
+                    text-2xl sm:text-3xl font-mono font-bold tracking-wider
+                    transition-all duration-200
+                    ${
+                      isCompleted
+                        ? "text-white/25 line-through decoration-white/20"
+                        : isCurrent
+                          ? "text-cyber-magenta"
+                          : isPending
+                            ? "text-white/40"
+                            : ""
+                    }
+                  `}
+                >
+                  {word}
+                </span>
+                {isCorrected && !isCompleted && (
+                  <span className="text-cyber-green text-[10px]" title="Autocorrected">✓</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Touch: tap to type prompt */}
-      <div className="touch-only mt-6 text-center">
-        <button
-          type="button"
-          className="px-4 py-2 border border-cyber-cyan/40 rounded-lg bg-cyber-cyan/10 text-cyber-cyan text-xs uppercase tracking-widest font-mono animate-pulse"
-          onClick={() => hiddenInputRef.current?.focus()}
-        >
-          TAP HERE TO TYPE
-        </button>
-        <p className="text-white/40 text-xs uppercase tracking-widest mt-2">
-          Type the original word &mdash; wrong key = fail
+      {/* Divider */}
+      <div className="w-24 h-px bg-white/10" />
+
+      {/* Word counter */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        Word {wordIndex + 1}/{displayWords.length}
+      </p>
+
+      {/* Autocorrect indicator */}
+      {autocorrectFraction > 0 && (
+        <p className="text-cyber-green/50 text-[10px] uppercase tracking-widest">
+          AUTOCORRECT ACTIVE — {Math.round(autocorrectFraction * 100)}% CORRECTED
         </p>
+      )}
+
+      {/* Typed progress display */}
+      <div className="text-center">
+        <p className="text-white/30 text-xs uppercase tracking-widest mb-3">
+          Type the original word
+        </p>
+        <div className="flex items-center justify-center min-h-[3.5rem]">
+          <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl tracking-wider">
+            {/* Characters already typed */}
+            {typedPortion.split("").map((ch, i) => (
+              <span
+                key={i}
+                className="text-cyber-green font-bold transition-colors duration-100"
+              >
+                {ch}
+              </span>
+            ))}
+
+            {/* Blinking cursor */}
+            <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-0.5" />
+
+            {/* Remaining slots shown as dim underscores */}
+            {remainingPortion.split("").map((_, i) => (
+              <span
+                key={`r-${i}`}
+                className="text-white/15 font-bold"
+              >
+                _
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* Completed words indicator dots */}
+      {displayWords.length > 1 && (
+        <div className="mt-2">
+          <ProgressDots
+            total={displayWords.length}
+            current={wordIndex}
+            activeIndex={wordIndex}
+          />
+        </div>
+      )}
+
+      {/* Hidden test helper: expected word */}
+      <span data-testid="expected-word" data-word={currentAnswer} className="hidden" />
+    </MinigameShell>
   );
 }

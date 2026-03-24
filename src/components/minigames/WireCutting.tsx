@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 
 // -- Stream colors -------------------------------------------------------------
 
@@ -67,11 +67,8 @@ interface Rule {
 }
 
 interface Puzzle {
-  /** Stream colors in display order (position 1..N) */
   wires: WireColor[];
-  /** The correct sequence of stream indices (0-based) to terminate */
   correctOrder: number[];
-  /** Human-readable rules */
   rules: Rule[];
 }
 
@@ -88,10 +85,6 @@ function shuffle<T>(arr: T[]): T[] {
 
 // -- Puzzle generation ---------------------------------------------------------
 
-/**
- * Generate a puzzle: pick N random colors, build a valid ordering,
- * and express it as rules.
- */
 function generatePuzzle(wireCount: number, difficulty: number): Puzzle {
   const colorPool = shuffle([...ALL_COLORS]);
   const wires = colorPool.slice(0, wireCount) as WireColor[];
@@ -211,15 +204,6 @@ function buildRules(
 
 // -- Component -----------------------------------------------------------------
 
-/**
- * WireCutting -- rule-based deduction minigame with matrix rain visuals.
- *
- * Displays N colored data streams and a set of rules. The player must read
- * the rules and deduce the correct termination order. No default highlighting
- * of the next stream -- that's a meta upgrade.
- *
- * Wrong key = immediate fail. All correct kills = success.
- */
 export function WireCutting(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
   const { timer, complete, fail, isActive } = useMinigame(
@@ -229,41 +213,32 @@ export function WireCutting(props: MinigameProps) {
 
   const resolvedRef = useRef(false);
 
-  // Check if player has the "wire order hint" meta upgrade
   const hasWireOrderHint = useMemo(() => {
     return activePowerUps.some(
       (p) => p.effect.type === "wire-color-labels" && p.effect.minigame === "wire-cutting",
     );
   }, [activePowerUps]);
 
-  // Stream count: 3 (d=0) -> 7 (d=1)
   const wireCount = Math.round(3 + difficulty * 4);
 
-  // Generate puzzle on mount
   const puzzle = useMemo(() => {
     return generatePuzzle(wireCount, difficulty);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pre-generate rain params per stream (stable across renders)
   const rainParams = useMemo(
     () => puzzle.wires.map(() => generateRainParams()),
     [puzzle.wires],
   );
 
-  // Current position in the correct termination order
   const [cutIndex, setCutIndex] = useState(0);
   const cutIndexRef = useRef(0);
 
-  // Track which streams have been killed (by stream index)
   const [cutWires, setCutWires] = useState<Set<number>>(new Set());
   const cutWiresRef = useRef<Set<number>>(new Set());
 
-  // Refs for rain character mutation (avoid re-renders)
-  // rainRefs[streamIndex][charIndex] = span element
   const rainRefs = useRef<(HTMLSpanElement | null)[][]>([]);
 
-  // Sync refs with state
   useEffect(() => {
     cutIndexRef.current = cutIndex;
   }, [cutIndex]);
@@ -272,12 +247,12 @@ export function WireCutting(props: MinigameProps) {
     cutWiresRef.current = cutWires;
   }, [cutWires]);
 
-  // Character mutation interval — mutate ~12% of visible rain chars every 150ms
+  // Character mutation interval
   useEffect(() => {
     const interval = setInterval(() => {
       const killed = cutWiresRef.current;
       rainRefs.current.forEach((chars, streamIdx) => {
-        if (killed.has(streamIdx)) return; // skip killed streams
+        if (killed.has(streamIdx)) return;
         if (!chars) return;
         chars.forEach((span) => {
           if (span && Math.random() < 0.12) {
@@ -318,7 +293,6 @@ export function WireCutting(props: MinigameProps) {
     [isActive, puzzle, cutWires, complete, fail],
   );
 
-  // Build key map for number keys 1-9
   const keyMap = useMemo(() => {
     const map: Record<string, () => void> = {};
     for (let i = 1; i <= 9; i++) {
@@ -330,11 +304,9 @@ export function WireCutting(props: MinigameProps) {
 
   useKeyboard(keyMap);
 
-  // The next stream to kill (for conditional highlighting)
   const nextWireIndex =
     cutIndex < puzzle.correctOrder.length ? puzzle.correctOrder[cutIndex] : -1;
 
-  // Helper to register rain span refs
   const setRainRef = useCallback(
     (streamIdx: number, charIdx: number, el: HTMLSpanElement | null) => {
       if (!rainRefs.current[streamIdx]) {
@@ -346,7 +318,46 @@ export function WireCutting(props: MinigameProps) {
   );
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
+    <MinigameShell
+      timer={timer}
+      gap="gap-6"
+      maxWidth="max-w-2xl"
+      desktopHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Press the process number to terminate
+          </p>
+          <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+            {puzzle.wires.map((color, i) => {
+              const isCut = cutWires.has(i);
+              const isNextKey = hasWireOrderHint && i === nextWireIndex;
+              const keyColor = COLOR_CSS[color];
+
+              return (
+                <kbd
+                  key={i}
+                  className="px-2 py-1 rounded text-xs font-bold font-mono transition-colors duration-200"
+                  style={
+                    isCut
+                      ? { backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.2)" }
+                      : isNextKey
+                        ? { backgroundColor: hexToRgba(keyColor, 0.2), color: keyColor }
+                        : { backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }
+                  }
+                >
+                  {i + 1}
+                </kbd>
+              );
+            })}
+          </div>
+        </>
+      }
+      touchHint={
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+          Tap a process to terminate
+        </p>
+      }
+    >
       {/* Keyframes for matrix rain animation */}
       <style>{`
         @keyframes stream-fall {
@@ -358,191 +369,152 @@ export function WireCutting(props: MinigameProps) {
         }
       `}</style>
 
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-6" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-2xl">
-        {/* Rules panel */}
-        <div className="w-full max-w-md">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-3 text-center">
-            Instructions
-          </p>
-          <div className="flex flex-col gap-2 px-5 py-4 border border-white/15 rounded-lg bg-white/[0.03]">
-            {puzzle.rules.map((rule, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <span className="text-white/30 font-mono text-sm mt-px shrink-0">{`${i + 1}.`}</span>
-                <p className="text-sm font-mono text-cyber-cyan leading-relaxed">
-                  {rule.text}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Progress */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          TERMINATED {cutIndex} OF {puzzle.correctOrder.length} PROCESSES
-          <span className="text-white/25 ml-2">({puzzle.wires.length} total)</span>
+      {/* Rules panel */}
+      <div className="w-full max-w-md">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-3 text-center">
+          Instructions
         </p>
-
-        {/* Streams display -- matrix rain */}
-        <div className="flex items-end justify-center gap-5">
-          {puzzle.wires.map((color, i) => {
-            const isCut = cutWires.has(i);
-            const isNext = hasWireOrderHint && i === nextWireIndex;
-            const isDimmed = hasWireOrderHint && !isNext && !isCut;
-            const streamColor = COLOR_CSS[color];
-
-            return (
-              <div
-                key={i}
-                data-testid="stream"
-                data-index={i}
-                data-next={i === nextWireIndex}
-                className="flex flex-col items-center cursor-pointer group"
-                style={{
-                  transition: "opacity 0.2s",
-                  opacity: isDimmed ? 0.7 : 1,
-                }}
-                onClick={() => handleNumberPress(i + 1)}
-              >
-                {/* Stream box with matrix rain */}
-                <div
-                  className="relative overflow-hidden"
-                  style={{
-                    width: 32,
-                    height: 140,
-                    borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
-                    borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
-                    borderLeft: "none",
-                    borderRight: "none",
-                    transition: "border-color 0.3s",
-                  }}
-                >
-                  {/* Edge glow — gradient overlays from top/bottom borders (next target only) */}
-                  {isNext && (
-                    <>
-                      <div style={{
-                        position: "absolute", top: 0, left: 0, right: 0, height: 12,
-                        background: `linear-gradient(180deg, ${hexToRgba(streamColor, 0.35)}, transparent)`,
-                        pointerEvents: "none", zIndex: 1,
-                      }} />
-                      <div style={{
-                        position: "absolute", bottom: 0, left: 0, right: 0, height: 10,
-                        background: `linear-gradient(0deg, ${hexToRgba(streamColor, 0.3)}, transparent)`,
-                        pointerEvents: "none", zIndex: 1,
-                      }} />
-                    </>
-                  )}
-                  {/* Rain columns */}
-                  {COL_POSITIONS.map((leftPx, colIdx) => (
-                    <div
-                      key={colIdx}
-                      style={{
-                        position: "absolute",
-                        top: 0,
-                        bottom: 0,
-                        left: leftPx,
-                        width: 20,
-                      }}
-                    >
-                      {Array.from({ length: CHARS_PER_COL }, (_, rowIdx) => {
-                        const charIdx = colIdx * CHARS_PER_COL + rowIdx;
-                        const p = rainParams[i][charIdx];
-                        return (
-                          <span
-                            key={rowIdx}
-                            ref={(el) => setRainRef(i, charIdx, el)}
-                            style={{
-                              position: "absolute",
-                              width: "100%",
-                              textAlign: "center",
-                              fontSize: 10,
-                              fontFamily: "monospace",
-                              color: isCut
-                                ? "rgba(255,255,255,0.12)"
-                                : streamColor,
-                              opacity: 0,
-                              animation: `stream-fall ${p.duration}s linear infinite`,
-                              animationDelay: `-${p.delay}s`,
-                              animationPlayState: isCut ? "paused" : "running",
-                            }}
-                          >
-                            {p.text}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Stream number */}
-                <span
-                  className="font-mono font-bold transition-colors duration-200"
-                  style={{
-                    fontSize: 10,
-                    marginTop: 5,
-                    color: isCut
-                      ? "rgba(255,255,255,0.15)"
-                      : streamColor,
-                  }}
-                >
-                  {i + 1}
-                </span>
-
-                {/* Color label */}
-                <span
-                  className="font-mono font-bold uppercase transition-colors duration-200"
-                  style={{
-                    fontSize: 8,
-                    letterSpacing: "0.5px",
-                    marginTop: 2,
-                    color: isCut
-                      ? "rgba(255,255,255,0.1)"
-                      : hexToRgba(streamColor, 0.35),
-                  }}
-                >
-                  {color}
-                </span>
-              </div>
-            );
-          })}
+        <div className="flex flex-col gap-2 px-5 py-4 border border-white/15 rounded-lg bg-white/[0.03]">
+          {puzzle.rules.map((rule, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="text-white/30 font-mono text-sm mt-px shrink-0">{`${i + 1}.`}</span>
+              <p className="text-sm font-mono text-cyber-cyan leading-relaxed">
+                {rule.text}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Key hints */}
-      <div className="mt-6 text-center">
-        <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Press the process number to terminate
-        </p>
-        <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Tap a process to terminate
-        </p>
-        <div className="desktop-only inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          {puzzle.wires.map((color, i) => {
-            const isCut = cutWires.has(i);
-            const isNextKey = hasWireOrderHint && i === nextWireIndex;
-            const keyColor = COLOR_CSS[color];
+      {/* Progress */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        TERMINATED {cutIndex} OF {puzzle.correctOrder.length} PROCESSES
+        <span className="text-white/25 ml-2">({puzzle.wires.length} total)</span>
+      </p>
 
-            return (
-              <kbd
-                key={i}
-                className="px-2 py-1 rounded text-xs font-bold font-mono transition-colors duration-200"
-                style={
-                  isCut
-                    ? { backgroundColor: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.2)" }
-                    : isNextKey
-                      ? { backgroundColor: hexToRgba(keyColor, 0.2), color: keyColor }
-                      : { backgroundColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.7)" }
-                }
+      {/* Streams display -- matrix rain */}
+      <div className="flex items-end justify-center gap-5">
+        {puzzle.wires.map((color, i) => {
+          const isCut = cutWires.has(i);
+          const isNext = hasWireOrderHint && i === nextWireIndex;
+          const isDimmed = hasWireOrderHint && !isNext && !isCut;
+          const streamColor = COLOR_CSS[color];
+
+          return (
+            <div
+              key={i}
+              data-testid="stream"
+              data-index={i}
+              data-next={i === nextWireIndex}
+              className="flex flex-col items-center cursor-pointer group"
+              style={{
+                transition: "opacity 0.2s",
+                opacity: isDimmed ? 0.7 : 1,
+              }}
+              onClick={() => handleNumberPress(i + 1)}
+            >
+              {/* Stream box with matrix rain */}
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  width: 32,
+                  height: 140,
+                  borderTop: `2px solid ${isCut ? "rgba(255,255,255,0.06)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
+                  borderBottom: `2px solid ${isCut ? "rgba(255,255,255,0.04)" : isNext ? streamColor : hexToRgba(streamColor, 0.45)}`,
+                  borderLeft: "none",
+                  borderRight: "none",
+                  transition: "border-color 0.3s",
+                }}
+              >
+                {/* Edge glow */}
+                {isNext && (
+                  <>
+                    <div style={{
+                      position: "absolute", top: 0, left: 0, right: 0, height: 12,
+                      background: `linear-gradient(180deg, ${hexToRgba(streamColor, 0.35)}, transparent)`,
+                      pointerEvents: "none", zIndex: 1,
+                    }} />
+                    <div style={{
+                      position: "absolute", bottom: 0, left: 0, right: 0, height: 10,
+                      background: `linear-gradient(0deg, ${hexToRgba(streamColor, 0.3)}, transparent)`,
+                      pointerEvents: "none", zIndex: 1,
+                    }} />
+                  </>
+                )}
+                {/* Rain columns */}
+                {COL_POSITIONS.map((leftPx, colIdx) => (
+                  <div
+                    key={colIdx}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: leftPx,
+                      width: 20,
+                    }}
+                  >
+                    {Array.from({ length: CHARS_PER_COL }, (_, rowIdx) => {
+                      const charIdx = colIdx * CHARS_PER_COL + rowIdx;
+                      const p = rainParams[i][charIdx];
+                      return (
+                        <span
+                          key={rowIdx}
+                          ref={(el) => setRainRef(i, charIdx, el)}
+                          style={{
+                            position: "absolute",
+                            width: "100%",
+                            textAlign: "center",
+                            fontSize: 10,
+                            fontFamily: "monospace",
+                            color: isCut
+                              ? "rgba(255,255,255,0.12)"
+                              : streamColor,
+                            opacity: 0,
+                            animation: `stream-fall ${p.duration}s linear infinite`,
+                            animationDelay: `-${p.delay}s`,
+                            animationPlayState: isCut ? "paused" : "running",
+                          }}
+                        >
+                          {p.text}
+                        </span>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+
+              {/* Stream number */}
+              <span
+                className="font-mono font-bold transition-colors duration-200"
+                style={{
+                  fontSize: 10,
+                  marginTop: 5,
+                  color: isCut
+                    ? "rgba(255,255,255,0.15)"
+                    : streamColor,
+                }}
               >
                 {i + 1}
-              </kbd>
-            );
-          })}
-        </div>
+              </span>
+
+              {/* Color label */}
+              <span
+                className="font-mono font-bold uppercase transition-colors duration-200"
+                style={{
+                  fontSize: 8,
+                  letterSpacing: "0.5px",
+                  marginTop: 2,
+                  color: isCut
+                    ? "rgba(255,255,255,0.1)"
+                    : hexToRgba(streamColor, 0.35),
+                }}
+              >
+                {color}
+              </span>
+            </div>
+          );
+        })}
       </div>
-    </div>
+    </MinigameShell>
   );
 }
