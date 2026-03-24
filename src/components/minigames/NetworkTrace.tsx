@@ -4,6 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TouchControls } from "@/components/layout/TouchControls";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
 import { generateMaze } from "@/lib/maze-generator";
 import type { MazeData } from "@/lib/maze-generator";
 
@@ -314,22 +315,7 @@ export function NetworkTrace(props: MinigameProps) {
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Arrow keys to navigate
         </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-        </div>
+        <ArrowKeyHints />
       </div>
 
       {/* Touch: D-pad + instruction */}

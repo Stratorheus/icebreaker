@@ -3,6 +3,8 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 /** Hex alphabet characters */
@@ -300,21 +302,13 @@ export function FindSymbol(props: MinigameProps) {
                   }
                 }}
                 className={`
-                  flex items-center justify-center
-                  w-12 h-10 sm:w-14 sm:h-12
-                  rounded-md border-2 font-mono font-bold
-                  text-sm sm:text-base
-                  transition-all duration-150
-                  cursor-pointer
-                  focus:outline-none
+                  w-12 h-10 sm:w-14 sm:h-12 font-mono font-bold text-sm sm:text-base
                   ${
                     isSelected
-                      ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
+                      ? "flex items-center justify-center rounded-md border border-cyber-green/60 bg-cyber-green/15 text-cyber-green transition-all duration-150 focus:outline-none select-none"
                       : isTargetHinted && !isCursor
-                        ? "border-white/20 bg-white/10 text-white/90"
-                        : isCursor
-                          ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
+                        ? "flex items-center justify-center rounded-md border border-white/20 bg-white/10 text-white/90 transition-all duration-150 focus:outline-none select-none cursor-pointer"
+                        : cellStyles({ isCursor, isTouch }) + " text-white/70"
                   }
                 `}
               >
@@ -339,25 +333,10 @@ export function FindSymbol(props: MinigameProps) {
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Click or use arrow keys + Enter to select
         </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-          <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
-            Enter
-          </kbd>
-        </div>
+        <ArrowKeyHints />
+        <kbd className="desktop-only px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
+          Enter
+        </kbd>
       </div>
 
       {/* Touch instruction */}

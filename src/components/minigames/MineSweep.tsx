@@ -3,6 +3,8 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 type Phase = "preview" | "mark";
@@ -328,24 +330,17 @@ export function MineSweep(props: MinigameProps) {
                   }
                 }}
                 className={`
-                  flex items-center justify-center
-                  w-10 h-10 sm:w-12 sm:h-12
-                  rounded-md border-2 font-mono font-bold
-                  text-lg sm:text-xl
-                  transition-all duration-150
-                  focus:outline-none
+                  w-10 h-10 sm:w-12 sm:h-12 font-mono font-bold text-lg sm:text-xl
                   ${
                     showMine
-                      ? "border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)]"
+                      ? "flex items-center justify-center rounded-md border border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)] transition-all duration-150 focus:outline-none select-none"
                       : isVisibleMine
-                        ? "border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60"
+                        ? "flex items-center justify-center rounded-md border border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60 transition-all duration-150 focus:outline-none select-none"
                         : isMarked
-                          ? "border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                          : isCursor
-                            ? "border-cyber-cyan/60 bg-cyber-cyan/10 text-white shadow-[0_0_10px_rgba(0,255,255,0.15)]"
-                            : phase === "mark"
-                              ? "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10 cursor-pointer"
-                              : "border-white/10 bg-white/5 text-white/30"
+                          ? "flex items-center justify-center rounded-md border border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_10px_rgba(0,255,255,0.25)] transition-all duration-150 focus:outline-none select-none"
+                          : phase === "mark"
+                            ? cellStyles({ isCursor, isTouch }) + " text-white/70"
+                            : "flex items-center justify-center rounded-md border border-white/10 bg-white/5 text-white/30 transition-all duration-150 focus:outline-none select-none"
                   }
                 `}
               >
@@ -378,25 +373,10 @@ export function MineSweep(props: MinigameProps) {
             <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
               TAP to mark corrupted sectors
             </p>
-            <div className="desktop-only inline-flex flex-col items-center gap-1">
-              <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-                {"\u2191"}
-              </kbd>
-              <div className="flex items-center gap-1">
-                <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-                  {"\u2190"}
-                </kbd>
-                <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-                  {"\u2193"}
-                </kbd>
-                <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-                  {"\u2192"}
-                </kbd>
-              </div>
-              <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
-                Enter / Space
-              </kbd>
-            </div>
+            <ArrowKeyHints />
+            <kbd className="desktop-only px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
+              Enter / Space
+            </kbd>
           </>
         )}
       </div>

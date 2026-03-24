@@ -3,6 +3,8 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // -- Port pool ----------------------------------------------------------------
@@ -398,44 +400,26 @@ export function PortScan(props: MinigameProps) {
             // After resolve, show correct answers
             const showCorrect = resolvedRef.current && isOpen && !isSelected;
 
-            let cellClasses = `
-              ${cellSize}
-              flex items-center justify-center
-              font-mono font-bold
-              border rounded-md
-              transition-all duration-150
-            `;
-
+            let cellClasses: string;
             let cellStyle: React.CSSProperties = {};
 
             if (isFlashing) {
               // Display phase: green flash
-              cellClasses += " bg-green-400/30 border-green-400 text-green-300";
+              cellClasses = `${cellSize} flex items-center justify-center font-mono font-bold rounded-md border border-green-400 bg-green-400/30 text-green-300 transition-all duration-150 focus:outline-none select-none`;
               cellStyle = { boxShadow: "0 0 16px rgba(0, 255, 65, 0.5), 0 0 32px rgba(0, 255, 65, 0.3)" };
             } else if (isSelected) {
               // Selected: cyan border
-              cellClasses += " bg-cyan-950/40 border-cyber-cyan text-cyber-cyan";
+              cellClasses = `${cellSize} flex items-center justify-center font-mono font-bold rounded-md border border-cyber-cyan bg-cyan-950/40 text-cyber-cyan transition-all duration-150 focus:outline-none select-none`;
               cellStyle = { boxShadow: "0 0 8px rgba(0, 255, 255, 0.3)" };
             } else if (showCorrect) {
               // After resolve, show missed open ports in dim green
-              cellClasses += " bg-green-950/30 border-green-700/50 text-green-500/60";
+              cellClasses = `${cellSize} flex items-center justify-center font-mono font-bold rounded-md border border-green-700/50 bg-green-950/30 text-green-500/60 transition-all duration-150 focus:outline-none select-none`;
+            } else if (phase === "select") {
+              // Default interactive cell — use shared styles
+              cellClasses = `${cellSize} font-mono font-bold text-white/50 ${cellStyles({ isCursor, isTouch })}`;
             } else {
-              // Default: dark cell
-              cellClasses += " bg-white/[0.03] border-white/10 text-white/50";
-              if (phase === "select") {
-                cellClasses += " hover:bg-white/[0.06] hover:border-white/20 cursor-pointer";
-              }
-            }
-
-            if (isCursor) {
-              cellClasses += " ring-2 ring-cyber-cyan ring-offset-0";
-              cellStyle = {
-                ...cellStyle,
-                boxShadow: `${cellStyle.boxShadow ?? ""}, 0 0 12px rgba(255, 0, 255, 0.4)`.replace(
-                  /^, /,
-                  "",
-                ),
-              };
+              // Display phase non-flashing cell
+              cellClasses = `${cellSize} flex items-center justify-center font-mono font-bold rounded-md border border-white/10 bg-white/5 text-white/50 transition-all duration-150 focus:outline-none select-none`;
             }
 
             return (
@@ -467,25 +451,10 @@ export function PortScan(props: MinigameProps) {
         <p className="text-white/30 text-xs uppercase tracking-widest">
           Arrow keys to navigate, Space to toggle, or click
         </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-            {"\u2191"}
-          </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-          <kbd className="px-4 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
-            SPACE
-          </kbd>
-        </div>
+        <ArrowKeyHints />
+        <kbd className="desktop-only px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
+          Space
+        </kbd>
       </div>
 
       {/* Touch instruction */}

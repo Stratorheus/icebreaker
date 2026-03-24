@@ -4,6 +4,8 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TouchControls } from "@/components/layout/TouchControls";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -485,25 +487,18 @@ export function Defrag(props: MinigameProps) {
                       toggleFlag(i);
                     }}
                     className={`
-                      flex items-center justify-center
-                      ${cellSizeClass}
-                      rounded-sm border font-mono font-bold
-                      transition-all duration-150
-                      focus:outline-none
+                      ${cellSizeClass} font-mono font-bold
                       ${
                         isMineRevealed
-                          ? "border-cyber-magenta bg-cyber-magenta/30 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.4)]"
+                          ? "flex items-center justify-center rounded-md border border-cyber-magenta bg-cyber-magenta/30 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.4)] transition-all duration-150 focus:outline-none select-none"
                           : state === "revealed"
                             ? cell.adjacentMines > 0
-                              ? "border-white/5 bg-white/5 " + (NUMBER_COLORS[cell.adjacentMines] ?? "text-cyber-magenta")
-                              : "border-white/5 bg-white/[0.03]"
+                              ? "flex items-center justify-center rounded-md border border-white/5 bg-white/5 transition-all duration-150 focus:outline-none select-none " + (NUMBER_COLORS[cell.adjacentMines] ?? "text-cyber-magenta")
+                              : "flex items-center justify-center rounded-md border border-white/5 bg-white/[0.03] transition-all duration-150 focus:outline-none select-none"
                             : state === "flagged"
-                              ? "border-cyber-magenta/60 bg-cyber-magenta/10 text-cyber-magenta"
-                              : isCursor
-                                ? "border-cyber-cyan/80 bg-cyber-cyan/10 shadow-[0_0_10px_rgba(0,255,255,0.2)]"
-                                : "border-white/10 bg-white/5 hover:border-white/25 hover:bg-white/10 cursor-pointer"
+                              ? "flex items-center justify-center rounded-md border border-cyber-magenta/60 bg-cyber-magenta/10 text-cyber-magenta transition-all duration-150 focus:outline-none select-none"
+                              : cellStyles({ isCursor, isTouch })
                       }
-                      ${isCursor && !isMineRevealed ? "ring-2 ring-cyber-cyan ring-offset-0 z-10" : ""}
                     `}
                   >
                     {isMineRevealed ? (
@@ -530,29 +525,14 @@ export function Defrag(props: MinigameProps) {
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           L-Click / Space = uncover &nbsp;|&nbsp; R-Click / Enter = flag
         </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-            {"\u2191"}
+        <ArrowKeyHints />
+        <div className="desktop-only flex items-center gap-1 mt-1">
+          <kbd className="px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+            Space
           </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-          <div className="flex items-center gap-1 mt-1">
-            <kbd className="px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              Space
-            </kbd>
-            <kbd className="px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              Enter
-            </kbd>
-          </div>
+          <kbd className="px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+            Enter
+          </kbd>
         </div>
       </div>
 

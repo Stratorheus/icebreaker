@@ -4,6 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { TouchControls } from "@/components/layout/TouchControls";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
 
 /** Arrow directions with display characters and corresponding key codes */
 const ARROWS = [
@@ -185,24 +186,7 @@ export function MatchArrows(props: MinigameProps) {
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           Match the arrow with arrow keys
         </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          {/* Top row: up arrow */}
-          <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          {/* Bottom row: left, down, right */}
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-        </div>
+        <ArrowKeyHints />
       </div>
 
       {/* Touch: D-pad + instruction */}

@@ -3,6 +3,7 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // ---------------------------------------------------------------------------
@@ -550,17 +551,10 @@ export function SubnetScan(props: MinigameProps) {
           <p className="text-white/30 text-xs uppercase tracking-widest">
             Arrow keys to navigate, Space to toggle, or click
           </p>
-          <div className="inline-flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-              {"\u2191"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-4 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono ml-2">
-              SPACE
-            </kbd>
-          </div>
+          <ArrowKeyHints vertical />
+          <kbd className="desktop-only px-4 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono ml-2">
+            Space
+          </kbd>
         </div>
 
         {/* Touch instruction */}
