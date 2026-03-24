@@ -11,22 +11,13 @@ import { ResultFlash } from "@/components/ui/ResultFlash";
 import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CLI_PROMPT } from "@/lib/constants";
+import { DIFFICULTY_OPTIONS } from "@/data/balancing";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const TRAINING_TIME_LIMIT = 30; // generous 30s for all trial rounds
-
-const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
-  { label: "TRIVIAL", value: 0.05 },
-  { label: "EASY", value: 0.15 },
-  { label: "NORMAL", value: 0.3 },
-  { label: "MEDIUM", value: 0.5 },
-  { label: "HARD", value: 0.7 },
-  { label: "EXPERT", value: 0.85 },
-  { label: "INSANE", value: 1.0 },
-];
 
 // ---------------------------------------------------------------------------
 // Per-minigame training settings

@@ -67,6 +67,34 @@ export function getTimeLimit(baseTime: number, difficulty: number, floor?: numbe
 // Percentages amplify everything below them.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Difficulty labels (SSOT — used by Training picker AND vendor display)
+// ---------------------------------------------------------------------------
+
+export const DIFFICULTY_OPTIONS = [
+  { label: "TRIVIAL", value: 0.05 },
+  { label: "EASY", value: 0.15 },
+  { label: "NORMAL", value: 0.30 },
+  { label: "MEDIUM", value: 0.50 },
+  { label: "HARD", value: 0.70 },
+  { label: "EXPERT", value: 0.85 },
+  { label: "INSANE", value: 1.00 },
+] as const;
+
+/** Map a 0-1 difficulty scalar to the closest named label. */
+export function getDifficultyLabel(difficulty: number): string {
+  let closestLabel = DIFFICULTY_OPTIONS[0].label as string;
+  let closestDist = Math.abs(DIFFICULTY_OPTIONS[0].value - difficulty);
+  for (const opt of DIFFICULTY_OPTIONS) {
+    const dist = Math.abs(opt.value - difficulty);
+    if (dist < closestDist) {
+      closestLabel = opt.label;
+      closestDist = dist;
+    }
+  }
+  return closestLabel;
+}
+
 /**
  * Compute effective difficulty with meta Difficulty Reducer applied.
  */

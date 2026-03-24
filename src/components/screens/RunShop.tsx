@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
-import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
+import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty, getDifficultyLabel } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import { Coins } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
@@ -68,21 +68,6 @@ const FALLBACK_COLORS = {
 // ---------------------------------------------------------------------------
 
 type VendorView = "shop" | "codex" | "stats";
-
-// ---------------------------------------------------------------------------
-// Difficulty label — maps 0-1 scalar to named label
-// (thresholds align with Training DIFFICULTY_OPTIONS midpoints)
-// ---------------------------------------------------------------------------
-
-function getDifficultyLabel(difficulty: number): string {
-  if (difficulty <= 0.10) return "TRIVIAL";
-  if (difficulty <= 0.225) return "EASY";
-  if (difficulty <= 0.40) return "NORMAL";
-  if (difficulty <= 0.60) return "MEDIUM";
-  if (difficulty <= 0.775) return "HARD";
-  if (difficulty <= 0.925) return "EXPERT";
-  return "INSANE";
-}
 
 // ---------------------------------------------------------------------------
 // Component
