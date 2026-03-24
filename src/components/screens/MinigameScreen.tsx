@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType } from "@/types/game";
-import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
+import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEffectiveTimeLimit, getDataDrip } from "@/data/balancing";
+import { Coins, Hexagon, Heart } from "lucide-react";
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
@@ -205,6 +206,7 @@ export function MinigameScreen() {
             index={currentMinigameIndex}
             total={floorMinigames.length}
             purchasedUpgrades={purchasedUpgrades}
+            inventory={inventory}
           />
         )}
 
@@ -252,6 +254,7 @@ function RunCountdownPhase({
   index,
   total,
   purchasedUpgrades,
+  inventory,
 }: {
   minigameName: string;
   value: number;
@@ -259,10 +262,17 @@ function RunCountdownPhase({
   index: number;
   total: number;
   purchasedUpgrades: Record<string, number>;
+  inventory: import("@/types/game").PowerUpInstance[];
 }) {
   const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
   const approxCredits = Math.round(20 * (1 + diff)) + floor * 2;
-  const damage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
+  const dataDrip = getDataDrip(floor);
+
+  // Damage with all power-ups: meta armor + run-shop shields
+  const baseDamage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
+  const fullShield = inventory.some((p) => p.effect.type === "shield");
+  const reducer = inventory.find((p) => p.effect.type === "damage-reduction" || p.effect.type === "damage-reduction-stacked");
+  const effectiveDamage = fullShield ? 0 : reducer ? Math.round(baseDamage * reducer.effect.value) : baseDamage;
 
   return (
     <CountdownDisplay
@@ -270,9 +280,17 @@ function RunCountdownPhase({
       subtitle={`FLOOR ${floor} // PROTOCOL ${index + 1} OF ${total}`}
       value={value}
     >
-      <p className="mt-4 text-xs text-white/30 font-mono uppercase tracking-widest">
-        +{approxCredits} CR on success &nbsp;|&nbsp; -{damage} HP on fail
-      </p>
+      <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-mono uppercase tracking-wider">
+        <span className="flex items-center gap-1 text-currency-credits">
+          <Coins size={12} /> +{approxCredits}
+        </span>
+        <span className="flex items-center gap-1 text-currency-data">
+          <Hexagon size={11} /> +{dataDrip}
+        </span>
+        <span className={`flex items-center gap-1 ${effectiveDamage === 0 ? "text-cyber-green/60" : "text-cyber-magenta/60"}`}>
+          <Heart size={12} /> {effectiveDamage === 0 ? "SHIELDED" : `-${effectiveDamage}`}
+        </span>
+      </div>
     </CountdownDisplay>
   );
 }
