@@ -7,6 +7,7 @@ import { Hexagon } from "lucide-react";
 import { Coins } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
 import { Stats } from "@/components/screens/Stats";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
@@ -415,39 +416,11 @@ export function RunShop() {
             QUIT RUN (+{dataReward} DATA)
           </button>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-cyber-orange text-[10px] uppercase tracking-widest">
-              QUIT?
-            </span>
-            <button
-              type="button"
-              onClick={quitRun}
-              className="
-                py-2 px-3
-                text-[10px] uppercase tracking-widest font-mono
-                border border-cyber-magenta/50 text-cyber-magenta
-                hover:bg-cyber-magenta/10
-                transition-colors duration-150
-                cursor-pointer select-none
-              "
-            >
-              CONFIRM
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmQuit(false)}
-              className="
-                py-2 px-3
-                text-[10px] uppercase tracking-widest font-mono
-                border border-white/20 text-white/50
-                hover:bg-white/5
-                transition-colors duration-150
-                cursor-pointer select-none
-              "
-            >
-              CANCEL
-            </button>
-          </div>
+          <ConfirmDialog
+            title="QUIT?"
+            onConfirm={quitRun}
+            onCancel={() => setConfirmQuit(false)}
+          />
         )}
       </div>
     </div>

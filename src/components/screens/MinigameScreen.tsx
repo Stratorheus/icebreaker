@@ -6,6 +6,8 @@ import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEff
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { ResultFlash } from "@/components/ui/ResultFlash";
+import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -195,7 +197,7 @@ export function MinigameScreen() {
       {/* Phase content */}
       <div className="flex-1 flex items-center justify-center px-4">
         {phase === "countdown" && (
-          <CountdownPhase
+          <RunCountdownPhase
             minigameName={getMinigameDisplayName(currentMinigame)}
             value={countdownValue}
             floor={floor}
@@ -219,9 +221,19 @@ export function MinigameScreen() {
         {phase === "result" && (
           <ResultFlash
             success={lastResult ?? false}
-            earnedCredits={lastEarnedCredits}
-            hadSpeedBonus={lastHadSpeedBonus}
-          />
+            subtitle={lastResult ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
+          >
+            {lastResult && lastEarnedCredits > 0 && (
+              <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
+                +{lastEarnedCredits} CR
+              </p>
+            )}
+            {lastResult && lastHadSpeedBonus && (
+              <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
+                SPEED BONUS
+              </p>
+            )}
+          </ResultFlash>
         )}
       </div>
     </div>
@@ -229,10 +241,10 @@ export function MinigameScreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Countdown phase
+// Countdown phase — wraps shared CountdownDisplay with run-mode extras
 // ---------------------------------------------------------------------------
 
-function CountdownPhase({
+function RunCountdownPhase({
   minigameName,
   value,
   floor,
@@ -252,20 +264,15 @@ function CountdownPhase({
   const damage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
 
   return (
-    <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
-        FLOOR {floor} // PROTOCOL {index + 1} OF {total}
-      </p>
-      <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {minigameName}
-      </h2>
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
-        {value > 0 ? value : "GO"}
-      </p>
+    <CountdownDisplay
+      title={minigameName}
+      subtitle={`FLOOR ${floor} // PROTOCOL ${index + 1} OF ${total}`}
+      value={value}
+    >
       <p className="mt-4 text-xs text-white/30 font-mono uppercase tracking-widest">
         +{approxCredits} CR on success &nbsp;|&nbsp; -{damage} HP on fail
       </p>
-    </div>
+    </CountdownDisplay>
   );
 }
 
@@ -322,42 +329,4 @@ function MinigameRouter({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Result flash
-// ---------------------------------------------------------------------------
-
-function ResultFlash({
-  success,
-  earnedCredits,
-  hadSpeedBonus,
-}: {
-  success: boolean;
-  earnedCredits: number;
-  hadSpeedBonus: boolean;
-}) {
-  return (
-    <div className="text-center select-none">
-      <h2
-        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider glitch-text ${
-          success ? "text-cyber-cyan" : "text-cyber-magenta"
-        }`}
-      >
-        {success ? "SUCCESS" : "FAILED"}
-      </h2>
-      {success && earnedCredits > 0 && (
-        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
-          +{earnedCredits} CR
-        </p>
-      )}
-      {success && hadSpeedBonus && (
-        <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
-          SPEED BONUS
-        </p>
-      )}
-      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">
-        {success ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
-      </p>
-    </div>
-  );
-}
 

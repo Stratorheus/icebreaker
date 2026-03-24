@@ -7,6 +7,9 @@ import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
 import { CyberButton } from "@/components/ui/CyberButton";
+import { ResultFlash } from "@/components/ui/ResultFlash";
+import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
@@ -247,9 +250,9 @@ export function Training() {
 
       {phase === "countdown" && (
         <div className="flex-1 flex items-center justify-center px-4">
-          <CountdownPhase
-            type={type}
-            round={round}
+          <CountdownDisplay
+            title={getMinigameDisplayName(type).toUpperCase()}
+            subtitle={`TRAINING — ROUND ${round}`}
             value={countdownValue}
           />
         </div>
@@ -267,9 +270,9 @@ export function Training() {
 
       {phase === "round-result" && (
         <div className="flex-1 flex items-center justify-center px-4">
-          <RoundResultFlash
+          <ResultFlash
             success={lastSuccess ?? false}
-            round={round}
+            subtitle={`ROUND ${round} COMPLETE — NEXT ROUND`}
           />
         </div>
       )}
@@ -310,46 +313,12 @@ export function Training() {
       {/* Quit confirmation overlay */}
       {showQuitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-6 p-8 border border-white/15 bg-black/90">
-            <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-magenta glitch-text">
-              QUIT TRAINING?
-            </h2>
-            <p className="text-white/40 text-xs uppercase tracking-widest">
-              CURRENT PROGRESS WILL BE SAVED TO RESULTS
-            </p>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                data-testid="confirm-quit"
-                onClick={handleQuitConfirm}
-                className="
-                  py-2.5 px-8
-                  text-sm uppercase tracking-widest font-mono font-bold
-                  border border-cyber-magenta/50 text-cyber-magenta
-                  hover:bg-cyber-magenta/10 hover:border-cyber-magenta/80
-                  active:bg-cyber-magenta/20
-                  transition-colors duration-150
-                  cursor-pointer select-none
-                "
-              >
-                CONFIRM
-              </button>
-              <button
-                type="button"
-                onClick={handleQuitCancel}
-                className="
-                  py-2.5 px-8
-                  text-sm uppercase tracking-widest font-mono
-                  border border-white/20 text-white/50
-                  hover:bg-white/5 hover:text-white/80
-                  transition-colors duration-150
-                  cursor-pointer select-none
-                "
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
+          <ConfirmDialog
+            title="QUIT TRAINING?"
+            message="CURRENT PROGRESS WILL BE SAVED TO RESULTS"
+            onConfirm={handleQuitConfirm}
+            onCancel={handleQuitCancel}
+          />
         </div>
       )}
     </div>
@@ -746,33 +715,6 @@ function BriefingPhase({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Countdown phase
-// ---------------------------------------------------------------------------
-
-function CountdownPhase({
-  type,
-  round,
-  value,
-}: {
-  type: MinigameType;
-  round: number;
-  value: number;
-}) {
-  return (
-    <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
-        TRAINING — ROUND {round}
-      </p>
-      <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {getMinigameDisplayName(type).toUpperCase()}
-      </h2>
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
-        {value > 0 ? value : "GO"}
-      </p>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Active round — renders the minigame component with per-minigame settings
@@ -808,32 +750,6 @@ function ActiveRound({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Round result flash
-// ---------------------------------------------------------------------------
-
-function RoundResultFlash({
-  success,
-  round,
-}: {
-  success: boolean;
-  round: number;
-}) {
-  return (
-    <div className="text-center select-none">
-      <h2
-        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider ${
-          success ? "text-cyber-cyan" : "text-cyber-magenta"
-        }`}
-      >
-        {success ? "SUCCESS" : "FAILED"}
-      </h2>
-      <p className="mt-4 text-white/30 text-sm uppercase tracking-widest">
-        ROUND {round} COMPLETE — NEXT ROUND
-      </p>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Complete phase — continue training or back to list
