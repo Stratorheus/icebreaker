@@ -3,7 +3,7 @@ import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType } from "@/types/game";
 import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEffectiveTimeLimit, getDataDrip } from "@/data/balancing";
-import { Coins, Hexagon, Heart } from "lucide-react";
+import { Coins, Hexagon } from "lucide-react";
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
@@ -288,7 +288,7 @@ function RunCountdownPhase({
           <Hexagon size={11} /> +{dataDrip}
         </span>
         <span className={`flex items-center gap-1 ${effectiveDamage === 0 ? "text-cyber-green/60" : "text-cyber-magenta/60"}`}>
-          <Heart size={12} /> {effectiveDamage === 0 ? "SHIELDED" : `-${effectiveDamage}`}
+          {effectiveDamage === 0 ? "SHIELDED" : `${effectiveDamage} HP`}
         </span>
       </div>
     </CountdownDisplay>
