@@ -57,14 +57,13 @@ test.describe("Defrag", () => {
     // First click is always safe (mines placed after)
     const firstCell = page.locator('[data-testid="cell"]').first();
     await firstCell.click();
-    await page.waitForTimeout(300);
 
-    // Now find a mine cell and click it
+    // Wait for mines to be placed and rendered (data-mine attributes appear after first click)
     const mineCells = page.locator('[data-testid="cell"][data-mine="true"]');
-    const count = await mineCells.count();
-    if (count > 0) {
-      await mineCells.first().click();
-    }
+    await mineCells.first().waitFor({ timeout: 3000 });
+
+    // Click a mine cell to trigger fail
+    await mineCells.first().click();
 
     await expect(page.getByText("FAILED")).toBeVisible({ timeout: 10000 });
   });
