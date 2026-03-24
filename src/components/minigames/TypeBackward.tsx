@@ -260,13 +260,11 @@ export function TypeBackward(props: MinigameProps) {
                             ? "text-white/40"
                             : ""
                     }
+                    ${isCorrected && !isCompleted ? "underline decoration-cyber-green/40 underline-offset-4 decoration-1" : ""}
                   `}
                 >
                   {word}
                 </span>
-                {isCorrected && !isCompleted && (
-                  <span className="text-cyber-green text-[10px]" title="Autocorrected">✓</span>
-                )}
               </div>
             );
           })}
