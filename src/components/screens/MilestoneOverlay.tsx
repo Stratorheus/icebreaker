@@ -76,13 +76,13 @@ export function MilestoneOverlay() {
       />
 
       {/* Floor badge */}
-      <p className="text-xs uppercase tracking-[0.4em] text-white/30 mb-6 animate-pulse">
+      <p className="text-xs font-heading uppercase tracking-[0.4em] text-white/30 mb-6 animate-pulse">
         FLOOR {milestoneFloor} MILESTONE
       </p>
 
       {/* Main title with glitch-like gradient */}
       <h1
-        className="text-4xl sm:text-6xl md:text-7xl font-black uppercase text-center px-4 leading-none glitch-text-strong"
+        className="text-4xl sm:text-6xl md:text-7xl font-heading font-black uppercase text-center px-4 leading-none glitch-text-strong"
         style={{
           letterSpacing: "0.12em",
           background:

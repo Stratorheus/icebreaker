@@ -35,7 +35,7 @@ export const STAT_UPGRADES: MetaUpgrade[] = [
   {
     id: "difficulty-reducer",
     name: "Difficulty Reducer",
-    description: "Reduces effective difficulty by 5% per purchase (multiplicative). Diminishing returns.",
+    description: "Delays difficulty scaling — each level pushes max difficulty 2 floors further.",
     category: "stat",
     maxTier: 999,
     prices: [150], // dynamic pricing via getStackablePrice()

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType } from "@/types/game";
-import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
+import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
@@ -201,6 +201,7 @@ export function MinigameScreen() {
             floor={floor}
             index={currentMinigameIndex}
             total={floorMinigames.length}
+            purchasedUpgrades={purchasedUpgrades}
           />
         )}
 
@@ -237,13 +238,19 @@ function CountdownPhase({
   floor,
   index,
   total,
+  purchasedUpgrades,
 }: {
   minigameName: string;
   value: number;
   floor: number;
   index: number;
   total: number;
+  purchasedUpgrades: Record<string, number>;
 }) {
+  const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+  const approxCredits = Math.round(20 * (1 + diff));
+  const damage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
+
   return (
     <div className="text-center select-none">
       <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
@@ -254,6 +261,9 @@ function CountdownPhase({
       </h2>
       <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
         {value > 0 ? value : "GO"}
+      </p>
+      <p className="mt-4 text-xs text-white/30 font-mono uppercase tracking-widest">
+        +{approxCredits} CR on success &nbsp;|&nbsp; -{damage} HP on fail
       </p>
     </div>
   );

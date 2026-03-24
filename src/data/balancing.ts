@@ -3,11 +3,6 @@
  * All math comes directly from the design spec.
  */
 
-/** Returns difficulty scalar 0–1 based on current floor. Starts at 0.1, reaches max ~floor 13. */
-function getDifficulty(floor: number): number {
-  return Math.min(0.1 + floor / 15, 1.0);
-}
-
 /** Returns damage dealt to player on a failed minigame. */
 function getDamage(floor: number): number {
   return 20 + floor * 4;
@@ -76,7 +71,7 @@ export function getTimeLimit(baseTime: number, difficulty: number, floor?: numbe
  * Compute effective difficulty with meta Difficulty Reducer applied.
  */
 export function getEffectiveDifficulty(floor: number, diffReducerTier: number): number {
-  return getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
+  return Math.min(0.1 + floor / (15 + diffReducerTier * 2), 1.0);
 }
 
 /**

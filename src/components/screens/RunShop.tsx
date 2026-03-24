@@ -4,61 +4,9 @@ import { cn } from "@/lib/utils";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
-import {
-  Clock,
-  Zap,
-  Timer,
-  PauseCircle,
-  Shield,
-  ShieldHalf,
-  Layers,
-  SkipForward,
-  FastForward,
-  DoorOpen,
-  RouteOff,
-  HeartPulse,
-  RefreshCw,
-  Activity,
-  Eye,
-  Lightbulb,
-  Map,
-  Sword,
-  Code,
-  Compass,
-  Radio,
-  Coins,
-  type LucideIcon,
-} from "lucide-react";
+import { Coins } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
 import { Stats } from "@/components/screens/Stats";
-
-// ---------------------------------------------------------------------------
-// Icon map: kebab-case string -> Lucide component
-// ---------------------------------------------------------------------------
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  clock: Clock,
-  zap: Zap,
-  timer: Timer,
-  "pause-circle": PauseCircle,
-  shield: Shield,
-  "shield-half": ShieldHalf,
-  layers: Layers,
-  "skip-forward": SkipForward,
-  "fast-forward": FastForward,
-  "door-open": DoorOpen,
-  "route-off": RouteOff,
-  "heart-pulse": HeartPulse,
-  "refresh-cw": RefreshCw,
-  activity: Activity,
-  eye: Eye,
-  lightbulb: Lightbulb,
-  map: Map,
-  sword: Sword,
-  code: Code,
-  compass: Compass,
-  radio: Radio,
-};
 
 // ---------------------------------------------------------------------------
 // Category color scheme (matches task spec)
@@ -118,6 +66,21 @@ const FALLBACK_COLORS = {
 // ---------------------------------------------------------------------------
 
 type VendorView = "shop" | "codex" | "stats";
+
+// ---------------------------------------------------------------------------
+// Difficulty label — maps 0-1 scalar to named label
+// (thresholds align with Training DIFFICULTY_OPTIONS midpoints)
+// ---------------------------------------------------------------------------
+
+function getDifficultyLabel(difficulty: number): string {
+  if (difficulty <= 0.10) return "TRIVIAL";
+  if (difficulty <= 0.225) return "EASY";
+  if (difficulty <= 0.40) return "NORMAL";
+  if (difficulty <= 0.60) return "MEDIUM";
+  if (difficulty <= 0.775) return "HARD";
+  if (difficulty <= 0.925) return "EXPERT";
+  return "INSANE";
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -224,7 +187,7 @@ export function RunShop() {
         {">"}_&nbsp;FLOOR {floor} CLEARED
       </p>
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
-        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0) * 100)}%
+        NEXT FLOOR: {floor + 1} // DIFFICULTY: {getDifficultyLabel(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0))}
       </p>
 
       {/* Status bar: HP + Credits + Data earned this run */}
@@ -273,7 +236,6 @@ export function RunShop() {
           const alreadyOwned = inventory.some((p) => p.type === offer.id);
           const available = !offer.purchased && !alreadyOwned && canAfford;
           const colors = CATEGORY_COLORS[offer.category] ?? FALLBACK_COLORS;
-          const IconComponent = ICON_MAP[offer.icon];
 
           return (
             <div
@@ -294,22 +256,8 @@ export function RunShop() {
                 </div>
               )}
 
-              {/* Header: icon + name + category badge */}
+              {/* Header: name + category badge */}
               <div className="flex items-center gap-3">
-                {/* Icon */}
-                {IconComponent && (
-                  <div
-                    className={cn(
-                      "shrink-0 w-9 h-9 flex items-center justify-center border",
-                      offer.purchased
-                        ? "border-white/10 text-white/20"
-                        : cn(colors.border, colors.text),
-                    )}
-                  >
-                    <IconComponent size={18} />
-                  </div>
-                )}
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span
