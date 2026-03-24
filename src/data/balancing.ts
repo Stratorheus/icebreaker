@@ -10,13 +10,15 @@ function getDamage(floor: number): number {
 
 /**
  * Credits awarded after a minigame win.
- * Base 20 × (1 + difficulty) × speed bonus.
+ * Base 20 × (1 + difficulty) × speed bonus + floor bonus.
  * Speed bonus: completing under 10 s earns up to +50%.
+ * Floor bonus: +2 CR per floor (flat, unaffected by difficulty reducer).
  */
-function getCredits(timeMs: number, difficulty: number): number {
+function getCredits(timeMs: number, difficulty: number, floor: number = 1): number {
   const base = 20 * (1 + difficulty);
   const speedBonus = 1 + Math.max(0, 1 - timeMs / 10_000) * 0.5;
-  return Math.round(base * speedBonus);
+  const floorBonus = floor * 2;
+  return Math.round(base * speedBonus) + floorBonus;
 }
 
 /** Number of minigames presented on a given floor (caps at 8). */
@@ -174,8 +176,9 @@ export function getEffectiveCredits(
   creditTier: number,
   speedTaxTier: number,
   unlockBonus: number,
+  floor: number = 1,
 ): number {
-  const base = getCredits(timeMs, difficulty);
+  const base = getCredits(timeMs, difficulty, floor);
   const speedTaxFlat = speedTaxTier > 0 ? Math.round(base * speedTaxTier * 0.05) : 0;
   const withFlat = base + speedTaxFlat;
   const creditMultiplier = Math.pow(1.03, creditTier);

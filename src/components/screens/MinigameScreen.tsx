@@ -82,7 +82,7 @@ export function MinigameScreen() {
             const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
             const unlockedCount = useGameStore.getState().unlockedMinigames.length;
             const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
-            const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+            const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus, floor);
             setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction * remaining.length));
           } else {
             setLastEarnedCredits(0);
@@ -105,7 +105,7 @@ export function MinigameScreen() {
           const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
           const unlockedCount = useGameStore.getState().unlockedMinigames.length;
           const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
-          const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+          const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus, floor);
           setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction));
         } else {
           setLastEarnedCredits(0);
@@ -153,6 +153,7 @@ export function MinigameScreen() {
           purchasedUpgrades["credit-multiplier"] ?? 0,
           purchasedUpgrades["speed-tax"] ?? 0,
           unlockBonus,
+          floor,
         );
         // Speed bonus applies when completing under 10 s (timeMs < 10000)
         const hasSpeedBonus = result.timeMs < 10000;
@@ -260,7 +261,7 @@ function RunCountdownPhase({
   purchasedUpgrades: Record<string, number>;
 }) {
   const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
-  const approxCredits = Math.round(20 * (1 + diff));
+  const approxCredits = Math.round(20 * (1 + diff)) + floor * 2;
   const damage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
 
   return (

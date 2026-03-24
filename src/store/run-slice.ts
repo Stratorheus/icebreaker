@@ -255,6 +255,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       state.purchasedUpgrades["credit-multiplier"] ?? 0,
       state.purchasedUpgrades["speed-tax"] ?? 0,
       unlockBonus,
+      state.floor,
     );
     const earned = Math.round(rawEarned * rewardFraction);
 
@@ -536,6 +537,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         state.purchasedUpgrades["credit-multiplier"] ?? 0,
         state.purchasedUpgrades["speed-tax"] ?? 0,
         unlockBonus,
+        state.floor,
       ) * rewardFraction,
     );
     const totalCredits = creditsPerGame * remaining;
