@@ -503,6 +503,12 @@ export function SubnetScan(props: MinigameProps) {
                 data-correct={isCorrect}
                 type="button"
                 onClick={() => handleToggle(idx)}
+                onMouseEnter={() => {
+                  if (!isTouch) {
+                    setCursorIndex(idx);
+                    cursorIndexRef.current = idx;
+                  }
+                }}
                 disabled={!isActive || resolvedRef.current}
                 className={itemClasses}
                 style={itemStyle}

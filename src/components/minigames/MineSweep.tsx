@@ -319,6 +319,14 @@ export function MineSweep(props: MinigameProps) {
                   !isActive || resolvedRef.current || phase === "preview"
                 }
                 onClick={() => toggleMark(i)}
+                onMouseEnter={() => {
+                  if (!isTouch) {
+                    setCursorRow(cellRow);
+                    setCursorCol(cellCol);
+                    cursorRowRef.current = cellRow;
+                    cursorColRef.current = cellCol;
+                  }
+                }}
                 className={`
                   flex items-center justify-center
                   w-10 h-10 sm:w-12 sm:h-12

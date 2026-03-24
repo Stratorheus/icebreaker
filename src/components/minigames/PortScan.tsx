@@ -445,6 +445,12 @@ export function PortScan(props: MinigameProps) {
                 data-open={isOpen}
                 type="button"
                 onClick={() => handleToggle(idx)}
+                onMouseEnter={() => {
+                  if (!isTouch) {
+                    setCursorIndex(idx);
+                    cursorIndexRef.current = idx;
+                  }
+                }}
                 disabled={phase !== "select" || !isActive || resolvedRef.current}
                 className={cellClasses}
                 style={cellStyle}

@@ -291,6 +291,14 @@ export function FindSymbol(props: MinigameProps) {
                 type="button"
                 disabled={!isActive || resolvedRef.current}
                 onClick={() => handleSelect(i)}
+                onMouseEnter={() => {
+                  if (!isTouch) {
+                    setCursorRow(cellRow);
+                    setCursorCol(cellCol);
+                    cursorRowRef.current = cellRow;
+                    cursorColRef.current = cellCol;
+                  }
+                }}
                 className={`
                   flex items-center justify-center
                   w-12 h-10 sm:w-14 sm:h-12

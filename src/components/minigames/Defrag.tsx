@@ -472,6 +472,14 @@ export function Defrag(props: MinigameProps) {
                     type="button"
                     disabled={!isActive || resolvedRef.current}
                     onClick={() => flagMode ? toggleFlag(i) : uncoverCell(i)}
+                    onMouseEnter={() => {
+                      if (!isTouch) {
+                        setCursorRow(cellRow);
+                        setCursorCol(cellCol);
+                        cursorRowRef.current = cellRow;
+                        cursorColRef.current = cellCol;
+                      }
+                    }}
                     onContextMenu={(e) => {
                       e.preventDefault();
                       toggleFlag(i);
