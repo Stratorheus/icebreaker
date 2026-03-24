@@ -5,6 +5,8 @@ import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import { cn } from "@/lib/utils";
 import type { MetaUpgrade } from "@/types/shop";
 import { Hexagon } from "lucide-react";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -214,24 +216,18 @@ export function MetaShop() {
         UPGRADE TERMINAL
       </h1>
       <p className="text-white/30 text-xs uppercase tracking-widest mb-6 glitch-subtle">
-        {">"}_&nbsp;DATA MARKET // PERSISTENT UPGRADES
+        {CLI_PROMPT}DATA MARKET // PERSISTENT UPGRADES
       </p>
 
       {/* Back button — top nav */}
-      <button
-        type="button"
+      <CyberButton
+        variant="muted"
+        prompt
         onClick={handleBack}
-        className="
-          mb-6 py-1.5 px-6
-          text-xs uppercase tracking-widest font-mono
-          border border-white/15 text-white/40
-          hover:bg-white/5 hover:text-white/70 hover:border-white/30
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
+        className="mb-6 w-auto py-1.5 px-6 text-xs"
       >
-        {">"}_&nbsp;{trainingMinigame ? "BACK TO TRAINING" : "BACK TO MENU"}
-      </button>
+        {trainingMinigame ? "BACK TO TRAINING" : "BACK TO MENU"}
+      </CyberButton>
 
       {/* Data balance + price multiplier */}
       <div className="flex flex-col items-center gap-2 mb-10">
@@ -239,7 +235,7 @@ export function MetaShop() {
           <span className="text-white/50 text-xs uppercase tracking-widest glitch-subtle">
             DATA BALANCE
           </span>
-          <span className="font-bold text-xl tabular-nums flex items-center gap-1.5" style={{ color: "var(--color-currency-data)" }}>
+          <span className="font-bold text-xl tabular-nums flex items-center gap-1.5 text-currency-data">
             <Hexagon size={16} /> {data.toLocaleString()}
           </span>
         </div>

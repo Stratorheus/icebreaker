@@ -103,8 +103,8 @@ export function MilestoneOverlay() {
       {/* Bonus data */}
       {bonus > 0 && (
         <div className="mt-8 flex items-center gap-2 border border-cyber-cyan/30 px-6 py-3">
-          <Hexagon size={20} style={{ color: "var(--color-currency-data)" }} />
-          <span className="font-bold uppercase tracking-widest text-lg" style={{ color: "var(--color-currency-data)" }}>
+          <Hexagon size={20} className="text-currency-data" />
+          <span className="font-bold uppercase tracking-widest text-lg text-currency-data">
             +{bonus} DATA
           </span>
           <span className="text-white/30 text-xs uppercase tracking-wider ml-2">

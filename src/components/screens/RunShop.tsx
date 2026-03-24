@@ -7,6 +7,7 @@ import { Hexagon } from "lucide-react";
 import { Coins } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
 import { Stats } from "@/components/screens/Stats";
+import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
 // Category color scheme (matches task spec)
@@ -184,7 +185,7 @@ export function RunShop() {
         VENDOR NODE
       </h1>
       <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
-        {">"}_&nbsp;FLOOR {floor} CLEARED
+        {CLI_PROMPT}FLOOR {floor} CLEARED
       </p>
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
         NEXT FLOOR: {floor + 1} // DIFFICULTY: {getDifficultyLabel(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0))}
@@ -214,7 +215,7 @@ export function RunShop() {
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             CR
           </span>
-          <span className="font-bold text-lg tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-credits)" }}>
+          <span className="font-bold text-lg tabular-nums flex items-center gap-1 text-currency-credits">
             <Coins size={16} /> {credits.toLocaleString()}
           </span>
         </div>
@@ -223,7 +224,7 @@ export function RunShop() {
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             RUN DATA
           </span>
-          <span className="font-bold text-sm tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
+          <span className="font-bold text-sm tabular-nums flex items-center gap-1 text-currency-data">
             <Hexagon size={14} /> +{(baseDataReward + dataDripThisRun + milestoneDataThisRun).toLocaleString()}
           </span>
         </div>
@@ -346,7 +347,7 @@ export function RunShop() {
             : "border-white/10 text-white/20 cursor-not-allowed",
         )}
       >
-        {">"}_&nbsp;REROLL STOCK ({rerollPrice} CR)
+        {CLI_PROMPT}REROLL STOCK ({rerollPrice} CR)
       </button>
 
       {/* Continue button */}
@@ -363,7 +364,7 @@ export function RunShop() {
           mb-6
         "
       >
-        {">"}_&nbsp;CONTINUE TO FLOOR {floor + 1}
+        {CLI_PROMPT}CONTINUE TO FLOOR {floor + 1}
       </button>
 
       {/* Utility buttons: Codex, Stats, Quit */}

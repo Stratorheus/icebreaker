@@ -4,6 +4,8 @@ import type { MinigameType } from "@/types/game";
 import { ALL_MINIGAMES, UNLOCKABLE_MINIGAMES, getMinigameBriefing, getMinigameDisplayName } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -147,15 +149,11 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;REFERENCE ARCHIVE
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          OPERATION MANUAL
-        </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          CODEX — PROTOCOL REFERENCE
-        </p>
+        <ScreenHeader
+          subtitle="REFERENCE ARCHIVE"
+          title="OPERATION MANUAL"
+          description="CODEX — PROTOCOL REFERENCE"
+        />
       </div>
 
       {/* Progress indicator */}
@@ -211,20 +209,14 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
 
       {/* Back button */}
       <div className="w-full max-w-2xl">
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={handleBack}
-          className="
-            py-2 px-6
-            text-sm uppercase tracking-widest font-mono
-            border border-white/15 text-white/40
-            hover:bg-white/5 hover:text-white/70 hover:border-white/30
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;{onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
-        </button>
+          {onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
+        </CyberButton>
       </div>
     </div>
   );

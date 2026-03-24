@@ -5,6 +5,9 @@ import type { MinigameResult } from "@/types/minigame";
 import { MINIGAME_COMPONENTS, MINIGAME_REGISTRY, getMinigameDisplayName, getMinigameBriefing, buildMetaPowerUps } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -209,15 +212,16 @@ export function Training() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <p className="text-white/30 text-sm uppercase tracking-widest mb-8">
-          {">"}_&nbsp;NO TRAINING TARGET
+          {CLI_PROMPT}NO TRAINING TARGET
         </p>
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={handlePickerBack}
-          className="py-2 px-6 text-sm uppercase tracking-widest font-mono border border-white/20 text-white/50 hover:bg-white/5 hover:text-white/80 transition-colors duration-150 cursor-pointer select-none"
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;BACK
-        </button>
+          BACK
+        </CyberButton>
       </div>
     );
   }
@@ -369,15 +373,11 @@ function PickerPhase({
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;TRAINING MODE
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          SELECT PROTOCOL
-        </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          PRACTICE ANY UNLOCKED PROTOCOL — RESULTS NOT RECORDED
-        </p>
+        <ScreenHeader
+          subtitle="TRAINING MODE"
+          title="SELECT PROTOCOL"
+          description="PRACTICE ANY UNLOCKED PROTOCOL — RESULTS NOT RECORDED"
+        />
       </div>
 
       {/* Minigame list */}
@@ -414,20 +414,14 @@ function PickerPhase({
       </div>
 
       {/* Back button */}
-      <button
-        type="button"
+      <CyberButton
+        variant="muted"
+        prompt
         onClick={onBack}
-        className="
-          py-2 px-6
-          text-sm uppercase tracking-widest font-mono
-          border border-white/15 text-white/40
-          hover:bg-white/5 hover:text-white/70 hover:border-white/30
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
+        className="w-auto py-2 px-6"
       >
-        {">"}_&nbsp;BACK TO MENU
-      </button>
+        BACK TO MENU
+      </CyberButton>
     </div>
   );
 }
@@ -503,12 +497,10 @@ function BriefingPhase({
     <div className="flex-1 flex flex-col items-center px-4 pb-12 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mt-6 mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;TRAINING PROTOCOL
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          {getMinigameDisplayName(type).toUpperCase()}
-        </h1>
+        <ScreenHeader
+          subtitle="TRAINING PROTOCOL"
+          title={getMinigameDisplayName(type).toUpperCase()}
+        />
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
           PROTOCOL ID: <span className="text-white/40">{type}</span>
         </p>
@@ -549,7 +541,7 @@ function BriefingPhase({
         {/* Rules */}
         <section className="border border-white/10 bg-white/[0.02] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-3">
-            {">"}_&nbsp;PROTOCOL RULES
+            {CLI_PROMPT}PROTOCOL RULES
           </h2>
           <ul className="space-y-2">
             {briefing.rules.map((rule, i) => (
@@ -564,7 +556,7 @@ function BriefingPhase({
         {/* Controls */}
         <section className="border border-cyber-cyan/20 bg-cyber-cyan/[0.03] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-cyan/50 mb-3">
-            {">"}_&nbsp;CONTROLS
+            {CLI_PROMPT}CONTROLS
           </h2>
           <p className="text-cyber-cyan text-sm font-mono">
             {isTouch ? briefing.controls.touch : briefing.controls.desktop}
@@ -574,7 +566,7 @@ function BriefingPhase({
         {/* Tips */}
         <section className="border border-white/10 bg-white/[0.02] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-3">
-            {">"}_&nbsp;TACTICAL TIPS
+            {CLI_PROMPT}TACTICAL TIPS
           </h2>
           <ul className="space-y-2">
             {briefing.tips.map((tip, i) => (
@@ -589,7 +581,7 @@ function BriefingPhase({
         {/* Per-upgrade checkboxes */}
         <section>
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
-            {">"}_&nbsp;META UPGRADES
+            {CLI_PROMPT}META UPGRADES
           </h2>
           {gameUpgrades.length > 0 ? (
             <div className="space-y-2">
@@ -709,7 +701,7 @@ function BriefingPhase({
               cursor-pointer select-none
             "
           >
-            {">"}_&nbsp;OPEN META SHOP
+            {CLI_PROMPT}OPEN META SHOP
           </button>
         </section>
 
@@ -732,30 +724,23 @@ function BriefingPhase({
 
       {/* Action buttons */}
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={onBack}
-          className="py-2 px-6 text-sm uppercase tracking-widest font-mono border border-white/15 text-white/30 hover:bg-white/5 hover:text-white/60 hover:border-white/30 transition-colors duration-150 cursor-pointer select-none"
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;BACK
-        </button>
+          BACK
+        </CyberButton>
 
-        <button
-          type="button"
+        <CyberButton
+          variant="primary"
           data-testid="begin-training"
           onClick={() => onBeginRef.current()}
-          className="
-            py-3 px-10
-            text-sm uppercase tracking-widest font-mono font-bold
-            border border-cyber-cyan/50 text-cyber-cyan
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
-            active:bg-cyber-cyan/20
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-10 font-bold"
         >
           BEGIN TRAINING
-        </button>
+        </CyberButton>
       </div>
     </div>
   );
@@ -871,12 +856,11 @@ function CompletePhase({
   return (
     <div className="text-center select-none flex flex-col items-center">
       {/* Header */}
-      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2 glitch-flicker">
-        {">"}_&nbsp;TRAINING PROTOCOL COMPLETE
-      </p>
-      <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {getMinigameDisplayName(type).toUpperCase()}
-      </h2>
+      <ScreenHeader
+        subtitle="TRAINING PROTOCOL COMPLETE"
+        title={getMinigameDisplayName(type).toUpperCase()}
+      />
+      <div className="mb-8" />
 
       {/* Round results */}
       <div className="flex items-center gap-3 mb-8 flex-wrap justify-center">
@@ -916,36 +900,21 @@ function CompletePhase({
 
       {/* Action buttons */}
       <div className="flex items-center gap-4">
-        <button
-          type="button"
+        <CyberButton
+          variant="primary"
           onClick={onContinue}
-          className="
-            py-3 px-10
-            text-sm uppercase tracking-widest font-mono font-bold
-            border border-cyber-cyan/50 text-cyber-cyan
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
-            active:bg-cyber-cyan/20
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-10 font-bold"
         >
           CONTINUE TRAINING
-        </button>
+        </CyberButton>
 
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
           onClick={onBackToList}
-          className="
-            py-3 px-8
-            text-sm uppercase tracking-widest font-mono
-            border border-white/15 text-white/40
-            hover:bg-white/5 hover:text-white/70 hover:border-white/30
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-8"
         >
           BACK TO LIST
-        </button>
+        </CyberButton>
       </div>
     </div>
   );
