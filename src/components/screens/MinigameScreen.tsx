@@ -288,7 +288,7 @@ function RunCountdownPhase({
           <Hexagon size={11} /> +{dataDrip}
         </span>
         <span className={`flex items-center gap-1 ${effectiveDamage === 0 ? "text-cyber-green/60" : "text-cyber-magenta/60"}`}>
-          {effectiveDamage === 0 ? "SHIELDED" : `${effectiveDamage} HP`}
+          {effectiveDamage === 0 ? "SHIELDED" : `-${effectiveDamage} HP`}
         </span>
       </div>
     </CountdownDisplay>
