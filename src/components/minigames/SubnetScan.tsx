@@ -4,6 +4,7 @@ import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
 import { TimerBar } from "@/components/layout/TimerBar";
 import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { CURSOR_CLASSES, HOVER_CLASSES } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 // ---------------------------------------------------------------------------
@@ -483,18 +484,11 @@ export function SubnetScan(props: MinigameProps) {
             } else {
               // Default
               itemClasses += " bg-white/[0.03] border-white/10 text-white/60";
-              itemClasses += " hover:bg-white/[0.06] hover:border-white/20 cursor-pointer";
+              itemClasses += ` ${HOVER_CLASSES} cursor-pointer`;
             }
 
             if (isCursor && !resolvedRef.current) {
-              itemClasses += " ring-2 ring-cyber-cyan ring-offset-0";
-              itemStyle = {
-                ...itemStyle,
-                boxShadow: `${itemStyle.boxShadow ?? ""}, 0 0 12px rgba(0, 255, 255, 0.3)`.replace(
-                  /^, /,
-                  "",
-                ),
-              };
+              itemClasses += ` ${CURSOR_CLASSES}`;
             }
 
             return (
