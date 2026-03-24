@@ -9,6 +9,8 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Compact inline variant — smaller text, less padding, no border/bg. For use inside existing layouts. */
+  compact?: boolean;
 }
 
 /**
@@ -28,7 +30,47 @@ export function ConfirmDialog({
   cancelLabel = "CANCEL",
   onConfirm,
   onCancel,
+  compact = false,
 }: ConfirmDialogProps) {
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3">
+        <span className="text-[10px] uppercase tracking-widest font-mono text-cyber-magenta/70">
+          {title}
+        </span>
+        <button
+          type="button"
+          data-testid="confirm-quit"
+          onClick={onConfirm}
+          className="
+            py-1.5 px-4
+            text-[10px] uppercase tracking-widest font-mono font-bold
+            border border-cyber-magenta/50 text-cyber-magenta
+            hover:bg-cyber-magenta/10 hover:border-cyber-magenta/80
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          {confirmLabel}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="
+            py-1.5 px-4
+            text-[10px] uppercase tracking-widest font-mono
+            border border-white/15 text-white/40
+            hover:bg-white/5 hover:text-white/70
+            transition-colors duration-150
+            cursor-pointer select-none
+          "
+        >
+          {cancelLabel}
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 p-8 border border-white/15 bg-black/90">
       <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-magenta glitch-text">

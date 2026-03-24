@@ -403,6 +403,7 @@ export function RunShop() {
         ) : (
           <ConfirmDialog
             title="QUIT?"
+            compact
             onConfirm={quitRun}
             onCancel={() => setConfirmQuit(false)}
           />
