@@ -322,6 +322,18 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       cascadeClockPct = Math.min(tierCap, cascadeClockPct + 0.02);
     }
 
+    // Clean up floor-scoped power-ups at end of floor (not in advanceFloor,
+    // so items bought in vendor apply to the next floor).
+    const cleanedInventory = isLastMinigame
+      ? state.inventory.filter(
+          (p) =>
+            p.effect.type !== "heal-on-success" &&
+            p.effect.type !== "time-bonus" &&
+            p.effect.type !== "time-siphon" &&
+            p.effect.type !== "hp-leech",
+        )
+      : state.inventory;
+
     // Floor-completion bookkeeping — computed when floor is done (isLastMinigame)
     // so achievement checks in RunShop see up-to-date counters.
     const floorCompletionTimestamps = isLastMinigame
@@ -336,6 +348,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
     set({
       hp: newHp,
+      inventory: cleanedInventory,
       credits: state.credits + earned,
       creditsEarnedThisRun: state.creditsEarnedThisRun + earned,
       runScore: state.runScore + earned,
@@ -483,14 +496,10 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const count = getMinigamesPerFloor(nextFloor);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
-    // Consume floor-scoped power-ups (heal-on-success, time-bonus, time-siphon, hp-leech)
-    const inventory = state.inventory.filter(
-      (p) =>
-        p.effect.type !== "heal-on-success" &&
-        p.effect.type !== "time-bonus" &&
-        p.effect.type !== "time-siphon" &&
-        p.effect.type !== "hp-leech",
-    );
+    // Floor-scoped power-ups are now cleaned up at end of floor
+    // (in completeMinigame when isLastMinigame) so items bought in the
+    // vendor apply to the next floor.
+    const inventory = state.inventory;
 
     // Emergency Patch (meta upgrade): regenerate 2% of maxHp per purchase tier at floor start
     const emergencyPatchTier = state.purchasedUpgrades["emergency-patch"] ?? 0;
