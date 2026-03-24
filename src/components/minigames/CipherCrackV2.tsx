@@ -67,7 +67,12 @@ function pickOne<T>(arr: readonly T[]): T {
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarker?: boolean }) {
+function AlphabetChart({ rotN, showShiftMarker, highlightEncrypted, highlightDecrypted }: {
+  rotN: number;
+  showShiftMarker?: boolean;
+  highlightEncrypted?: string;
+  highlightDecrypted?: string;
+}) {
   // Example pair for shift marker: A → shifted letter
   const examplePlain = "A";
   const exampleShifted = String.fromCharCode(((0 + rotN) % 26) + 65);
@@ -95,33 +100,41 @@ function AlphabetChart({ rotN, showShiftMarker }: { rotN: number; showShiftMarke
         Alphabet reference (shift +{rotN})
       </p>
       <div className="grid grid-cols-13 gap-0 text-center font-mono text-[11px] leading-tight">
-        {/* First row: original A-M */}
-        {ALPHABET.slice(0, 13).split("").map((ch, i) => (
-          <div key={`o1-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
-        ))}
-        {/* Second row: shifted A-M */}
+        {/* First row: original A-M (decrypted = what to type) */}
+        {ALPHABET.slice(0, 13).split("").map((ch, i) => {
+          const isHighlight = showShiftMarker && highlightDecrypted === ch;
+          return (
+            <div key={`o1-${i}`} className={`py-0.5 ${isHighlight ? "text-cyber-green font-bold bg-cyber-green/15 rounded-sm" : showShiftMarker ? "text-white/25" : "text-white/30"}`}>{ch}</div>
+          );
+        })}
+        {/* Second row: shifted A-M (encrypted = what you see) */}
         {ALPHABET.slice(0, 13).split("").map((ch, i) => {
           const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
+          const isHighlight = showShiftMarker && highlightEncrypted === shifted;
           return (
             <div
               key={`s1-${i}`}
-              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
+              className={`py-0.5 font-bold ${isHighlight ? "text-cyber-orange bg-cyber-orange/20 rounded-sm" : showShiftMarker ? "text-white/20" : "text-cyber-cyan/70"}`}
             >
               {shifted}
             </div>
           );
         })}
         {/* Third row: original N-Z */}
-        {ALPHABET.slice(13).split("").map((ch, i) => (
-          <div key={`o2-${i}`} className={`py-0.5 ${showShiftMarker ? "text-cyber-green/50 font-bold" : "text-white/30"}`}>{ch}</div>
-        ))}
+        {ALPHABET.slice(13).split("").map((ch, i) => {
+          const isHighlight = showShiftMarker && highlightDecrypted === ch;
+          return (
+            <div key={`o2-${i}`} className={`py-0.5 ${isHighlight ? "text-cyber-green font-bold bg-cyber-green/15 rounded-sm" : showShiftMarker ? "text-white/25" : "text-white/30"}`}>{ch}</div>
+          );
+        })}
         {/* Fourth row: shifted N-Z */}
         {ALPHABET.slice(13).split("").map((ch, i) => {
           const shifted = String.fromCharCode(((ch.charCodeAt(0) - 65 + rotN) % 26) + 65);
+          const isHighlight = showShiftMarker && highlightEncrypted === shifted;
           return (
             <div
               key={`s2-${i}`}
-              className={`py-0.5 font-bold ${showShiftMarker ? "text-cyber-orange bg-cyber-orange/10 rounded-sm" : "text-cyber-cyan/70"}`}
+              className={`py-0.5 font-bold ${isHighlight ? "text-cyber-orange bg-cyber-orange/20 rounded-sm" : showShiftMarker ? "text-white/20" : "text-cyber-cyan/70"}`}
             >
               {shifted}
             </div>
@@ -242,7 +255,12 @@ export function CipherCrackV2(props: MinigameProps) {
       </div>
 
       {/* Alphabet chart -- always shown, with optional shift marker */}
-      <AlphabetChart rotN={puzzle.rotN} showShiftMarker={hasShiftMarker} />
+      <AlphabetChart
+        rotN={puzzle.rotN}
+        showShiftMarker={hasShiftMarker}
+        highlightEncrypted={hasShiftMarker && cipher.charIndex < puzzle.encrypted.length ? puzzle.encrypted[cipher.charIndex].toUpperCase() : undefined}
+        highlightDecrypted={hasShiftMarker && cipher.charIndex < puzzle.word.length ? puzzle.word[cipher.charIndex].toUpperCase() : undefined}
+      />
 
       <div className="w-24 h-px bg-white/10 my-1" />
 
