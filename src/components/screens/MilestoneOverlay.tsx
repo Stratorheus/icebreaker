@@ -76,13 +76,13 @@ export function MilestoneOverlay() {
       />
 
       {/* Floor badge */}
-      <p className="text-xs uppercase tracking-[0.4em] text-white/30 mb-6 animate-pulse">
+      <p className="text-xs font-heading uppercase tracking-[0.4em] text-white/30 mb-6 animate-pulse">
         FLOOR {milestoneFloor} MILESTONE
       </p>
 
       {/* Main title with glitch-like gradient */}
       <h1
-        className="text-4xl sm:text-6xl md:text-7xl font-black uppercase text-center px-4 leading-none glitch-text-strong"
+        className="text-4xl sm:text-6xl md:text-7xl font-heading font-black uppercase text-center px-4 leading-none glitch-text-strong"
         style={{
           letterSpacing: "0.12em",
           background:
@@ -103,8 +103,8 @@ export function MilestoneOverlay() {
       {/* Bonus data */}
       {bonus > 0 && (
         <div className="mt-8 flex items-center gap-2 border border-cyber-cyan/30 px-6 py-3">
-          <Hexagon size={20} style={{ color: "var(--color-currency-data)" }} />
-          <span className="font-bold uppercase tracking-widest text-lg" style={{ color: "var(--color-currency-data)" }}>
+          <Hexagon size={20} className="text-currency-data" />
+          <span className="font-bold uppercase tracking-widest text-lg text-currency-data">
             +{bonus} DATA
           </span>
           <span className="text-white/30 text-xs uppercase tracking-wider ml-2">

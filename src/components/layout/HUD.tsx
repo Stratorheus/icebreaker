@@ -99,7 +99,7 @@ export function HUD() {
         </div>
 
         {/* Credits */}
-        <div className="flex items-center gap-1 glitch-subtle" style={{ color: "var(--color-currency-credits)" }}>
+        <div className="flex items-center gap-1 glitch-subtle text-currency-credits">
           <Coins size={14} />
           <span className="tabular-nums">
             {credits.toLocaleString()}<span className="hidden sm:inline"> CR</span>
@@ -107,7 +107,7 @@ export function HUD() {
         </div>
 
         {/* Data balance */}
-        <div className="flex items-center gap-1 glitch-subtle" style={{ color: "var(--color-currency-data)" }}>
+        <div className="flex items-center gap-1 glitch-subtle text-currency-data">
           <Hexagon size={12} />
           <span className="tabular-nums text-[10px]">
             {data.toLocaleString()}

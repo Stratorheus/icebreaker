@@ -2,8 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 import { TouchControls } from "@/components/layout/TouchControls";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
 
 /** Arrow directions with display characters and corresponding key codes */
 const ARROWS = [
@@ -129,89 +130,70 @@ export function MatchArrows(props: MinigameProps) {
     ARROWS.find((a) => a.key === key)?.char ?? "?";
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-8" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full max-w-2xl">
-        {/* Progress counter */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          {currentIndex}/{sequence.length}
-        </p>
-
-        {/* Arrow row */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-          {sequence.map((arrowKey, i) => {
-            const isCompleted = i < currentIndex;
-            const isCurrent = i === currentIndex;
-            const isPeeked = !isCompleted && !isCurrent && i <= currentIndex + peekAhead;
-            const isHidden = i > currentIndex && !isPeeked;
-
-            return (
-              <div
-                key={i}
-                className={`
-                  flex items-center justify-center
-                  w-12 h-12 sm:w-14 sm:h-14
-                  rounded-lg border-2 font-mono font-bold
-                  text-2xl sm:text-3xl
-                  transition-all duration-200
-                  ${
-                    isCompleted
-                      ? "border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan"
-                      : isCurrent
-                        ? "border-cyber-green bg-cyber-green/10 text-cyber-green animate-pulse shadow-[0_0_20px_rgba(0,255,65,0.3)]"
-                        : isPeeked
-                          ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400/70"
-                          : isHidden
-                            ? "border-white/10 bg-white/5 text-white/20"
-                            : ""
-                  }
-                `}
-              >
-                {isCompleted || isCurrent || isPeeked ? getArrowChar(arrowKey) : "?"}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Hidden test helper: expected arrow key */}
-        <span data-testid="expected-arrow" data-key={sequence[currentIndex]} className="hidden" />
-      </div>
-
-      {/* Arrow key hints (layout reference -- desktop) */}
-      <div className="desktop-only mt-8 text-center">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          Match the arrow with arrow keys
-        </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          {/* Top row: up arrow */}
-          <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          {/* Bottom row: left, down, right */}
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2190"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1.5 bg-white/10 rounded text-sm text-white/70 font-bold font-mono">
-              {"\u2192"}
-            </kbd>
-          </div>
-        </div>
-      </div>
-
-      {/* Touch: D-pad + instruction */}
-      <div className="touch-only mt-4 text-center">
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-8"
+      gap="gap-8"
+      maxWidth="max-w-2xl"
+      desktopHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Match the arrow with arrow keys
+          </p>
+          <ArrowKeyHints />
+        </>
+      }
+      touchHint={
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
           TAP the matching direction
         </p>
+      }
+    >
+      {/* Progress counter */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        {currentIndex}/{sequence.length}
+      </p>
+
+      {/* Arrow row */}
+      <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+        {sequence.map((arrowKey, i) => {
+          const isCompleted = i < currentIndex;
+          const isCurrent = i === currentIndex;
+          const isPeeked = !isCompleted && !isCurrent && i <= currentIndex + peekAhead;
+          const isHidden = i > currentIndex && !isPeeked;
+
+          return (
+            <div
+              key={i}
+              className={`
+                flex items-center justify-center
+                w-12 h-12 sm:w-14 sm:h-14
+                rounded-lg border-2 font-mono font-bold
+                text-2xl sm:text-3xl
+                transition-all duration-200
+                ${
+                  isCompleted
+                    ? "border-cyber-cyan/40 bg-cyber-cyan/10 text-cyber-cyan"
+                    : isCurrent
+                      ? "border-cyber-green bg-cyber-green/10 text-cyber-green animate-pulse shadow-[0_0_20px_rgba(0,255,65,0.3)]"
+                      : isPeeked
+                        ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400/70"
+                        : isHidden
+                          ? "border-white/10 bg-white/5 text-white/20"
+                          : ""
+                }
+              `}
+            >
+              {isCompleted || isCurrent || isPeeked ? getArrowChar(arrowKey) : "?"}
+            </div>
+          );
+        })}
       </div>
+
+      {/* Hidden test helper: expected arrow key */}
+      <span data-testid="expected-arrow" data-key={sequence[currentIndex]} className="hidden" />
+
       <TouchControls type="dpad" />
-    </div>
+    </MinigameShell>
   );
 }

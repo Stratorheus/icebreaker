@@ -1,5 +1,7 @@
 import { useGameStore } from "@/store/game-store";
 import { Hexagon } from "lucide-react";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { CLI_PROMPT } from "@/lib/constants";
 
 /**
  * Main menu screen — entry point of the game.
@@ -30,7 +32,7 @@ export function MainMenu() {
 
       {/* Subtitle */}
       <p className="text-white/40 text-sm tracking-[0.3em] uppercase mb-12 glitch-subtle">
-        {">"}_&nbsp;NEURAL INTRUSION SYSTEM
+        {CLI_PROMPT}NEURAL INTRUSION SYSTEM
       </p>
 
       {/* Stats display */}
@@ -38,28 +40,28 @@ export function MainMenu() {
         <span className="text-cyber-cyan glitch-subtle">
           BEST: FLOOR {stats.bestFloor}
         </span>
-        <span className="glitch-subtle flex items-center gap-1.5 font-bold" style={{ color: "var(--color-currency-data)" }}>
+        <span className="glitch-subtle flex items-center gap-1.5 font-bold text-currency-data">
           <Hexagon size={16} /> {data}
         </span>
       </div>
 
       {/* Menu buttons */}
       <div className="flex flex-col gap-3 w-64">
-        <MenuButton onClick={handleStartRun} primary>
-          {">"}_&nbsp;START RUN
-        </MenuButton>
-        <MenuButton onClick={() => setStatus("meta-shop")}>
-          {">"}_&nbsp;META SHOP
-        </MenuButton>
-        <MenuButton onClick={() => setStatus("training")}>
-          {">"}_&nbsp;TRAINING
-        </MenuButton>
-        <MenuButton onClick={() => setStatus("codex")}>
-          {">"}_&nbsp;CODEX
-        </MenuButton>
-        <MenuButton onClick={() => setStatus("stats")}>
-          {">"}_&nbsp;STATS
-        </MenuButton>
+        <CyberButton variant="primary" prompt onClick={handleStartRun}>
+          START RUN
+        </CyberButton>
+        <CyberButton prompt onClick={() => setStatus("meta-shop")}>
+          META SHOP
+        </CyberButton>
+        <CyberButton prompt onClick={() => setStatus("training")}>
+          TRAINING
+        </CyberButton>
+        <CyberButton prompt onClick={() => setStatus("codex")}>
+          CODEX
+        </CyberButton>
+        <CyberButton prompt onClick={() => setStatus("stats")}>
+          STATS
+        </CyberButton>
       </div>
 
       {/* Reset + Version */}
@@ -118,36 +120,3 @@ export function MainMenu() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Internal button component
-// ---------------------------------------------------------------------------
-
-function MenuButton({
-  children,
-  onClick,
-  primary = false,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  primary?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        w-full py-3 px-4
-        text-left text-sm uppercase tracking-widest font-mono
-        border transition-colors duration-150
-        cursor-pointer select-none
-        ${
-          primary
-            ? "border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70"
-            : "border-white/10 text-white/60 hover:bg-white/5 hover:text-white/90 hover:border-white/30"
-        }
-      `}
-    >
-      {children}
-    </button>
-  );
-}

@@ -5,22 +5,19 @@ import type { MinigameResult } from "@/types/minigame";
 import { MINIGAME_COMPONENTS, MINIGAME_REGISTRY, getMinigameDisplayName, getMinigameBriefing, buildMetaPowerUps } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { ResultFlash } from "@/components/ui/ResultFlash";
+import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CLI_PROMPT } from "@/lib/constants";
+import { DIFFICULTY_OPTIONS } from "@/data/balancing";
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const TRAINING_TIME_LIMIT = 30; // generous 30s for all trial rounds
-
-const DIFFICULTY_OPTIONS: { label: string; value: number }[] = [
-  { label: "TRIVIAL", value: 0.05 },
-  { label: "EASY", value: 0.15 },
-  { label: "NORMAL", value: 0.3 },
-  { label: "MEDIUM", value: 0.5 },
-  { label: "HARD", value: 0.7 },
-  { label: "EXPERT", value: 0.85 },
-  { label: "INSANE", value: 1.0 },
-];
 
 // ---------------------------------------------------------------------------
 // Per-minigame training settings
@@ -209,15 +206,16 @@ export function Training() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <p className="text-white/30 text-sm uppercase tracking-widest mb-8">
-          {">"}_&nbsp;NO TRAINING TARGET
+          {CLI_PROMPT}NO TRAINING TARGET
         </p>
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={handlePickerBack}
-          className="py-2 px-6 text-sm uppercase tracking-widest font-mono border border-white/20 text-white/50 hover:bg-white/5 hover:text-white/80 transition-colors duration-150 cursor-pointer select-none"
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;BACK
-        </button>
+          BACK
+        </CyberButton>
       </div>
     );
   }
@@ -243,9 +241,9 @@ export function Training() {
 
       {phase === "countdown" && (
         <div className="flex-1 flex items-center justify-center px-4">
-          <CountdownPhase
-            type={type}
-            round={round}
+          <CountdownDisplay
+            title={getMinigameDisplayName(type).toUpperCase()}
+            subtitle={`TRAINING — ROUND ${round}`}
             value={countdownValue}
           />
         </div>
@@ -263,9 +261,9 @@ export function Training() {
 
       {phase === "round-result" && (
         <div className="flex-1 flex items-center justify-center px-4">
-          <RoundResultFlash
+          <ResultFlash
             success={lastSuccess ?? false}
-            round={round}
+            subtitle={`ROUND ${round} COMPLETE — NEXT ROUND`}
           />
         </div>
       )}
@@ -306,46 +304,12 @@ export function Training() {
       {/* Quit confirmation overlay */}
       {showQuitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-6 p-8 border border-white/15 bg-black/90">
-            <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-magenta glitch-text">
-              QUIT TRAINING?
-            </h2>
-            <p className="text-white/40 text-xs uppercase tracking-widest">
-              CURRENT PROGRESS WILL BE SAVED TO RESULTS
-            </p>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                data-testid="confirm-quit"
-                onClick={handleQuitConfirm}
-                className="
-                  py-2.5 px-8
-                  text-sm uppercase tracking-widest font-mono font-bold
-                  border border-cyber-magenta/50 text-cyber-magenta
-                  hover:bg-cyber-magenta/10 hover:border-cyber-magenta/80
-                  active:bg-cyber-magenta/20
-                  transition-colors duration-150
-                  cursor-pointer select-none
-                "
-              >
-                CONFIRM
-              </button>
-              <button
-                type="button"
-                onClick={handleQuitCancel}
-                className="
-                  py-2.5 px-8
-                  text-sm uppercase tracking-widest font-mono
-                  border border-white/20 text-white/50
-                  hover:bg-white/5 hover:text-white/80
-                  transition-colors duration-150
-                  cursor-pointer select-none
-                "
-              >
-                CANCEL
-              </button>
-            </div>
-          </div>
+          <ConfirmDialog
+            title="QUIT TRAINING?"
+            message="CURRENT PROGRESS WILL BE SAVED TO RESULTS"
+            onConfirm={handleQuitConfirm}
+            onCancel={handleQuitCancel}
+          />
         </div>
       )}
     </div>
@@ -369,15 +333,11 @@ function PickerPhase({
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;TRAINING MODE
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          SELECT PROTOCOL
-        </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          PRACTICE ANY UNLOCKED PROTOCOL — RESULTS NOT RECORDED
-        </p>
+        <ScreenHeader
+          subtitle="TRAINING MODE"
+          title="SELECT PROTOCOL"
+          description="PRACTICE ANY UNLOCKED PROTOCOL — RESULTS NOT RECORDED"
+        />
       </div>
 
       {/* Minigame list */}
@@ -414,20 +374,14 @@ function PickerPhase({
       </div>
 
       {/* Back button */}
-      <button
-        type="button"
+      <CyberButton
+        variant="muted"
+        prompt
         onClick={onBack}
-        className="
-          py-2 px-6
-          text-sm uppercase tracking-widest font-mono
-          border border-white/15 text-white/40
-          hover:bg-white/5 hover:text-white/70 hover:border-white/30
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
+        className="w-auto py-2 px-6"
       >
-        {">"}_&nbsp;BACK TO MENU
-      </button>
+        BACK TO MENU
+      </CyberButton>
     </div>
   );
 }
@@ -503,12 +457,10 @@ function BriefingPhase({
     <div className="flex-1 flex flex-col items-center px-4 pb-12 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mt-6 mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;TRAINING PROTOCOL
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          {getMinigameDisplayName(type).toUpperCase()}
-        </h1>
+        <ScreenHeader
+          subtitle="TRAINING PROTOCOL"
+          title={getMinigameDisplayName(type).toUpperCase()}
+        />
         <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1">
           PROTOCOL ID: <span className="text-white/40">{type}</span>
         </p>
@@ -549,7 +501,7 @@ function BriefingPhase({
         {/* Rules */}
         <section className="border border-white/10 bg-white/[0.02] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-3">
-            {">"}_&nbsp;PROTOCOL RULES
+            {CLI_PROMPT}PROTOCOL RULES
           </h2>
           <ul className="space-y-2">
             {briefing.rules.map((rule, i) => (
@@ -564,7 +516,7 @@ function BriefingPhase({
         {/* Controls */}
         <section className="border border-cyber-cyan/20 bg-cyber-cyan/[0.03] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-cyan/50 mb-3">
-            {">"}_&nbsp;CONTROLS
+            {CLI_PROMPT}CONTROLS
           </h2>
           <p className="text-cyber-cyan text-sm font-mono">
             {isTouch ? briefing.controls.touch : briefing.controls.desktop}
@@ -574,7 +526,7 @@ function BriefingPhase({
         {/* Tips */}
         <section className="border border-white/10 bg-white/[0.02] p-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-3">
-            {">"}_&nbsp;TACTICAL TIPS
+            {CLI_PROMPT}TACTICAL TIPS
           </h2>
           <ul className="space-y-2">
             {briefing.tips.map((tip, i) => (
@@ -589,7 +541,7 @@ function BriefingPhase({
         {/* Per-upgrade checkboxes */}
         <section>
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-cyber-green/50 mb-3">
-            {">"}_&nbsp;META UPGRADES
+            {CLI_PROMPT}META UPGRADES
           </h2>
           {gameUpgrades.length > 0 ? (
             <div className="space-y-2">
@@ -709,7 +661,7 @@ function BriefingPhase({
               cursor-pointer select-none
             "
           >
-            {">"}_&nbsp;OPEN META SHOP
+            {CLI_PROMPT}OPEN META SHOP
           </button>
         </section>
 
@@ -732,62 +684,28 @@ function BriefingPhase({
 
       {/* Action buttons */}
       <div className="w-full max-w-2xl flex items-center justify-between mt-8">
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={onBack}
-          className="py-2 px-6 text-sm uppercase tracking-widest font-mono border border-white/15 text-white/30 hover:bg-white/5 hover:text-white/60 hover:border-white/30 transition-colors duration-150 cursor-pointer select-none"
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;BACK
-        </button>
+          BACK
+        </CyberButton>
 
-        <button
-          type="button"
+        <CyberButton
+          variant="primary"
           data-testid="begin-training"
           onClick={() => onBeginRef.current()}
-          className="
-            py-3 px-10
-            text-sm uppercase tracking-widest font-mono font-bold
-            border border-cyber-cyan/50 text-cyber-cyan
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
-            active:bg-cyber-cyan/20
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-10 font-bold"
         >
           BEGIN TRAINING
-        </button>
+        </CyberButton>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Countdown phase
-// ---------------------------------------------------------------------------
-
-function CountdownPhase({
-  type,
-  round,
-  value,
-}: {
-  type: MinigameType;
-  round: number;
-  value: number;
-}) {
-  return (
-    <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
-        TRAINING — ROUND {round}
-      </p>
-      <h2 className="text-2xl sm:text-3xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {getMinigameDisplayName(type).toUpperCase()}
-      </h2>
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
-        {value > 0 ? value : "GO"}
-      </p>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Active round — renders the minigame component with per-minigame settings
@@ -823,32 +741,6 @@ function ActiveRound({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Round result flash
-// ---------------------------------------------------------------------------
-
-function RoundResultFlash({
-  success,
-  round,
-}: {
-  success: boolean;
-  round: number;
-}) {
-  return (
-    <div className="text-center select-none">
-      <h2
-        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider ${
-          success ? "text-cyber-cyan" : "text-cyber-magenta"
-        }`}
-      >
-        {success ? "SUCCESS" : "FAILED"}
-      </h2>
-      <p className="mt-4 text-white/30 text-sm uppercase tracking-widest">
-        ROUND {round} COMPLETE — NEXT ROUND
-      </p>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Complete phase — continue training or back to list
@@ -871,12 +763,11 @@ function CompletePhase({
   return (
     <div className="text-center select-none flex flex-col items-center">
       {/* Header */}
-      <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2 glitch-flicker">
-        {">"}_&nbsp;TRAINING PROTOCOL COMPLETE
-      </p>
-      <h2 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {getMinigameDisplayName(type).toUpperCase()}
-      </h2>
+      <ScreenHeader
+        subtitle="TRAINING PROTOCOL COMPLETE"
+        title={getMinigameDisplayName(type).toUpperCase()}
+      />
+      <div className="mb-8" />
 
       {/* Round results */}
       <div className="flex items-center gap-3 mb-8 flex-wrap justify-center">
@@ -916,36 +807,21 @@ function CompletePhase({
 
       {/* Action buttons */}
       <div className="flex items-center gap-4">
-        <button
-          type="button"
+        <CyberButton
+          variant="primary"
           onClick={onContinue}
-          className="
-            py-3 px-10
-            text-sm uppercase tracking-widest font-mono font-bold
-            border border-cyber-cyan/50 text-cyber-cyan
-            hover:bg-cyber-cyan/10 hover:border-cyber-cyan/80
-            active:bg-cyber-cyan/20
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-10 font-bold"
         >
           CONTINUE TRAINING
-        </button>
+        </CyberButton>
 
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
           onClick={onBackToList}
-          className="
-            py-3 px-8
-            text-sm uppercase tracking-widest font-mono
-            border border-white/15 text-white/40
-            hover:bg-white/5 hover:text-white/70 hover:border-white/30
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-3 px-8"
         >
           BACK TO LIST
-        </button>
+        </CyberButton>
       </div>
     </div>
   );

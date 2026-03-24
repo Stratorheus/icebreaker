@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 import { TouchControls } from "@/components/layout/TouchControls";
 
 /** Opener -> closer mapping */
@@ -150,119 +150,116 @@ export function CloseBrackets(props: MinigameProps) {
   const nextExpected = currentIndex < expectedClosers.length ? expectedClosers[currentIndex] : null;
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-8" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 w-full max-w-lg">
-        {/* Label */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          Close the brackets
-        </p>
-
-        {/* Inline bracket display */}
-        <div className="flex items-center justify-center flex-wrap">
-          <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl font-bold tracking-wider">
-            {/* Opening brackets */}
-            {sequence.map((opener, i) => {
-              // This opener corresponds to closer index = sequence.length - 1 - i
-              const closerIdx = sequence.length - 1 - i;
-              const isMatched = closerIdx < currentIndex;
-
-              return (
-                <span
-                  key={`o-${i}`}
-                  className={`
-                    transition-all duration-200
-                    ${isMatched ? "text-cyber-green/50" : "text-cyber-cyan"}
-                  `}
-                >
-                  {opener}
-                </span>
-              );
-            })}
-
-            {/* Separator + cursor area */}
-            <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-1" />
-
-            {/* Typed closers (left to right in order typed) */}
-            {typedClosers.map((closer, i) => (
-              <span
-                key={`c-${i}`}
-                className="text-cyber-green transition-all duration-150"
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-8"
+      gap="gap-8"
+      desktopHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Type the matching closers in reverse order
+          </p>
+          <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+            {CLOSER_KEYS.filter(k => !excludedClosers.includes(k)).map((key) => (
+              <kbd
+                key={key}
+                className="px-2 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono"
               >
-                {closer}
-              </span>
-            ))}
-
-            {/* Remaining closer slots as dim placeholders */}
-            {Array.from({ length: expectedClosers.length - currentIndex }).map((_, i) => (
-              <span
-                key={`p-${i}`}
-                className="text-white/10"
-              >
-                _
-              </span>
+                {key}
+              </kbd>
             ))}
           </div>
-        </div>
-
-        {/* Progress */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          {currentIndex}/{expectedClosers.length} closed
-        </p>
-
-        {/* Next character hint -- ONLY if player has the Bracket Mirror meta upgrade */}
-        {hasBracketFlash && nextExpected && (
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-white/40 text-xs uppercase tracking-widest">
-              Next
-            </p>
-            <div
-              className={`
-                flex items-center justify-center
-                w-14 h-14 sm:w-16 sm:h-16
-                rounded-xl border-2 border-cyber-cyan/60
-                shadow-[0_0_12px_rgba(0,255,255,0.15)]
-                bg-cyber-bg/80
-              `}
-            >
-              <span className="text-3xl sm:text-4xl font-mono font-bold text-cyber-cyan">
-                {nextExpected}
-              </span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Instruction — desktop */}
-      <div className="desktop-only mt-8 text-center">
+        </>
+      }
+      touchHint={
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          Type the matching closers in reverse order
+          TAP the matching closers
         </p>
-        <div className="inline-flex items-center gap-1.5 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          {CLOSER_KEYS.filter(k => !excludedClosers.includes(k)).map((key) => (
-            <kbd
-              key={key}
-              className="px-2 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono"
+      }
+    >
+      {/* Label */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        Close the brackets
+      </p>
+
+      {/* Inline bracket display */}
+      <div className="flex items-center justify-center flex-wrap">
+        <div className="flex items-center justify-center font-mono text-3xl sm:text-4xl font-bold tracking-wider">
+          {/* Opening brackets */}
+          {sequence.map((opener, i) => {
+            // This opener corresponds to closer index = sequence.length - 1 - i
+            const closerIdx = sequence.length - 1 - i;
+            const isMatched = closerIdx < currentIndex;
+
+            return (
+              <span
+                key={`o-${i}`}
+                className={`
+                  transition-all duration-200
+                  ${isMatched ? "text-cyber-green/50" : "text-cyber-cyan"}
+                `}
+              >
+                {opener}
+              </span>
+            );
+          })}
+
+          {/* Separator + cursor area */}
+          <span className="inline-block w-[2px] h-8 sm:h-10 bg-cyber-cyan animate-pulse mx-1" />
+
+          {/* Typed closers (left to right in order typed) */}
+          {typedClosers.map((closer, i) => (
+            <span
+              key={`c-${i}`}
+              className="text-cyber-green transition-all duration-150"
             >
-              {key}
-            </kbd>
+              {closer}
+            </span>
+          ))}
+
+          {/* Remaining closer slots as dim placeholders */}
+          {Array.from({ length: expectedClosers.length - currentIndex }).map((_, i) => (
+            <span
+              key={`p-${i}`}
+              className="text-white/10"
+            >
+              _
+            </span>
           ))}
         </div>
       </div>
 
+      {/* Progress */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        {currentIndex}/{expectedClosers.length} closed
+      </p>
+
+      {/* Next character hint -- ONLY if player has the Bracket Mirror meta upgrade */}
+      {hasBracketFlash && nextExpected && (
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-white/40 text-xs uppercase tracking-widest">
+            Next
+          </p>
+          <div
+            className={`
+              flex items-center justify-center
+              w-14 h-14 sm:w-16 sm:h-16
+              rounded-xl border-2 border-cyber-cyan/60
+              shadow-[0_0_12px_rgba(0,255,255,0.15)]
+              bg-cyber-bg/80
+            `}
+          >
+            <span className="text-3xl sm:text-4xl font-mono font-bold text-cyber-cyan">
+              {nextExpected}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Hidden test helper: expected closer key */}
       <span data-testid="expected-closer" data-key={nextExpected ?? ""} className="hidden" />
 
-      {/* Touch: bracket buttons + instruction */}
-      <div className="touch-only mt-4 text-center">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          TAP the matching closers
-        </p>
-      </div>
       <TouchControls type="brackets" excludedClosers={excludedClosers} />
-    </div>
+    </MinigameShell>
   );
 }

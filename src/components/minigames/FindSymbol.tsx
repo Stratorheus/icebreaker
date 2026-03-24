@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
+import { ArrowKeyHints } from "@/components/layout/ArrowKeyHints";
+import { cellStyles } from "@/components/layout/GameCell";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 
 /** Hex alphabet characters */
@@ -55,10 +57,6 @@ interface GeneratedPuzzle {
 
 /**
  * Generate a grid and a target sequence using hex codes.
- *
- * 1. Pick `seqLen` target hex codes (unique).
- * 2. Fill the grid ensuring each target appears at least once.
- * 3. At higher difficulty, fill remaining cells with similar-looking codes.
  */
 function generatePuzzle(difficulty: number): GeneratedPuzzle {
   const cols = Math.round(3 + difficulty * 3);
@@ -79,10 +77,8 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
   // Fill remaining cells
   while (cells.length < totalCells) {
     if (difficulty > 0.4 && Math.random() < difficulty * 0.6) {
-      // At higher difficulty, add similar-looking codes to confuse
       const refTarget = targets[Math.floor(Math.random() * targets.length)];
       const similar = similarHexCode(refTarget);
-      // Avoid duplicating an existing target code
       if (!targets.includes(similar)) {
         cells.push(similar);
         continue;
@@ -100,12 +96,6 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
 
 /**
  * FindSymbol -- grid-based hex-code finding minigame (redesigned).
- *
- * A target sequence of hex codes is shown at the top. The player must
- * find and select the current target code in the grid, in order.
- * Wrong cell = immediate fail. All targets found = success.
- *
- * Supports mouse click and arrow-key + Enter navigation.
  */
 export function FindSymbol(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;
@@ -117,7 +107,7 @@ export function FindSymbol(props: MinigameProps) {
   const resolvedRef = useRef(false);
   const isTouch = useTouchDevice();
 
-  // 3b. Symbol Scanner (hint): subtly highlight the target cell
+  // Symbol Scanner (hint): subtly highlight the target cell
   const hasProximityHint = useMemo(() => {
     return activePowerUps.some(
       (p) => p.effect.type === "hint" && p.effect.minigame === "find-symbol",
@@ -219,145 +209,129 @@ export function FindSymbol(props: MinigameProps) {
   useKeyboard(keyMap);
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-6" />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-lg">
-        {/* Target sequence */}
-        <div className="text-center">
-          <p className="text-white/40 text-xs uppercase tracking-widest mb-3">
-            Find in order
+    <MinigameShell
+      timer={timer}
+      desktopHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Click or use arrow keys + Enter/Space to select
           </p>
-          <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-            {targets.map((code, i) => {
-              const isCompleted = i < targetIndex;
-              const isCurrent = i === targetIndex;
-
-              return (
-                <div
-                  key={i}
-                  {...(isCurrent ? { "data-testid": "target-symbol" } : {})}
-                  className={`
-                    flex items-center justify-center
-                    w-12 h-10 sm:w-14 sm:h-12
-                    rounded-lg border-2 font-mono font-bold
-                    text-base sm:text-lg
-                    transition-all duration-200
-                    ${
-                      isCompleted
-                        ? "border-cyber-green/40 bg-cyber-green/10 text-cyber-green"
-                        : isCurrent
-                          ? "border-cyber-cyan bg-cyber-cyan/10 text-cyber-cyan animate-pulse shadow-[0_0_16px_rgba(0,255,255,0.3)]"
-                          : "border-white/15 bg-white/5 text-white/40"
-                    }
-                  `}
-                >
-                  {isCompleted ? (
-                    <span className="text-cyber-green text-sm">&#10003;</span>
-                  ) : (
-                    code
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="w-24 h-px bg-white/10" />
-
-        {/* Hex code grid */}
-        <div
-          className="grid gap-1.5 sm:gap-2"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-          }}
-        >
-          {grid.map((cell, i) => {
-            const cellRow = Math.floor(i / cols);
-            const cellCol = i % cols;
-            const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
-            const isSelected = selectedCells.has(cell.id);
-
-            // Symbol Scanner: subtly lighter text/border on the target cell
-            const isTargetHinted = hasProximityHint && !isSelected
-              && targetIndex < targets.length && cell.code === targets[targetIndex];
-
-            return (
-              <button
-                key={cell.id}
-                type="button"
-                disabled={!isActive || resolvedRef.current}
-                onClick={() => handleSelect(i)}
-                className={`
-                  flex items-center justify-center
-                  w-12 h-10 sm:w-14 sm:h-12
-                  rounded-md border-2 font-mono font-bold
-                  text-sm sm:text-base
-                  transition-all duration-150
-                  cursor-pointer
-                  focus:outline-none
-                  ${
-                    isSelected
-                      ? "border-cyber-green/60 bg-cyber-green/15 text-cyber-green"
-                      : isTargetHinted && !isCursor
-                        ? "border-white/20 bg-white/10 text-white/90"
-                        : isCursor
-                          ? "border-cyber-cyan bg-cyber-cyan/10 text-white shadow-[0_0_12px_rgba(0,255,255,0.25)]"
-                          : "border-white/10 bg-white/5 text-white/70 hover:border-white/30 hover:bg-white/10"
-                  }
-                `}
-              >
-                {isSelected ? (
-                  <span className="text-cyber-green text-sm">&#10003;</span>
-                ) : (
-                  cell.code
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Progress */}
-        <p className="text-white/40 text-xs uppercase tracking-widest">
-          {targetIndex}/{targets.length}
-        </p>
-      </div>
-
-      {/* Instructions — desktop */}
-      <div className="desktop-only mt-6 text-center">
-        <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          Click or use arrow keys + Enter to select
-        </p>
-        <div className="inline-flex flex-col items-center gap-1">
-          <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-            {"\u2191"}
-          </kbd>
-          <div className="flex items-center gap-1">
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2190"}
+          <ArrowKeyHints />
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+              Enter
             </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2193"}
-            </kbd>
-            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
-              {"\u2192"}
+            <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+              Space
             </kbd>
           </div>
-          <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
-            Enter
-          </kbd>
-        </div>
-      </div>
-
-      {/* Touch instruction */}
-      <div className="touch-only mt-6 text-center">
+        </>
+      }
+      touchHint={
         <p className="text-white/40 text-xs uppercase tracking-widest">
           TAP the matching hex code in the grid
         </p>
+      }
+    >
+      {/* Target sequence */}
+      <div className="text-center">
+        <p className="text-white/40 text-xs uppercase tracking-widest mb-3">
+          Find in order
+        </p>
+        <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
+          {targets.map((code, i) => {
+            const isCompleted = i < targetIndex;
+            const isCurrent = i === targetIndex;
+
+            return (
+              <div
+                key={i}
+                {...(isCurrent ? { "data-testid": "target-symbol" } : {})}
+                className={`
+                  flex items-center justify-center
+                  w-12 h-10 sm:w-14 sm:h-12
+                  rounded-lg border-2 font-mono font-bold
+                  text-base sm:text-lg
+                  transition-all duration-200
+                  ${
+                    isCompleted
+                      ? "border-cyber-green/40 bg-cyber-green/10 text-cyber-green"
+                      : isCurrent
+                        ? "border-cyber-cyan bg-cyber-cyan/10 text-cyber-cyan animate-pulse shadow-[0_0_16px_rgba(0,255,255,0.3)]"
+                        : "border-white/15 bg-white/5 text-white/40"
+                  }
+                `}
+              >
+                {isCompleted ? (
+                  <span className="text-cyber-green text-sm">&#10003;</span>
+                ) : (
+                  code
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      {/* Divider */}
+      <div className="w-24 h-px bg-white/10" />
+
+      {/* Hex code grid */}
+      <div
+        className="grid gap-1.5 sm:gap-2"
+        style={{
+          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+        }}
+      >
+        {grid.map((cell, i) => {
+          const cellRow = Math.floor(i / cols);
+          const cellCol = i % cols;
+          const isCursor = !isTouch && cellRow === cursorRow && cellCol === cursorCol;
+          const isSelected = selectedCells.has(cell.id);
+
+          // Symbol Scanner: subtly lighter text/border on the target cell
+          const isTargetHinted = hasProximityHint && !isSelected
+            && targetIndex < targets.length && cell.code === targets[targetIndex];
+
+          return (
+            <button
+              key={cell.id}
+              type="button"
+              disabled={!isActive || resolvedRef.current}
+              onClick={() => handleSelect(i)}
+              onMouseEnter={() => {
+                if (!isTouch) {
+                  setCursorRow(cellRow);
+                  setCursorCol(cellCol);
+                  cursorRowRef.current = cellRow;
+                  cursorColRef.current = cellCol;
+                }
+              }}
+              className={`
+                w-12 h-10 sm:w-14 sm:h-12 font-mono font-bold text-sm sm:text-base
+                ${
+                  isSelected
+                    ? "flex items-center justify-center rounded-md border border-cyber-green/60 bg-cyber-green/15 text-cyber-green transition-all duration-150 focus:outline-none select-none"
+                    : isTargetHinted && !isCursor
+                      ? "flex items-center justify-center rounded-md border border-white/20 bg-white/10 text-white/90 transition-all duration-150 focus:outline-none select-none cursor-pointer"
+                      : cellStyles({ isCursor, isTouch }) + " text-white/70"
+                }
+              `}
+            >
+              {isSelected ? (
+                <span className="text-cyber-green text-sm">&#10003;</span>
+              ) : (
+                cell.code
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Progress */}
+      <p className="text-white/40 text-xs uppercase tracking-widest">
+        {targetIndex}/{targets.length}
+      </p>
+    </MinigameShell>
   );
 }

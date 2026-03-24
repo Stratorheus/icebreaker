@@ -3,11 +3,6 @@
  * All math comes directly from the design spec.
  */
 
-/** Returns difficulty scalar 0–1 based on current floor. Starts at 0.1, reaches max ~floor 13. */
-function getDifficulty(floor: number): number {
-  return Math.min(0.1 + floor / 15, 1.0);
-}
-
 /** Returns damage dealt to player on a failed minigame. */
 function getDamage(floor: number): number {
   return 20 + floor * 4;
@@ -15,13 +10,15 @@ function getDamage(floor: number): number {
 
 /**
  * Credits awarded after a minigame win.
- * Base 20 × (1 + difficulty) × speed bonus.
+ * Base 20 × (1 + difficulty) × speed bonus + floor bonus.
  * Speed bonus: completing under 10 s earns up to +50%.
+ * Floor bonus: +2 CR per floor (flat, unaffected by difficulty reducer).
  */
-function getCredits(timeMs: number, difficulty: number): number {
+function getCredits(timeMs: number, difficulty: number, floor: number = 1): number {
   const base = 20 * (1 + difficulty);
   const speedBonus = 1 + Math.max(0, 1 - timeMs / 10_000) * 0.5;
-  return Math.round(base * speedBonus);
+  const floorBonus = floor * 2;
+  return Math.round(base * speedBonus) + floorBonus;
 }
 
 /** Number of minigames presented on a given floor (caps at 8). */
@@ -72,11 +69,39 @@ export function getTimeLimit(baseTime: number, difficulty: number, floor?: numbe
 // Percentages amplify everything below them.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Difficulty labels (SSOT — used by Training picker AND vendor display)
+// ---------------------------------------------------------------------------
+
+export const DIFFICULTY_OPTIONS = [
+  { label: "TRIVIAL", value: 0.05 },
+  { label: "EASY", value: 0.15 },
+  { label: "NORMAL", value: 0.30 },
+  { label: "MEDIUM", value: 0.50 },
+  { label: "HARD", value: 0.70 },
+  { label: "EXPERT", value: 0.85 },
+  { label: "INSANE", value: 1.00 },
+] as const;
+
+/** Map a 0-1 difficulty scalar to the closest named label. */
+export function getDifficultyLabel(difficulty: number): string {
+  let closestLabel = DIFFICULTY_OPTIONS[0].label as string;
+  let closestDist = Math.abs(DIFFICULTY_OPTIONS[0].value - difficulty);
+  for (const opt of DIFFICULTY_OPTIONS) {
+    const dist = Math.abs(opt.value - difficulty);
+    if (dist < closestDist) {
+      closestLabel = opt.label;
+      closestDist = dist;
+    }
+  }
+  return closestLabel;
+}
+
 /**
  * Compute effective difficulty with meta Difficulty Reducer applied.
  */
 export function getEffectiveDifficulty(floor: number, diffReducerTier: number): number {
-  return getDifficulty(floor) * Math.pow(0.95, diffReducerTier);
+  return Math.min(0.1 + floor / (15 + diffReducerTier * 2), 1.0);
 }
 
 /**
@@ -151,8 +176,9 @@ export function getEffectiveCredits(
   creditTier: number,
   speedTaxTier: number,
   unlockBonus: number,
+  floor: number = 1,
 ): number {
-  const base = getCredits(timeMs, difficulty);
+  const base = getCredits(timeMs, difficulty, floor);
   const speedTaxFlat = speedTaxTier > 0 ? Math.round(base * speedTaxTier * 0.05) : 0;
   const withFlat = base + speedTaxFlat;
   const creditMultiplier = Math.pow(1.03, creditTier);

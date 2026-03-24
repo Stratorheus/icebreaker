@@ -162,25 +162,33 @@ describe("getTimeLimit", () => {
 // ---------------------------------------------------------------------------
 describe("getEffectiveDifficulty", () => {
   it("returns base difficulty when tier=0 (no reducer)", () => {
-    // getDifficulty(0) = min(0.1 + 0/15, 1.0) = 0.1
+    // min(0.1 + 0/(15+0), 1.0) = 0.1
     expect(getEffectiveDifficulty(0, 0)).toBeCloseTo(0.1);
   });
 
-  it("reduces difficulty by 5% per tier at floor 0", () => {
-    const base = Math.min(0.1 + 0 / 15, 1.0);
-    expect(getEffectiveDifficulty(0, 1)).toBeCloseTo(base * 0.95);
-    expect(getEffectiveDifficulty(0, 2)).toBeCloseTo(base * Math.pow(0.95, 2));
+  it("shifts curve right by 2 per tier at floor 0", () => {
+    // tier 1: min(0.1 + 0/(15+2), 1.0) = 0.1
+    expect(getEffectiveDifficulty(0, 1)).toBeCloseTo(0.1);
+    // tier 2: min(0.1 + 0/(15+4), 1.0) = 0.1
+    expect(getEffectiveDifficulty(0, 2)).toBeCloseTo(0.1);
   });
 
-  it("caps difficulty at 1.0 for very high floors (before reduction)", () => {
-    // getDifficulty(15) = min(0.1+1, 1.0) = 1.0
+  it("caps difficulty at 1.0 for very high floors with tier=0", () => {
+    // min(0.1 + 15/15, 1.0) = 1.0
     expect(getEffectiveDifficulty(15, 0)).toBeCloseTo(1.0);
   });
 
-  it("applies reducer multiplicatively", () => {
-    const tier = 5;
-    const base = Math.min(0.1 + 10 / 15, 1.0);
-    expect(getEffectiveDifficulty(10, tier)).toBeCloseTo(base * Math.pow(0.95, tier));
+  it("delays max difficulty with higher tiers", () => {
+    // tier 0, floor 10: min(0.1 + 10/15, 1.0) = 0.767
+    // tier 5, floor 10: min(0.1 + 10/25, 1.0) = 0.5
+    expect(getEffectiveDifficulty(10, 0)).toBeCloseTo(0.1 + 10 / 15);
+    expect(getEffectiveDifficulty(10, 5)).toBeCloseTo(0.1 + 10 / 25);
+  });
+
+  it("max difficulty is always reachable, just later", () => {
+    // tier 5: denominator = 25, need floor/(25) = 0.9 → floor = 22.5
+    // floor 23: min(0.1 + 23/25, 1.0) = min(1.02, 1.0) = 1.0
+    expect(getEffectiveDifficulty(23, 5)).toBeCloseTo(1.0);
   });
 });
 
@@ -394,11 +402,10 @@ describe("getDeathPenaltyPct", () => {
 // getEffectiveCredits
 // ---------------------------------------------------------------------------
 describe("getEffectiveCredits", () => {
-  it("returns base credits with no bonuses (tier=0, speedTax=0, unlockBonus=0)", () => {
-    // getCredits(5000, 0.5) = Math.round(20*(1+0.5) * (1 + max(0, 1-5000/10000)*0.5))
-    // = Math.round(30 * (1 + 0.5*0.5)) = Math.round(30 * 1.25) = 38
+  it("returns base credits with no bonuses (tier=0, speedTax=0, unlockBonus=0, floor=1)", () => {
+    // getCredits(5000, 0.5, 1) = Math.round(20*(1+0.5) * 1.25) + 1*2 = 38 + 2 = 40
     const result = getEffectiveCredits(5000, 0.5, 0, 0, 0);
-    expect(result).toBe(38);
+    expect(result).toBe(40);
   });
 
   it("creditTier compounds at 3% per tier", () => {

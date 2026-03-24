@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useKeyPress } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
 
 type Phase = "guard" | "prepare" | "attack";
 
@@ -22,7 +22,7 @@ export function SlashTiming(props: MinigameProps) {
     props,
   );
 
-  // 2f/3a. Window-extend: widen attack window from both run shop and meta upgrades
+  // Window-extend: widen attack window
   const windowExtendBonus = useMemo(() => {
     let bonus = 0;
     for (const pu of activePowerUps) {
@@ -33,19 +33,16 @@ export function SlashTiming(props: MinigameProps) {
     return bonus;
   }, [activePowerUps]);
 
-  // --- Difficulty-scaled durations (ms) ---
-  const baseAttackWindow = 800 - difficulty * 500; // 800ms (d=0) → 300ms (d=1)
-  // Apply window-extend bonus (value is a fraction, e.g. 0.2 = 20% wider)
+  const baseAttackWindow = 800 - difficulty * 500;
   const attackWindow = baseAttackWindow * (1 + windowExtendBonus);
-  const prepareDuration = 500 - difficulty * 300; // 500ms (d=0) → 200ms (d=1)
-  const guardMinDuration = 1000 - difficulty * 400; // 1000ms (d=0) → 600ms (d=1)
-  const guardMaxDuration = 2000 - difficulty * 800; // 2000ms (d=0) → 1200ms (d=1)
+  const prepareDuration = 500 - difficulty * 300;
+  const guardMinDuration = 1000 - difficulty * 400;
+  const guardMaxDuration = 2000 - difficulty * 800;
 
   const [phase, setPhase] = useState<Phase>("guard");
   const phaseRef = useRef<Phase>("guard");
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Track whether we already resolved (success/fail) to avoid double calls
   const resolvedRef = useRef(false);
 
   const clearPhaseTimeout = useCallback(() => {
@@ -60,12 +57,10 @@ export function SlashTiming(props: MinigameProps) {
     setPhase(p);
   }, []);
 
-  // Random guard duration within scaled range
   const getGuardDuration = useCallback(() => {
     return guardMinDuration + Math.random() * (guardMaxDuration - guardMinDuration);
   }, [guardMinDuration, guardMaxDuration]);
 
-  // Start a guard phase (entry point for cycling)
   const startGuard = useCallback(() => {
     if (resolvedRef.current) return;
     setPhaseSync("guard");
@@ -73,17 +68,14 @@ export function SlashTiming(props: MinigameProps) {
 
     timeoutRef.current = setTimeout(() => {
       if (resolvedRef.current) return;
-      // Transition to PREPARE
       setPhaseSync("prepare");
 
       timeoutRef.current = setTimeout(() => {
         if (resolvedRef.current) return;
-        // Transition to ATTACK
         setPhaseSync("attack");
 
         timeoutRef.current = setTimeout(() => {
           if (resolvedRef.current) return;
-          // Attack window expired without input — cycle back to guard
           startGuard();
         }, attackWindow);
       }, prepareDuration);
@@ -96,7 +88,6 @@ export function SlashTiming(props: MinigameProps) {
     setPhaseSync,
   ]);
 
-  // Start the phase cycle on mount
   useEffect(() => {
     startGuard();
     return () => {
@@ -105,19 +96,16 @@ export function SlashTiming(props: MinigameProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle Space key press
   const handleSpace = useCallback(() => {
     if (!isActive || resolvedRef.current) return;
 
     const currentPhase = phaseRef.current;
 
     if (currentPhase === "attack") {
-      // Success — pressed during the attack window
       resolvedRef.current = true;
       clearPhaseTimeout();
       complete(true);
     } else {
-      // Fail — pressed during guard or prepare
       resolvedRef.current = true;
       clearPhaseTimeout();
       fail();
@@ -126,7 +114,6 @@ export function SlashTiming(props: MinigameProps) {
 
   useKeyPress(" ", handleSpace);
 
-  // --- Visual configuration per phase ---
   const phaseConfig = {
     guard: {
       label: "GUARD",
@@ -163,13 +150,40 @@ export function SlashTiming(props: MinigameProps) {
   const config = phaseConfig[phase];
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-8" />
-
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-8"
+      maxWidth="max-w-none"
+      desktopHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Press Space to strike during the{" "}
+            <span className="text-cyber-green">green</span> phase
+          </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+            <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
+              SPACE
+            </kbd>
+          </div>
+        </>
+      }
+      touchHint={
+        <>
+          <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
+            Tap to strike during the{" "}
+            <span className="text-cyber-green">green</span> phase
+          </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
+            <span className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
+              TAP TO STRIKE
+            </span>
+          </div>
+        </>
+      }
+    >
       {/* Central indicator — tap anywhere to strike on mobile */}
       <div
-        className="flex-1 flex items-center justify-center w-full cursor-pointer touch-manipulation"
+        className="flex items-center justify-center w-full cursor-pointer touch-manipulation"
         onClick={handleSpace}
       >
         <div
@@ -206,29 +220,7 @@ export function SlashTiming(props: MinigameProps) {
           </p>
         </div>
       </div>
-
-      {/* Instruction */}
-      <div className="mt-8 text-center">
-        <p className="desktop-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Press Space to strike during the{" "}
-          <span className="text-cyber-green">green</span> phase
-        </p>
-        <p className="touch-only text-white/40 text-xs uppercase tracking-widest mb-2">
-          Tap to strike during the{" "}
-          <span className="text-cyber-green">green</span> phase
-        </p>
-        <div className="desktop-only inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          <kbd className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
-            SPACE
-          </kbd>
-        </div>
-        <div className="touch-only inline-flex items-center gap-2 px-4 py-2 border border-white/10 rounded-lg bg-white/5">
-          <span className="px-3 py-1 bg-white/10 rounded text-xs text-white/70 font-bold tracking-wider">
-            TAP TO STRIKE
-          </span>
-        </div>
-      </div>
-    </div>
+    </MinigameShell>
   );
 }
 

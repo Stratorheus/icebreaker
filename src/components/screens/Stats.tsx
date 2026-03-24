@@ -4,6 +4,9 @@ import { getMinigameDisplayName } from "@/data/minigames/registry";
 import type { PlayerStats } from "@/types/game";
 import type { Achievement, AchievementCategory } from "@/types/shop";
 import { Hexagon } from "lucide-react";
+import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
 // Achievement category colors
@@ -115,7 +118,7 @@ function AchievementCard({
             <span className="text-cyber-cyan text-xs font-heading uppercase tracking-wider truncate">
               {achievement.name}
             </span>
-            <span className="text-xs font-bold font-mono shrink-0 flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
+            <span className="text-xs font-bold font-mono shrink-0 flex items-center gap-1 text-currency-data">
               <Hexagon size={10} /> +{achievement.reward}
             </span>
           </div>
@@ -217,21 +220,17 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
-        <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-1 glitch-flicker">
-          {">"}_&nbsp;OPERATOR DOSSIER
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-heading uppercase tracking-wider text-cyber-cyan glitch-text">
-          SYSTEM LOGS
-        </h1>
-        <p className="text-white/20 text-[10px] uppercase tracking-widest mt-1 glitch-subtle">
-          PERSISTENT RECORD — ALL SESSIONS
-        </p>
+        <ScreenHeader
+          subtitle="OPERATOR DOSSIER"
+          title="SYSTEM LOGS"
+          description="PERSISTENT RECORD — ALL SESSIONS"
+        />
       </div>
 
       {/* Stats table */}
       <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
-          {">"}_&nbsp;STATISTICS
+          {CLI_PROMPT}STATISTICS
         </h2>
 
         <div className="space-y-0">
@@ -244,7 +243,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
             value={calcWinRate(stats.totalMinigamesPlayed, stats.totalMinigamesWon)}
           />
           <StatRow label="Credits Earned" value={`${stats.totalCreditsEarned} CR`} />
-          <StatRow label="Data Earned" value={`${stats.totalDataEarned}`} icon={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
+          <StatRow label="Data Earned" value={`${stats.totalDataEarned}`} icon={<Hexagon size={10} className="text-currency-data" />} />
           <StatRow label="Total Play Time" value={formatPlayTime(stats.totalPlayTimeMs)} />
         </div>
       </section>
@@ -252,7 +251,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
       {/* Per-minigame win totals — all unlocked minigames */}
       <section className="w-full max-w-2xl border border-white/10 bg-white/[0.02] p-4 mb-6">
         <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 mb-4 glitch-subtle">
-          {">"}_&nbsp;PROTOCOL RECORD
+          {CLI_PROMPT}PROTOCOL RECORD
         </h2>
         <div className="space-y-0">
           {unlockedMinigames.map((type) => {
@@ -272,7 +271,7 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
       <section className="w-full max-w-2xl">
         <div className="flex items-baseline justify-between mb-4">
           <h2 className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/40 glitch-subtle">
-            {">"}_&nbsp;ACHIEVEMENTS
+            {CLI_PROMPT}ACHIEVEMENTS
           </h2>
           <span className="text-xs font-mono tabular-nums text-cyber-cyan/60">
             {earnedCount} / {totalCount}
@@ -302,20 +301,14 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
 
       {/* Back button */}
       <div className="w-full max-w-2xl mt-8">
-        <button
-          type="button"
+        <CyberButton
+          variant="muted"
+          prompt
           onClick={handleBack}
-          className="
-            py-2 px-6
-            text-sm uppercase tracking-widest font-mono
-            border border-white/15 text-white/40
-            hover:bg-white/5 hover:text-white/70 hover:border-white/30
-            transition-colors duration-150
-            cursor-pointer select-none
-          "
+          className="w-auto py-2 px-6"
         >
-          {">"}_&nbsp;{onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
-        </button>
+          {onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
+        </CyberButton>
       </div>
     </div>
   );

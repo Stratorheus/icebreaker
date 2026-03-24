@@ -3,6 +3,8 @@ import { useGameStore } from "@/store/game-store";
 import { getCreditsSaved, getDeathPenaltyPct, getEffectiveDataReward } from "@/data/balancing";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 import { Hexagon } from "lucide-react";
+import { CyberButton } from "@/components/ui/CyberButton";
+import { CLI_PROMPT } from "@/lib/constants";
 
 /**
  * Death screen — shown when HP reaches 0.
@@ -110,7 +112,7 @@ export function DeathScreen() {
         {quitVoluntarily ? "RUN TERMINATED" : "CONNECTION LOST"}
       </h1>
       <p className="text-white/30 text-sm tracking-[0.2em] uppercase mb-8 glitch-subtle">
-        {">"}_&nbsp;{quitVoluntarily ? "VOLUNTARY DISCONNECT" : "SYSTEM BREACH FAILED"}
+        {CLI_PROMPT}{quitVoluntarily ? "VOLUNTARY DISCONNECT" : "SYSTEM BREACH FAILED"}
       </p>
 
       {/* Run summary */}
@@ -125,12 +127,12 @@ export function DeathScreen() {
 
       {/* Data breakdown */}
       <div className="w-full max-w-xs font-mono text-xs uppercase tracking-widest mb-8">
-        <BreakdownRow label="FLOOR REWARD" value={`${baseDataEarned}`} suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />} />
+        <BreakdownRow label="FLOOR REWARD" value={`${baseDataEarned}`} suffix={<Hexagon size={10} className="text-currency-data" />} />
         {dataDripThisRun > 0 && (
           <BreakdownRow
             label="PROTOCOL WINS"
             value={`+${dataDripThisRun}`}
-            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            suffix={<Hexagon size={10} className="text-currency-data" />}
             className="text-cyber-green/70"
           />
         )}
@@ -138,7 +140,7 @@ export function DeathScreen() {
           <BreakdownRow
             label="CREDITS SAVED"
             value={`+${creditsSaved}`}
-            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            suffix={<Hexagon size={10} className="text-currency-data" />}
             className="text-cyber-green/70"
           />
         )}
@@ -146,7 +148,7 @@ export function DeathScreen() {
           <BreakdownRow
             label="MILESTONE BONUS"
             value={`+${milestoneData}`}
-            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            suffix={<Hexagon size={10} className="text-currency-data" />}
             className="text-cyber-cyan/70"
           />
         )}
@@ -154,7 +156,7 @@ export function DeathScreen() {
           <BreakdownRow
             label="ACHIEVEMENT BONUS"
             value={`+${achievementBonus}`}
-            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            suffix={<Hexagon size={10} className="text-currency-data" />}
             className="text-cyber-cyan/70"
           />
         )}
@@ -162,7 +164,7 @@ export function DeathScreen() {
           <BreakdownRow
             label={`DEATH PENALTY (${Math.round(penaltyPct * 100)}%)`}
             value={`-${penaltyAmount}`}
-            suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+            suffix={<Hexagon size={10} className="text-currency-data" />}
             className="text-cyber-magenta/70"
           />
         )}
@@ -175,26 +177,20 @@ export function DeathScreen() {
         <BreakdownRow
           label="TOTAL"
           value={`${totalDataEarned}`}
-          suffix={<Hexagon size={10} style={{ color: "var(--color-currency-data)" }} />}
+          suffix={<Hexagon size={10} className="text-currency-data" />}
           className="text-cyber-magenta font-bold text-sm"
         />
       </div>
 
       {/* Return button */}
-      <button
-        type="button"
+      <CyberButton
+        variant="primary"
+        prompt
         onClick={() => setStatus("menu")}
-        className="
-          py-3 px-8
-          text-sm uppercase tracking-widest font-mono
-          border border-cyber-cyan/40 text-cyber-cyan
-          hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70
-          transition-colors duration-150
-          cursor-pointer select-none
-        "
+        className="w-auto py-3 px-8"
       >
-        {">"}_&nbsp;RETURN TO MENU
-      </button>
+        RETURN TO MENU
+      </CyberButton>
     </div>
   );
 }

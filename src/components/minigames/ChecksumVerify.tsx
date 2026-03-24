@@ -3,7 +3,9 @@ import type { MinigameProps } from "@/types/minigame";
 import { useMinigame } from "@/hooks/use-minigame";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { useKeyboard } from "@/hooks/use-keyboard";
-import { TimerBar } from "@/components/layout/TimerBar";
+import { MinigameShell } from "@/components/layout/MinigameShell";
+import { HiddenMobileInput } from "@/components/layout/HiddenMobileInput";
+import { ProgressDots } from "@/components/layout/ProgressDots";
 
 // -- Expression generation ----------------------------------------------------
 
@@ -92,8 +94,6 @@ export function ChecksumVerify(props: MinigameProps) {
       setTimeout(() => hiddenInputRef.current?.focus(), 300);
     }
   }, [isTouch]);
-
-  // (calculator removed — Error Margin and Range Hint replace it)
 
   // Error Margin: accept answers within ±N tolerance
   const errorTolerance = useMemo(() => {
@@ -247,6 +247,15 @@ export function ChecksumVerify(props: MinigameProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Hidden input handler
+  const handleHiddenInput = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    const target = e.target as HTMLInputElement;
+    for (const char of target.value) {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
+    }
+    target.value = "";
+  }, []);
+
   // -- Render --
   const expr = expressions[currentIndex];
 
@@ -258,175 +267,136 @@ export function ChecksumVerify(props: MinigameProps) {
         : "bg-white/[0.03] border-white/10";
 
   return (
-    <div className="flex flex-col items-center justify-between h-full w-full select-none px-4 py-6">
-      {/* Timer */}
-      <TimerBar progress={timer.progress} className="w-full max-w-md mb-4" />
+    <MinigameShell
+      timer={timer}
+      timerGap="mb-4"
+      maxWidth="max-w-2xl"
+      desktopHint={
+        <div className="space-y-1">
+          <p className="text-white/30 text-xs uppercase tracking-widest">
+            Type digits, ENTER or SPACE to confirm
+          </p>
+          <div className="flex items-center justify-center gap-2">
+            <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
+              0-9
+            </kbd>
+            <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
+              -
+            </kbd>
+            <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
+              BKSP
+            </kbd>
+            <kbd className="px-2 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
+              ENTER
+            </kbd>
+            <kbd className="px-2 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
+              SPACE
+            </kbd>
+          </div>
+        </div>
+      }
+      touchHint={
+        <div className="space-y-2">
+          <HiddenMobileInput
+            inputRef={hiddenInputRef}
+            onInput={handleHiddenInput}
+            inputMode="numeric"
+          />
+          <div>
+            <button
+              type="button"
+              className="px-6 py-2 border border-cyber-green/50 rounded-lg bg-cyber-green/10 text-cyber-green text-xs uppercase tracking-widest font-mono font-bold"
+              onClick={() => {
+                window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+              }}
+            >
+              CONFIRM
+            </button>
+          </div>
+          <p className="text-white/30 text-xs uppercase tracking-widest">
+            Type digits, then CONFIRM
+          </p>
+        </div>
+      }
+    >
+      {/* Header */}
+      <p className="text-cyber-cyan text-xs uppercase tracking-widest font-mono glitch-subtle">
+        Verifying Data Integrity...
+      </p>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 w-full max-w-2xl">
-        {/* Header */}
-        <p className="text-cyber-cyan text-xs uppercase tracking-widest font-mono glitch-subtle">
-          Verifying Data Integrity...
-        </p>
+      {/* Progress */}
+      <p className="text-white/50 text-sm font-mono tracking-wider">
+        CHECKSUM {currentIndex + 1}/{expressions.length}
+      </p>
 
-        {/* Progress */}
-        <p className="text-white/50 text-sm font-mono tracking-wider">
-          CHECKSUM {currentIndex + 1}/{expressions.length}
-        </p>
+      {/* Progress dots */}
+      <ProgressDots
+        total={expressions.length}
+        current={currentIndex}
+        activeIndex={currentIndex}
+      />
 
-        {/* Progress dots */}
-        <div className="flex items-center gap-2">
-          {expressions.map((_, i) => (
-            <div
-              key={i}
-              className={`
-                w-3 h-3 rounded-full transition-all duration-200
-                ${
-                  i < currentIndex
-                    ? "bg-cyber-green"
-                    : i === currentIndex
-                      ? "bg-cyber-cyan animate-pulse"
-                      : "bg-white/15"
-                }
-              `}
-              style={
-                i < currentIndex
-                  ? { boxShadow: "0 0 6px rgba(0, 255, 65, 0.5)" }
-                  : i === currentIndex
-                    ? { boxShadow: "0 0 6px rgba(0, 255, 255, 0.4)" }
-                    : undefined
-              }
-            />
-          ))}
+      {/* Expression display */}
+      <div className="flex flex-col items-center gap-4">
+        <div
+          className="px-8 py-4 border border-cyan-800/50 bg-cyan-950/30 rounded-lg"
+          style={{ boxShadow: "0 0 20px rgba(0, 255, 255, 0.1)" }}
+        >
+          <p
+            className="text-4xl sm:text-5xl font-bold font-mono text-cyber-cyan tracking-wider"
+            style={{ textShadow: "0 0 12px rgba(0, 255, 255, 0.4)" }}
+          >
+            {expr.display}
+          </p>
         </div>
 
-        {/* Expression display */}
-        <div className="flex flex-col items-center gap-4">
-          <div
-            className="px-8 py-4 border border-cyan-800/50 bg-cyan-950/30 rounded-lg"
-            style={{ boxShadow: "0 0 20px rgba(0, 255, 255, 0.1)" }}
-          >
-            <p
-              className="text-4xl sm:text-5xl font-bold font-mono text-cyber-cyan tracking-wider"
-              style={{ textShadow: "0 0 12px rgba(0, 255, 255, 0.4)" }}
-            >
-              {expr.display}
+        {/* Range Hint: show answer range with fixed ±spread */}
+        {rangeHintSpread > 0 && (() => {
+          const lo = expr.answer - rangeHintSpread;
+          const hi = expr.answer + rangeHintSpread;
+          return (
+            <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
+              Answer is between {lo} and {hi}
             </p>
-          </div>
+          );
+        })()}
 
-          {/* Range Hint: show answer range with fixed ±spread */}
-          {rangeHintSpread > 0 && (() => {
-            const lo = expr.answer - rangeHintSpread;
-            const hi = expr.answer + rangeHintSpread;
-            return (
-              <p className="text-cyber-orange/60 text-xs font-mono uppercase tracking-wider">
-                Answer is between {lo} and {hi}
-              </p>
-            );
-          })()}
+        {/* Error Margin indicator */}
+        {errorTolerance > 0 && (
+          <p className="text-cyber-green/50 text-[10px] font-mono uppercase tracking-wider">
+            &plusmn;{errorTolerance} tolerance active
+          </p>
+        )}
 
-          {/* Error Margin indicator */}
-          {errorTolerance > 0 && (
-            <p className="text-cyber-green/50 text-[10px] font-mono uppercase tracking-wider">
-              &plusmn;{errorTolerance} tolerance active
-            </p>
-          )}
+        {/* Equals sign */}
+        <p className="text-white/40 text-2xl font-mono">=</p>
 
-          {/* Equals sign */}
-          <p className="text-white/40 text-2xl font-mono">=</p>
-
-          {/* Input area */}
-          <div
+        {/* Input area */}
+        <div
+          className={`
+            min-w-[160px] px-6 py-3 border rounded-lg
+            flex items-center justify-center
+            transition-all duration-200
+            ${flashBg}
+          `}
+        >
+          <span className="text-3xl sm:text-4xl font-bold font-mono text-white tracking-wider">
+            {input}
+          </span>
+          <span
             className={`
-              min-w-[160px] px-6 py-3 border rounded-lg
-              flex items-center justify-center
-              transition-all duration-200
-              ${flashBg}
+              text-3xl sm:text-4xl font-bold font-mono text-cyber-cyan
+              transition-opacity duration-100
+              ${cursorVisible && !flash ? "opacity-80" : "opacity-0"}
             `}
           >
-            <span className="text-3xl sm:text-4xl font-bold font-mono text-white tracking-wider">
-              {input}
-            </span>
-            <span
-              className={`
-                text-3xl sm:text-4xl font-bold font-mono text-cyber-cyan
-                transition-opacity duration-100
-                ${cursorVisible && !flash ? "opacity-80" : "opacity-0"}
-              `}
-            >
-              _
-            </span>
-          </div>
+            _
+          </span>
         </div>
       </div>
 
       {/* Hidden test helper: expected answer */}
       <span data-testid="expected-answer" data-answer={expr.answer} className="hidden" />
-
-      {/* Hidden input for mobile keyboard */}
-      <input
-        ref={hiddenInputRef}
-        type="text"
-        inputMode="numeric"
-        autoComplete="off"
-        autoCorrect="off"
-        autoCapitalize="off"
-        spellCheck={false}
-        className="fixed -top-24 -left-24 w-px h-px opacity-0"
-        onInput={(e) => {
-          const target = e.target as HTMLInputElement;
-          for (const char of target.value) {
-            window.dispatchEvent(new KeyboardEvent("keydown", { key: char, bubbles: true }));
-          }
-          target.value = "";
-        }}
-      />
-
-      {/* Control hints — desktop */}
-      <div className="desktop-only mt-4 text-center space-y-1">
-        <p className="text-white/30 text-xs uppercase tracking-widest">
-          Type digits, ENTER or SPACE to confirm
-        </p>
-        <div className="flex items-center justify-center gap-2">
-          <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-            0-9
-          </kbd>
-          <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-            -
-          </kbd>
-          <kbd className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[10px] text-white/40 font-mono">
-            BKSP
-          </kbd>
-          <kbd className="px-2 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
-            ENTER
-          </kbd>
-        </div>
-      </div>
-
-      {/* Touch: tap to type + confirm button */}
-      <div className="touch-only mt-4 text-center space-y-2">
-        <button
-          type="button"
-          className="px-4 py-2 border border-cyber-cyan/40 rounded-lg bg-cyber-cyan/10 text-cyber-cyan text-xs uppercase tracking-widest font-mono animate-pulse"
-          onClick={() => hiddenInputRef.current?.focus()}
-        >
-          TAP HERE TO TYPE
-        </button>
-        <div>
-          <button
-            type="button"
-            className="px-6 py-2 border border-cyber-green/50 rounded-lg bg-cyber-green/10 text-cyber-green text-xs uppercase tracking-widest font-mono font-bold"
-            onClick={() => {
-              window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-            }}
-          >
-            CONFIRM
-          </button>
-        </div>
-        <p className="text-white/30 text-xs uppercase tracking-widest">
-          Type digits, then CONFIRM
-        </p>
-      </div>
-    </div>
+    </MinigameShell>
   );
 }

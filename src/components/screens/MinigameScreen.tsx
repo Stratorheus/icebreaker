@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameResult } from "@/types/minigame";
 import type { MinigameType } from "@/types/game";
-import { getEffectiveCredits, getEffectiveDifficulty, getEffectiveTimeLimit } from "@/data/balancing";
+import { getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getEffectiveTimeLimit, getDataDrip } from "@/data/balancing";
+import { Coins, Hexagon } from "lucide-react";
 import { MINIGAME_COMPONENTS, BASE_TIME_LIMITS, buildMetaPowerUps, STARTING_MINIGAMES, getMinigameDisplayName } from "@/data/minigames/registry";
 import { checkSkip } from "@/lib/power-up-effects";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { ResultFlash } from "@/components/ui/ResultFlash";
+import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
 
 type Phase = "countdown" | "active" | "result";
 
@@ -80,7 +83,7 @@ export function MinigameScreen() {
             const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
             const unlockedCount = useGameStore.getState().unlockedMinigames.length;
             const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
-            const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+            const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus, floor);
             setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction * remaining.length));
           } else {
             setLastEarnedCredits(0);
@@ -103,7 +106,7 @@ export function MinigameScreen() {
           const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
           const unlockedCount = useGameStore.getState().unlockedMinigames.length;
           const unlockBonus = Math.max(0, unlockedCount - STARTING_MINIGAMES.length) * 0.05;
-          const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus);
+          const rawCredits = getEffectiveCredits(Infinity, diff, purchasedUpgrades["credit-multiplier"] ?? 0, purchasedUpgrades["speed-tax"] ?? 0, unlockBonus, floor);
           setLastEarnedCredits(Math.round(rawCredits * skipResult.rewardFraction));
         } else {
           setLastEarnedCredits(0);
@@ -151,6 +154,7 @@ export function MinigameScreen() {
           purchasedUpgrades["credit-multiplier"] ?? 0,
           purchasedUpgrades["speed-tax"] ?? 0,
           unlockBonus,
+          floor,
         );
         // Speed bonus applies when completing under 10 s (timeMs < 10000)
         const hasSpeedBonus = result.timeMs < 10000;
@@ -195,12 +199,14 @@ export function MinigameScreen() {
       {/* Phase content */}
       <div className="flex-1 flex items-center justify-center px-4">
         {phase === "countdown" && (
-          <CountdownPhase
+          <RunCountdownPhase
             minigameName={getMinigameDisplayName(currentMinigame)}
             value={countdownValue}
             floor={floor}
             index={currentMinigameIndex}
             total={floorMinigames.length}
+            purchasedUpgrades={purchasedUpgrades}
+            inventory={inventory}
           />
         )}
 
@@ -218,9 +224,19 @@ export function MinigameScreen() {
         {phase === "result" && (
           <ResultFlash
             success={lastResult ?? false}
-            earnedCredits={lastEarnedCredits}
-            hadSpeedBonus={lastHadSpeedBonus}
-          />
+            subtitle={lastResult ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
+          >
+            {lastResult && lastEarnedCredits > 0 && (
+              <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
+                +{lastEarnedCredits} CR
+              </p>
+            )}
+            {lastResult && lastHadSpeedBonus && (
+              <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
+                SPEED BONUS
+              </p>
+            )}
+          </ResultFlash>
         )}
       </div>
     </div>
@@ -228,34 +244,54 @@ export function MinigameScreen() {
 }
 
 // ---------------------------------------------------------------------------
-// Countdown phase
+// Countdown phase — wraps shared CountdownDisplay with run-mode extras
 // ---------------------------------------------------------------------------
 
-function CountdownPhase({
+function RunCountdownPhase({
   minigameName,
   value,
   floor,
   index,
   total,
+  purchasedUpgrades,
+  inventory,
 }: {
   minigameName: string;
   value: number;
   floor: number;
   index: number;
   total: number;
+  purchasedUpgrades: Record<string, number>;
+  inventory: import("@/types/game").PowerUpInstance[];
 }) {
+  const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+  const approxCredits = Math.round(20 * (1 + diff)) + floor * 2;
+  const dataDrip = getDataDrip(floor);
+
+  // Damage with all power-ups: meta armor + run-shop shields
+  const baseDamage = getEffectiveDamage(floor, purchasedUpgrades["thicker-armor"] ?? 0);
+  const fullShield = inventory.some((p) => p.effect.type === "shield");
+  const reducer = inventory.find((p) => p.effect.type === "damage-reduction" || p.effect.type === "damage-reduction-stacked");
+  const effectiveDamage = fullShield ? 0 : reducer ? Math.round(baseDamage * reducer.effect.value) : baseDamage;
+
   return (
-    <div className="text-center select-none">
-      <p className="text-white/30 text-xs uppercase tracking-widest mb-4 glitch-subtle">
-        FLOOR {floor} // PROTOCOL {index + 1} OF {total}
-      </p>
-      <h2 className="text-3xl sm:text-5xl font-heading uppercase tracking-wider text-cyber-cyan mb-8 glitch-text">
-        {minigameName}
-      </h2>
-      <p className="text-6xl sm:text-8xl font-bold text-white/80 tabular-nums glitch-flicker">
-        {value > 0 ? value : "GO"}
-      </p>
-    </div>
+    <CountdownDisplay
+      title={minigameName}
+      subtitle={`FLOOR ${floor} // PROTOCOL ${index + 1} OF ${total}`}
+      value={value}
+    >
+      <div className="mt-4 flex items-center justify-center gap-4 text-[11px] font-mono uppercase tracking-wider">
+        <span className="flex items-center gap-1 text-currency-credits">
+          <Coins size={12} /> +{approxCredits}
+        </span>
+        <span className="flex items-center gap-1 text-currency-data">
+          <Hexagon size={11} /> +{dataDrip}
+        </span>
+        <span className={`flex items-center gap-1 ${effectiveDamage === 0 ? "text-cyber-green/60" : "text-cyber-magenta/60"}`}>
+          {effectiveDamage === 0 ? "SHIELDED" : `-${effectiveDamage} HP`}
+        </span>
+      </div>
+    </CountdownDisplay>
   );
 }
 
@@ -312,42 +348,4 @@ function MinigameRouter({
   );
 }
 
-// ---------------------------------------------------------------------------
-// Result flash
-// ---------------------------------------------------------------------------
-
-function ResultFlash({
-  success,
-  earnedCredits,
-  hadSpeedBonus,
-}: {
-  success: boolean;
-  earnedCredits: number;
-  hadSpeedBonus: boolean;
-}) {
-  return (
-    <div className="text-center select-none">
-      <h2
-        className={`text-5xl sm:text-7xl font-heading uppercase tracking-wider glitch-text ${
-          success ? "text-cyber-cyan" : "text-cyber-magenta"
-        }`}
-      >
-        {success ? "SUCCESS" : "FAILED"}
-      </h2>
-      {success && earnedCredits > 0 && (
-        <p className="mt-3 text-cyber-green text-lg font-mono font-bold tracking-widest glitch-subtle">
-          +{earnedCredits} CR
-        </p>
-      )}
-      {success && hadSpeedBonus && (
-        <p className="mt-1 text-cyber-green/60 text-xs font-mono uppercase tracking-widest">
-          SPEED BONUS
-        </p>
-      )}
-      <p className="mt-2 text-white/30 text-sm uppercase tracking-widest glitch-subtle">
-        {success ? "BREACH COMPLETE" : "INTRUSION BLOCKED"}
-      </p>
-    </div>
-  );
-}
 

@@ -2,63 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
-import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty } from "@/data/balancing";
+import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty, getDifficultyLabel } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
-import {
-  Clock,
-  Zap,
-  Timer,
-  PauseCircle,
-  Shield,
-  ShieldHalf,
-  Layers,
-  SkipForward,
-  FastForward,
-  DoorOpen,
-  RouteOff,
-  HeartPulse,
-  RefreshCw,
-  Activity,
-  Eye,
-  Lightbulb,
-  Map,
-  Sword,
-  Code,
-  Compass,
-  Radio,
-  Coins,
-  type LucideIcon,
-} from "lucide-react";
+import { Coins } from "lucide-react";
 import { Codex } from "@/components/screens/Codex";
 import { Stats } from "@/components/screens/Stats";
-
-// ---------------------------------------------------------------------------
-// Icon map: kebab-case string -> Lucide component
-// ---------------------------------------------------------------------------
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  clock: Clock,
-  zap: Zap,
-  timer: Timer,
-  "pause-circle": PauseCircle,
-  shield: Shield,
-  "shield-half": ShieldHalf,
-  layers: Layers,
-  "skip-forward": SkipForward,
-  "fast-forward": FastForward,
-  "door-open": DoorOpen,
-  "route-off": RouteOff,
-  "heart-pulse": HeartPulse,
-  "refresh-cw": RefreshCw,
-  activity: Activity,
-  eye: Eye,
-  lightbulb: Lightbulb,
-  map: Map,
-  sword: Sword,
-  code: Code,
-  compass: Compass,
-  radio: Radio,
-};
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
 // Category color scheme (matches task spec)
@@ -221,10 +171,10 @@ export function RunShop() {
         VENDOR NODE
       </h1>
       <p className="text-white/30 text-xs uppercase tracking-widest mb-2 glitch-subtle">
-        {">"}_&nbsp;FLOOR {floor} CLEARED
+        {CLI_PROMPT}FLOOR {floor} CLEARED
       </p>
       <p className="text-white/20 text-[10px] uppercase tracking-widest mb-4 font-mono">
-        NEXT FLOOR: {floor + 1} // DIFFICULTY: {Math.round(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0) * 100)}%
+        NEXT FLOOR: {floor + 1} // DIFFICULTY: {getDifficultyLabel(getEffectiveDifficulty(floor + 1, purchasedUpgrades["difficulty-reducer"] ?? 0))}
       </p>
 
       {/* Status bar: HP + Credits + Data earned this run */}
@@ -251,7 +201,7 @@ export function RunShop() {
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             CR
           </span>
-          <span className="font-bold text-lg tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-credits)" }}>
+          <span className="font-bold text-lg tabular-nums flex items-center gap-1 text-currency-credits">
             <Coins size={16} /> {credits.toLocaleString()}
           </span>
         </div>
@@ -260,7 +210,7 @@ export function RunShop() {
           <span className="text-white/40 text-xs uppercase tracking-widest glitch-subtle">
             RUN DATA
           </span>
-          <span className="font-bold text-sm tabular-nums flex items-center gap-1" style={{ color: "var(--color-currency-data)" }}>
+          <span className="font-bold text-sm tabular-nums flex items-center gap-1 text-currency-data">
             <Hexagon size={14} /> +{(baseDataReward + dataDripThisRun + milestoneDataThisRun).toLocaleString()}
           </span>
         </div>
@@ -273,7 +223,6 @@ export function RunShop() {
           const alreadyOwned = inventory.some((p) => p.type === offer.id);
           const available = !offer.purchased && !alreadyOwned && canAfford;
           const colors = CATEGORY_COLORS[offer.category] ?? FALLBACK_COLORS;
-          const IconComponent = ICON_MAP[offer.icon];
 
           return (
             <div
@@ -294,22 +243,8 @@ export function RunShop() {
                 </div>
               )}
 
-              {/* Header: icon + name + category badge */}
+              {/* Header: name + category badge */}
               <div className="flex items-center gap-3">
-                {/* Icon */}
-                {IconComponent && (
-                  <div
-                    className={cn(
-                      "shrink-0 w-9 h-9 flex items-center justify-center border",
-                      offer.purchased
-                        ? "border-white/10 text-white/20"
-                        : cn(colors.border, colors.text),
-                    )}
-                  >
-                    <IconComponent size={18} />
-                  </div>
-                )}
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <span
@@ -398,7 +333,7 @@ export function RunShop() {
             : "border-white/10 text-white/20 cursor-not-allowed",
         )}
       >
-        {">"}_&nbsp;REROLL STOCK ({rerollPrice} CR)
+        {CLI_PROMPT}REROLL STOCK ({rerollPrice} CR)
       </button>
 
       {/* Continue button */}
@@ -415,7 +350,7 @@ export function RunShop() {
           mb-6
         "
       >
-        {">"}_&nbsp;CONTINUE TO FLOOR {floor + 1}
+        {CLI_PROMPT}CONTINUE TO FLOOR {floor + 1}
       </button>
 
       {/* Utility buttons: Codex, Stats, Quit */}
@@ -466,39 +401,12 @@ export function RunShop() {
             QUIT RUN (+{dataReward} DATA)
           </button>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-cyber-orange text-[10px] uppercase tracking-widest">
-              QUIT?
-            </span>
-            <button
-              type="button"
-              onClick={quitRun}
-              className="
-                py-2 px-3
-                text-[10px] uppercase tracking-widest font-mono
-                border border-cyber-magenta/50 text-cyber-magenta
-                hover:bg-cyber-magenta/10
-                transition-colors duration-150
-                cursor-pointer select-none
-              "
-            >
-              CONFIRM
-            </button>
-            <button
-              type="button"
-              onClick={() => setConfirmQuit(false)}
-              className="
-                py-2 px-3
-                text-[10px] uppercase tracking-widest font-mono
-                border border-white/20 text-white/50
-                hover:bg-white/5
-                transition-colors duration-150
-                cursor-pointer select-none
-              "
-            >
-              CANCEL
-            </button>
-          </div>
+          <ConfirmDialog
+            title="QUIT?"
+            compact
+            onConfirm={quitRun}
+            onCancel={() => setConfirmQuit(false)}
+          />
         )}
       </div>
     </div>
