@@ -331,12 +331,17 @@ export function FindSymbol(props: MinigameProps) {
       {/* Instructions — desktop */}
       <div className="desktop-only mt-6 text-center">
         <p className="text-white/40 text-xs uppercase tracking-widest mb-2">
-          Click or use arrow keys + Enter to select
+          Click or use arrow keys + Enter/Space to select
         </p>
         <ArrowKeyHints />
-        <kbd className="desktop-only px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono mt-1">
-          Enter
-        </kbd>
+        <div className="flex items-center justify-center gap-2 mt-1">
+          <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+            Enter
+          </kbd>
+          <kbd className="px-6 py-1 bg-white/10 rounded text-xs text-white/70 font-bold font-mono">
+            Space
+          </kbd>
+        </div>
       </div>
 
       {/* Touch instruction */}

@@ -400,6 +400,9 @@ export function ChecksumVerify(props: MinigameProps) {
           <kbd className="px-2 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
             ENTER
           </kbd>
+          <kbd className="px-2 py-1 bg-cyan-950/50 border border-cyan-800/30 rounded text-[10px] text-cyan-500/70 font-mono">
+            SPACE
+          </kbd>
         </div>
       </div>
 
