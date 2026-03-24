@@ -271,9 +271,11 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     await setMetaUpgrades(page, { "difficulty-reducer": 5 });
     await startRunViaStore(page);
 
-    // Read the store state — difficulty is computed per floor, not stored directly.
-    // We verify via completeMinigame: higher effective credits = lower difficulty.
-    // With reducer tier 5: difficulty = getDifficulty(1) * 0.95^5
+    // Test on floor 10 where the K=2 curve shift makes a significant difference.
+    // Floor 10: with tier 5 → diff = 0.1 + 10/25 = 0.50, without → 0.1 + 10/15 = 0.77
+    await page.evaluate(() => {
+      (window as any).__GAME_STORE__.setState({ floor: 10 });
+    });
 
     // Complete a minigame and measure credits earned
     const creditsBefore = await page.evaluate(() =>
@@ -301,7 +303,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     });
     await page.waitForTimeout(200);
 
-    // Clear upgrades
+    // Clear upgrades and compare without reducer on same floor
     await page.evaluate(() => {
       const raw = localStorage.getItem("icebreaker-meta");
       const meta = raw ? JSON.parse(raw) : { state: {}, version: 0 };
@@ -310,6 +312,10 @@ test.describe("Meta Upgrade Runtime Effects", () => {
     });
     await page.reload();
     await startRunViaStore(page);
+
+    await page.evaluate(() => {
+      (window as any).__GAME_STORE__.setState({ floor: 10 });
+    });
 
     const creditsBeforeBase = await page.evaluate(() =>
       (window as any).__GAME_STORE__.getState().credits,
@@ -330,8 +336,8 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
     const earnedBase = creditsAfterBase - creditsBeforeBase;
 
-    // Lower difficulty = lower base credits (since getCredits = 20 * (1 + difficulty) * speedBonus)
-    // So with difficulty reducer, credits should be LESS
+    // Lower difficulty = lower credits (getCredits = 20 * (1 + difficulty) * speedBonus)
+    // Floor 10 with tier 5: diff 0.50 → ~37 CR vs without: diff 0.77 → ~44 CR
     expect(earnedWithReducer).toBeLessThan(earnedBase);
   });
 });
