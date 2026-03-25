@@ -32,15 +32,16 @@ function enforceVariety<T>(arr: T[], pool: T[], maxRun: number): T[] {
 /**
  * Generate an array of minigames for a given floor.
  *
- * Returns `getMinigamesPerFloor(floor)` entries randomly selected
- * from the unlocked pool (repeats within a floor are allowed).
+ * Returns `getMinigamesPerFloor(floor, diffReducerTier)` entries randomly
+ * selected from the unlocked pool (repeats within a floor are allowed).
  * No minigame type appears more than 2 times consecutively.
  */
 export function generateFloor(
   floor: number,
   unlockedMinigames: MinigameType[],
+  diffReducerTier: number = 0,
 ): MinigameType[] {
-  const count = getMinigamesPerFloor(floor);
+  const count = getMinigamesPerFloor(floor, diffReducerTier);
   const result: MinigameType[] = [];
 
   for (let i = 0; i < count; i++) {
