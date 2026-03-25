@@ -17,6 +17,8 @@ export interface MetaSlice {
   revealedAchievements: string[];
   stats: PlayerStats;
   seenBriefings: MinigameType[];
+  /** How many times each checkpoint floor has been reached (for floor-select unlock gating). */
+  checkpointReaches: Record<number, number>;
 
   // Actions
   addData: (amount: number) => void;
@@ -30,6 +32,7 @@ export interface MetaSlice {
   /** Update win streak + cumulative wins for a minigame result. */
   recordMinigameResult: (type: MinigameType, won: boolean) => void;
   getUpgradeTier: (id: string) => number;
+  incrementCheckpointReach: (floor: number) => void;
 }
 
 type FullStore = RunSlice & MetaSlice & ShopSlice;
@@ -58,6 +61,7 @@ export const initialMetaState = {
   revealedAchievements: [] as string[],
   stats: { ...initialStats },
   seenBriefings: [] as MinigameType[],
+  checkpointReaches: {} as Record<number, number>,
 };
 
 // ---------------------------------------------------------------------------
@@ -72,6 +76,7 @@ export const META_PERSIST_KEYS = [
   "revealedAchievements",
   "stats",
   "seenBriefings",
+  "checkpointReaches",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -156,5 +161,11 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
 
   getUpgradeTier: (id: string) => {
     return get().purchasedUpgrades[id] ?? 0;
+  },
+
+  incrementCheckpointReach: (floor: number) => {
+    const state = get();
+    const current = state.checkpointReaches[floor] ?? 0;
+    set({ checkpointReaches: { ...state.checkpointReaches, [floor]: current + 1 } });
   },
 });

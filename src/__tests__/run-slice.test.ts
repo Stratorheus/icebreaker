@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createTestStore } from "./helpers/test-store";
-import { getStartingCredits, getEffectiveDamage } from "@/data/balancing";
+import { getStartingCredits, getEffectiveDamage, getFloorBonusCredits } from "@/data/balancing";
 import type { PowerUpInstance } from "@/types/game";
 
 // ---------------------------------------------------------------------------
@@ -825,5 +825,147 @@ describe("floor-scoped power-ups survive advanceFloor", () => {
       (p) => p.effect.type === "time-bonus",
     );
     expect(hasTime).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// startRun with startFloor
+// ---------------------------------------------------------------------------
+
+describe("startRun with startFloor", () => {
+  it("defaults to floor 1", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    expect(store.getState().floor).toBe(1);
+    expect(store.getState().startFloor).toBe(1);
+  });
+
+  it("sets floor and startFloor to selected value", () => {
+    const store = createTestStore();
+    store.getState().startRun(10);
+    expect(store.getState().floor).toBe(10);
+    expect(store.getState().startFloor).toBe(10);
+  });
+
+  it("adds floor bonus credits on top of head start", () => {
+    const store = createTestStore();
+    store.setState({ purchasedUpgrades: { "head-start": 1 } });
+    store.getState().startRun(10);
+    const expected = getStartingCredits(1) + getFloorBonusCredits(10);
+    expect(store.getState().credits).toBe(expected);
+  });
+
+  it("floor bonus not counted in creditsEarnedThisRun", () => {
+    const store = createTestStore();
+    store.getState().startRun(10);
+    expect(store.getState().creditsEarnedThisRun).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// checkpoint tracking
+// ---------------------------------------------------------------------------
+
+describe("checkpoint tracking", () => {
+  it("increments checkpointReaches on milestone floor completion", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+    // Advance to floor 5 (milestone) — startFloor is 1 so this is NOT teleported
+    store.setState({
+      floorMinigames: ["slash-timing"],
+      currentMinigameIndex: 0,
+      floor: 5,
+      startFloor: 1,
+      stats: {
+        totalRuns: 0,
+        bestFloor: 0,
+        totalMinigamesPlayed: 0,
+        totalMinigamesWon: 0,
+        totalCreditsEarned: 0,
+        totalDataEarned: 0,
+        totalPlayTimeMs: 0,
+        minigameWinStreaks: {},
+        minigameWinsTotal: {},
+      },
+    });
+
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().status).toBe("milestone");
+    expect(store.getState().checkpointReaches[5]).toBe(1);
+  });
+
+  it("does NOT increment when floor === startFloor (teleported)", () => {
+    const store = createTestStore();
+    store.getState().startRun(5); // teleport to floor 5
+    store.setState({
+      floorMinigames: ["slash-timing"],
+      currentMinigameIndex: 0,
+      stats: {
+        totalRuns: 0,
+        bestFloor: 0,
+        totalMinigamesPlayed: 0,
+        totalMinigamesWon: 0,
+        totalCreditsEarned: 0,
+        totalDataEarned: 0,
+        totalPlayTimeMs: 0,
+        minigameWinStreaks: {},
+        minigameWinsTotal: {},
+      },
+    });
+
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    // Should NOT get milestone — teleported floor is suppressed
+    expect(store.getState().status).toBe("shop");
+    expect(store.getState().checkpointReaches[5]).toBeUndefined();
+  });
+
+  it("does NOT award milestone when floor === startFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun(10); // teleport to floor 10 (milestone floor)
+    store.setState({
+      floorMinigames: ["slash-timing"],
+      currentMinigameIndex: 0,
+      stats: {
+        totalRuns: 0,
+        bestFloor: 0,
+        totalMinigamesPlayed: 0,
+        totalMinigamesWon: 0,
+        totalCreditsEarned: 0,
+        totalDataEarned: 0,
+        totalPlayTimeMs: 0,
+        minigameWinStreaks: {},
+        minigameWinsTotal: {},
+      },
+    });
+
+    const milestoneBefore = store.getState().milestoneDataThisRun;
+    store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    expect(store.getState().milestoneDataThisRun).toBe(milestoneBefore);
+    expect(store.getState().status).toBe("shop");
+  });
+
+  it("skipRemainingFloor also suppresses milestone on teleported floor", () => {
+    const store = createTestStore();
+    store.getState().startRun(5); // teleport to floor 5 (milestone floor)
+    store.setState({
+      floorMinigames: ["slash-timing", "slash-timing"],
+      currentMinigameIndex: 0,
+      stats: {
+        totalRuns: 0,
+        bestFloor: 0,
+        totalMinigamesPlayed: 0,
+        totalMinigamesWon: 0,
+        totalCreditsEarned: 0,
+        totalDataEarned: 0,
+        totalPlayTimeMs: 0,
+        minigameWinStreaks: {},
+        minigameWinsTotal: {},
+      },
+    });
+
+    const milestoneBefore = store.getState().milestoneDataThisRun;
+    store.getState().skipRemainingFloor(1);
+    expect(store.getState().milestoneDataThisRun).toBe(milestoneBefore);
+    expect(store.getState().status).toBe("shop");
   });
 });
