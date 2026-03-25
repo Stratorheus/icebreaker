@@ -21,9 +21,19 @@ function getCredits(timeMs: number, difficulty: number, floor: number = 1): numb
   return Math.round(base * speedBonus) + floorBonus;
 }
 
-/** Number of minigames presented on a given floor (caps at 8). */
-export function getMinigamesPerFloor(floor: number): number {
-  return Math.min(1 + floor, 8);
+/** Number of minigames presented on a given floor, scaled by effective difficulty. */
+export function getMinigamesPerFloor(floor: number, diffReducerTier: number = 0): number {
+  const difficulty = getEffectiveDifficulty(floor, diffReducerTier);
+  return Math.max(1, Math.round(1 + difficulty * 19));
+}
+
+/**
+ * Bonus credits awarded when starting a run from a higher floor.
+ * Returns 0 for floor 1 and below.
+ */
+export function getFloorBonusCredits(startFloor: number): number {
+  if (startFloor <= 1) return 0;
+  return Math.round(startFloor * 25 + startFloor * startFloor * 0.3);
 }
 
 /** Data (◆) rewarded for clearing a floor. Sublinear to avoid early-floor windfalls. */
