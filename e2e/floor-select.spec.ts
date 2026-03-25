@@ -28,10 +28,10 @@ test.describe("Floor Select", () => {
   // 1. Floor picker shows when checkpoints unlocked
   // -------------------------------------------------------------------------
   test("floor picker shows unlocked checkpoints", async ({ page }) => {
-    // Inject checkpointReaches: floor 5 reached 2x (unlocked)
-    await injectCheckpoints(page, { "5": 2 });
+    // Inject checkpointReaches: floor 5 reached 1x (unlocked, threshold=1)
+    await injectCheckpoints(page, { "5": 1 });
 
-    // Click START RUN — should show floor picker (2+ checkpoints)
+    // Click START RUN — should show floor picker (unlocked checkpoints)
     await page.getByText("START RUN").click();
 
     // Floor 1 and Floor 5 should be visible
@@ -46,8 +46,8 @@ test.describe("Floor Select", () => {
   // 2. Starting on higher floor gives bonus credits
   // -------------------------------------------------------------------------
   test("starting on floor 10 gives bonus credits in HUD", async ({ page }) => {
-    // Inject checkpoints for floor 5 and floor 10
-    await injectCheckpoints(page, { "5": 2, "10": 2 });
+    // Inject checkpoints for floor 5 and floor 10 (threshold=1)
+    await injectCheckpoints(page, { "5": 1, "10": 1 });
 
     // Open floor picker and select floor 10
     await page.getByText("START RUN").click();

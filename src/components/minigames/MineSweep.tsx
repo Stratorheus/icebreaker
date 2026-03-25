@@ -332,7 +332,7 @@ export function MineSweep(props: MinigameProps) {
                   showMine
                     ? "flex items-center justify-center rounded-md border border-cyber-magenta/80 bg-cyber-magenta/20 text-cyber-magenta shadow-[0_0_10px_rgba(255,0,102,0.3)] transition-all duration-150 focus:outline-none select-none"
                     : isVisibleMine
-                      ? "flex items-center justify-center rounded-md border border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60 transition-all duration-150 focus:outline-none select-none"
+                      ? "flex items-center justify-center rounded-md border border-cyber-magenta/40 bg-cyber-magenta/10 text-cyber-magenta/60 transition-all duration-150 focus:outline-none select-none cursor-pointer"
                       : isMarked
                         ? "flex items-center justify-center rounded-md border border-cyber-cyan bg-cyber-cyan/15 text-cyber-cyan shadow-[0_0_10px_rgba(0,255,255,0.25)] transition-all duration-150 focus:outline-none select-none"
                         : phase === "mark"

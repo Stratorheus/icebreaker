@@ -7,7 +7,7 @@
 export const CHECKPOINT_INTERVAL = 5;
 
 /** Number of times a player must reach a checkpoint floor to unlock it for teleport */
-export const CHECKPOINT_UNLOCK_THRESHOLD = 2;
+export const CHECKPOINT_UNLOCK_THRESHOLD = 1;
 
 /** Returns damage dealt to player on a failed minigame. */
 function getDamage(floor: number): number {
