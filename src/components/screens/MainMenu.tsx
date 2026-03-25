@@ -1,7 +1,14 @@
+import { useMemo, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { Hexagon } from "lucide-react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
+import {
+  getEffectiveDifficulty,
+  getDifficultyLabel,
+  getFloorBonusCredits,
+  getMinigamesPerFloor,
+} from "@/data/balancing";
 
 /**
  * Main menu screen — entry point of the game.
@@ -14,10 +21,30 @@ export function MainMenu() {
   const setStatus = useGameStore((s) => s.setStatus);
   const stats = useGameStore((s) => s.stats);
   const data = useGameStore((s) => s.data);
+  const checkpointReaches = useGameStore((s) => s.checkpointReaches);
+  const purchasedUpgrades = useGameStore((s) => s.purchasedUpgrades);
+
+  const [showFloorPicker, setShowFloorPicker] = useState(false);
+  const [selectedFloor, setSelectedFloor] = useState(1);
+
+  const unlockedCheckpoints = useMemo(() => {
+    const checkpoints = [1];
+    const maxShow = Math.max(stats.bestFloor + 10, 20);
+    for (let f = 5; f <= maxShow; f += 5) {
+      if ((checkpointReaches[f] ?? 0) >= 2) {
+        checkpoints.push(f);
+      }
+    }
+    return checkpoints;
+  }, [checkpointReaches, stats.bestFloor]);
 
   const handleStartRun = () => {
-    startRun();
-    generateRunShop(1);
+    if (unlockedCheckpoints.length > 1) {
+      setShowFloorPicker(true);
+    } else {
+      startRun();
+      generateRunShop(1);
+    }
   };
 
   return (
@@ -45,43 +72,122 @@ export function MainMenu() {
         </span>
       </div>
 
-      {/* Menu buttons */}
-      <div className="flex flex-col gap-3 w-64">
-        <CyberButton variant="primary" prompt onClick={handleStartRun}>
-          START RUN
-        </CyberButton>
-        <CyberButton prompt onClick={() => setStatus("meta-shop")}>
-          META SHOP
-        </CyberButton>
-        <CyberButton prompt onClick={() => setStatus("training")}>
-          TRAINING
-        </CyberButton>
-        <CyberButton prompt onClick={() => setStatus("codex")}>
-          CODEX
-        </CyberButton>
-        <CyberButton prompt onClick={() => setStatus("stats")}>
-          STATS
-        </CyberButton>
-      </div>
+      {showFloorPicker ? (
+        /* Floor select picker */
+        <div className="w-full max-w-md space-y-2">
+          <p className="text-white/30 text-[10px] uppercase tracking-[0.3em] mb-2 glitch-subtle">
+            {CLI_PROMPT}SELECT STARTING FLOOR
+          </p>
 
-      {/* Reset + Version */}
-      <div className="mt-12 flex flex-col items-center gap-2">
-        <p className="text-white/20 text-[10px] uppercase tracking-widest glitch-flicker">
-          {`v${__APP_VERSION__}`} // PROTOTYPE
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            if (window.confirm("Reset ALL progress? This cannot be undone.")) {
-              localStorage.removeItem("icebreaker-meta");
-              window.location.reload();
+          {/* Unlocked checkpoints */}
+          {unlockedCheckpoints.map((floor) => {
+            const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+            const diffLabel = getDifficultyLabel(diff);
+            const bonusCR = getFloorBonusCredits(floor);
+            const minigames = getMinigamesPerFloor(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+            const isSelected = selectedFloor === floor;
+
+            return (
+              <button key={floor} onClick={() => setSelectedFloor(floor)}
+                className={`w-full text-left px-4 py-3 border font-mono text-sm transition-all
+                  ${isSelected
+                    ? "border-cyber-cyan/50 bg-cyber-cyan/10 text-cyber-cyan"
+                    : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/20 hover:bg-white/[0.04]"
+                  }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold">FLOOR {floor}</span>
+                  <span className="text-[10px] uppercase tracking-wider opacity-70">{diffLabel}</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-[10px] opacity-50">
+                  <span>{minigames} protocols</span>
+                  {bonusCR > 0 && <span>+{bonusCR} CR bonus</span>}
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Locked checkpoints with progress */}
+          {(() => {
+            const locked: { floor: number; reaches: number }[] = [];
+            const maxShow = Math.max(stats.bestFloor + 10, 20);
+            for (let f = 5; f <= maxShow; f += 5) {
+              if (!unlockedCheckpoints.includes(f)) {
+                const reaches = checkpointReaches[f] ?? 0;
+                if (reaches > 0) {
+                  locked.push({ floor: f, reaches });
+                }
+              }
             }
-          }}
-          className="text-white/15 text-[10px] uppercase tracking-widest hover:text-cyber-magenta/60 transition-colors cursor-pointer"
-        >
-          [RESET PROGRESS]
-        </button>
-      </div>
+            return locked.map(({ floor, reaches }) => (
+              <div key={floor} className="w-full px-4 py-2 border border-white/5 text-white/20 font-mono text-sm">
+                <span>FLOOR {floor}</span>
+                <span className="float-right text-[10px]">{reaches}/2 REACHED</span>
+              </div>
+            ));
+          })()}
+
+          {/* Begin run button */}
+          <div className="flex items-center justify-between mt-4">
+            <CyberButton variant="muted" onClick={() => setShowFloorPicker(false)} className="w-auto">
+              BACK
+            </CyberButton>
+            <CyberButton variant="primary" onClick={() => {
+              startRun(selectedFloor);
+              generateRunShop(selectedFloor);
+            }} className="w-auto">
+              BEGIN RUN
+            </CyberButton>
+          </div>
+
+          {/* Floor bonus info */}
+          {selectedFloor > 1 && (
+            <p className="text-center text-currency-credits text-[10px] font-mono mt-2">
+              FLOOR BONUS: +{getFloorBonusCredits(selectedFloor)} CR
+            </p>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Menu buttons */}
+          <div className="flex flex-col gap-3 w-64">
+            <CyberButton variant="primary" prompt onClick={handleStartRun}>
+              START RUN
+            </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("meta-shop")}>
+              META SHOP
+            </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("training")}>
+              TRAINING
+            </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("codex")}>
+              CODEX
+            </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("stats")}>
+              STATS
+            </CyberButton>
+          </div>
+
+          {/* Reset + Version */}
+          <div className="mt-12 flex flex-col items-center gap-2">
+            <p className="text-white/20 text-[10px] uppercase tracking-widest glitch-flicker">
+              {`v${__APP_VERSION__}`} // PROTOTYPE
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Reset ALL progress? This cannot be undone.")) {
+                  localStorage.removeItem("icebreaker-meta");
+                  window.location.reload();
+                }
+              }}
+              className="text-white/15 text-[10px] uppercase tracking-widest hover:text-cyber-magenta/60 transition-colors cursor-pointer"
+            >
+              [RESET PROGRESS]
+            </button>
+          </div>
+        </>
+      )}
 
       {/* Footer */}
       <div className="mt-8 mb-4 text-center text-white/20 text-[10px] uppercase tracking-widest font-mono">
