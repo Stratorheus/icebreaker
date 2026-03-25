@@ -58,8 +58,9 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
   generateRunShop: (floor: number) => {
     const state = get();
 
-    // Pick 3-4 random items from the pool
-    const count = 3 + (Math.random() < 0.5 ? 1 : 0);
+    // Vendor slot count: base 2, tier 1 = 4, tier 2 = 6
+    const supplyLineTier = state.purchasedUpgrades["supply-line"] ?? 0;
+    const count = supplyLineTier === 0 ? 2 : supplyLineTier === 1 ? 4 : 6;
     const shuffled = shuffle(RUN_SHOP_POOL);
     // (cache-primed removed — heal guarantee reduced shop variety and decision space)
     const picked = shuffled.slice(0, count);

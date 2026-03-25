@@ -80,4 +80,16 @@ export const STAT_UPGRADES: MetaUpgrade[] = [
     effects: [{ type: "global-time-bonus", value: 0.03 }],
     stackable: true,
   },
+  {
+    id: "supply-line",
+    name: "Supply Line",
+    description: "Expand vendor inventory: 4 items at tier 1, 6 items at tier 2.",
+    category: "stat",
+    maxTier: 2,
+    prices: [300, 600],
+    effects: [
+      { type: "shop-slots", value: 4 },
+      { type: "shop-slots", value: 6 },
+    ],
+  },
 ];
