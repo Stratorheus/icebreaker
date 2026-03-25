@@ -726,3 +726,104 @@ describe("currentWinStreak", () => {
     expect(store.getState().currentWinStreak).toBe(0);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Floor-scoped power-up lifecycle
+// ---------------------------------------------------------------------------
+
+describe("floor-scoped power-ups survive advanceFloor", () => {
+  it("heal-on-success stays in inventory after advanceFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    // Simulate buying heal-on-success in vendor
+    const healPU = makePowerUp("heal", "heal-on-success", 0.05);
+    store.setState({
+      inventory: [...store.getState().inventory, healPU],
+      status: "shop",
+    });
+
+    // advanceFloor (player clicks CONTINUE)
+    store.getState().advanceFloor();
+
+    // Power-up should still be in inventory for the next floor
+    const hasHeal = store.getState().inventory.some(
+      (p) => p.effect.type === "heal-on-success",
+    );
+    expect(hasHeal).toBe(true);
+  });
+
+  it("heal-on-success is removed after last minigame of the floor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    const healPU = makePowerUp("heal", "heal-on-success", 0.05);
+    store.setState({
+      inventory: [...store.getState().inventory, healPU],
+    });
+
+    // Complete all minigames on floor (simulate last one)
+    const floorMinigames = store.getState().floorMinigames;
+    store.setState({
+      currentMinigameIndex: floorMinigames.length - 1,
+    });
+
+    store.getState().completeMinigame({
+      success: true,
+      timeMs: 5000,
+      minigame: floorMinigames[floorMinigames.length - 1],
+    });
+
+    // Power-up should be cleaned up after last minigame
+    const hasHeal = store.getState().inventory.some(
+      (p) => p.effect.type === "heal-on-success",
+    );
+    expect(hasHeal).toBe(false);
+  });
+
+  it("heal-on-success heals HP during the floor it applies to", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    // Damage the player, then add heal-on-success (as if bought in shop)
+    store.setState({ hp: 80, maxHp: 100 });
+    const healPU = makePowerUp("heal", "heal-on-success", 0.05);
+    store.setState({
+      inventory: [...store.getState().inventory, healPU],
+    });
+
+    // advanceFloor → power-up survives
+    store.getState().advanceFloor();
+    expect(store.getState().hp).toBeLessThanOrEqual(100); // emergency patch may heal
+
+    const hpBefore = store.getState().hp;
+
+    // Win a minigame on the new floor
+    store.getState().completeMinigame({
+      success: true,
+      timeMs: 5000,
+      minigame: store.getState().floorMinigames[0],
+    });
+
+    // HP should have increased from heal-on-success (5% of maxHp = 5)
+    expect(store.getState().hp).toBeGreaterThan(hpBefore);
+  });
+
+  it("time-bonus survives advanceFloor", () => {
+    const store = createTestStore();
+    store.getState().startRun();
+
+    const timePU = makePowerUp("time", "time-bonus", 3);
+    store.setState({
+      inventory: [...store.getState().inventory, timePU],
+      status: "shop",
+    });
+
+    store.getState().advanceFloor();
+
+    const hasTime = store.getState().inventory.some(
+      (p) => p.effect.type === "time-bonus",
+    );
+    expect(hasTime).toBe(true);
+  });
+});
