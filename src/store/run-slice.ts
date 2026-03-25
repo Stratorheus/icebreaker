@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance, TrainingOrigin } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { MinigameResult } from "@/types/minigame";
-import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getFloorBonusCredits, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
+import { CHECKPOINT_INTERVAL, getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getFloorBonusCredits, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import type { MetaSlice } from "./meta-slice";
@@ -114,6 +114,45 @@ function pickRandom<T>(pool: T[], count: number): T[] {
     }
   }
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// Milestone resolution helper (used by completeMinigame + skipRemainingFloor)
+// ---------------------------------------------------------------------------
+
+interface MilestoneResolution {
+  nextStatus: GameStatus;
+  milestoneFloor: number;
+  milestoneDataThisRun: number;
+  shouldIncrementCheckpoint: boolean;
+}
+
+function resolveMilestone(
+  floor: number,
+  startFloor: number,
+  bestFloor: number,
+  milestoneDataSoFar: number,
+): MilestoneResolution {
+  const rawMilestone = getMilestoneBonus(floor);
+  const isTeleported = floor === startFloor && startFloor > 1;
+
+  if (rawMilestone > 0 && !isTeleported) {
+    const milestoneScale = floor > bestFloor ? 1.0 : 0.25;
+    const milestoneReward = Math.round(rawMilestone * milestoneScale);
+    return {
+      nextStatus: "milestone",
+      milestoneFloor: floor,
+      milestoneDataThisRun: milestoneDataSoFar + milestoneReward,
+      shouldIncrementCheckpoint: floor % CHECKPOINT_INTERVAL === 0,
+    };
+  }
+
+  return {
+    nextStatus: "shop",
+    milestoneFloor: 0,
+    milestoneDataThisRun: milestoneDataSoFar,
+    shouldIncrementCheckpoint: false,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +287,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   completeMinigame: (result: MinigameResult) => {
     const state = get();
-    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const difficulty = getEffectiveDifficulty(state.floor, diffTier);
 
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
@@ -297,21 +337,14 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     let milestoneFloor = 0;
     let milestoneDataThisRun = state.milestoneDataThisRun;
     if (isLastMinigame) {
-      const rawMilestone = getMilestoneBonus(state.floor);
-      const isTeleportedFloor = state.floor === state.startFloor && state.startFloor > 1;
-      if (rawMilestone > 0 && !isTeleportedFloor) {
-        // Fix #10: reduce milestone if player already reached this floor before
-        // First time reaching → full bonus; already reached → 25% bonus
-        const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
-        const milestoneReward = Math.round(rawMilestone * milestoneScale);
-        // Fix #11: don't award immediately — accumulate for death/quit screen
-        milestoneDataThisRun += milestoneReward;
-        nextStatus = "milestone";
-        milestoneFloor = state.floor;
-        // Track checkpoint reach for floor-select gating
+      const milestone = resolveMilestone(
+        state.floor, state.startFloor, state.stats.bestFloor, state.milestoneDataThisRun,
+      );
+      nextStatus = milestone.nextStatus;
+      milestoneFloor = milestone.milestoneFloor;
+      milestoneDataThisRun = milestone.milestoneDataThisRun;
+      if (milestone.shouldIncrementCheckpoint) {
         get().incrementCheckpointReach(state.floor);
-      } else {
-        nextStatus = "shop";
       }
     }
 
@@ -502,7 +535,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   advanceFloor: () => {
     const state = get();
     const nextFloor = state.floor + 1;
-    const count = getMinigamesPerFloor(nextFloor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const count = getMinigamesPerFloor(nextFloor, diffTier);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
     // Floor-scoped power-ups are now cleaned up at end of floor
@@ -544,7 +578,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const remaining = state.floorMinigames.length - state.currentMinigameIndex;
 
     // Calculate rewards for each remaining minigame at the given fraction
-    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const difficulty = getEffectiveDifficulty(state.floor, diffTier);
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
 
     // Skips don't get speed bonus — use Infinity to neutralize it
@@ -583,18 +618,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     );
 
     // Check for milestone (floor completion)
-    const rawMilestone = getMilestoneBonus(state.floor);
-    let milestoneFloor = 0;
-    let milestoneDataThisRun = state.milestoneDataThisRun;
-    let nextStatus: GameStatus = "shop";
-    const isTeleportedFloor = state.floor === state.startFloor && state.startFloor > 1;
-
-    if (rawMilestone > 0 && !isTeleportedFloor) {
-      const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
-      milestoneDataThisRun += Math.round(rawMilestone * milestoneScale);
-      nextStatus = "milestone";
-      milestoneFloor = state.floor;
-      // Track checkpoint reach for floor-select gating
+    const milestone = resolveMilestone(
+      state.floor, state.startFloor, state.stats.bestFloor, state.milestoneDataThisRun,
+    );
+    const { nextStatus, milestoneFloor, milestoneDataThisRun } = milestone;
+    if (milestone.shouldIncrementCheckpoint) {
       get().incrementCheckpointReach(state.floor);
     }
 

@@ -4,6 +4,8 @@ import { Hexagon } from "lucide-react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
 import {
+  CHECKPOINT_INTERVAL,
+  CHECKPOINT_UNLOCK_THRESHOLD,
   getEffectiveDifficulty,
   getDifficultyLabel,
   getFloorBonusCredits,
@@ -27,15 +29,21 @@ export function MainMenu() {
   const [showFloorPicker, setShowFloorPicker] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState(1);
 
-  const unlockedCheckpoints = useMemo(() => {
-    const checkpoints = [1];
+  const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
+
+  const { unlockedCheckpoints, lockedCheckpoints } = useMemo(() => {
+    const unlocked = [1];
+    const locked: { floor: number; reaches: number }[] = [];
     const maxShow = Math.max(stats.bestFloor + 10, 20);
-    for (let f = 5; f <= maxShow; f += 5) {
-      if ((checkpointReaches[f] ?? 0) >= 2) {
-        checkpoints.push(f);
+    for (let f = CHECKPOINT_INTERVAL; f <= maxShow; f += CHECKPOINT_INTERVAL) {
+      const reaches = checkpointReaches[f] ?? 0;
+      if (reaches >= CHECKPOINT_UNLOCK_THRESHOLD) {
+        unlocked.push(f);
+      } else if (reaches > 0) {
+        locked.push({ floor: f, reaches });
       }
     }
-    return checkpoints;
+    return { unlockedCheckpoints: unlocked, lockedCheckpoints: locked };
   }, [checkpointReaches, stats.bestFloor]);
 
   const handleStartRun = () => {
@@ -81,10 +89,10 @@ export function MainMenu() {
 
           {/* Unlocked checkpoints */}
           {unlockedCheckpoints.map((floor) => {
-            const diff = getEffectiveDifficulty(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+            const diff = getEffectiveDifficulty(floor, diffReducerTier);
             const diffLabel = getDifficultyLabel(diff);
             const bonusCR = getFloorBonusCredits(floor);
-            const minigames = getMinigamesPerFloor(floor, purchasedUpgrades["difficulty-reducer"] ?? 0);
+            const minigames = getMinigamesPerFloor(floor, diffReducerTier);
             const isSelected = selectedFloor === floor;
 
             return (
@@ -108,24 +116,12 @@ export function MainMenu() {
           })}
 
           {/* Locked checkpoints with progress */}
-          {(() => {
-            const locked: { floor: number; reaches: number }[] = [];
-            const maxShow = Math.max(stats.bestFloor + 10, 20);
-            for (let f = 5; f <= maxShow; f += 5) {
-              if (!unlockedCheckpoints.includes(f)) {
-                const reaches = checkpointReaches[f] ?? 0;
-                if (reaches > 0) {
-                  locked.push({ floor: f, reaches });
-                }
-              }
-            }
-            return locked.map(({ floor, reaches }) => (
-              <div key={floor} className="w-full px-4 py-2 border border-white/5 text-white/20 font-mono text-sm">
-                <span>FLOOR {floor}</span>
-                <span className="float-right text-[10px]">{reaches}/2 REACHED</span>
-              </div>
-            ));
-          })()}
+          {lockedCheckpoints.map(({ floor, reaches }) => (
+            <div key={floor} className="w-full px-4 py-2 border border-white/5 text-white/20 font-mono text-sm">
+              <span>FLOOR {floor}</span>
+              <span className="float-right text-[10px]">{reaches}/{CHECKPOINT_UNLOCK_THRESHOLD} REACHED</span>
+            </div>
+          ))}
 
           {/* Begin run button */}
           <div className="flex items-center justify-between mt-4">

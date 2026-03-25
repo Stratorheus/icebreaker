@@ -3,6 +3,12 @@
  * All math comes directly from the design spec.
  */
 
+/** Checkpoint floors occur every N floors (5, 10, 15...) */
+export const CHECKPOINT_INTERVAL = 5;
+
+/** Number of times a player must reach a checkpoint floor to unlock it for teleport */
+export const CHECKPOINT_UNLOCK_THRESHOLD = 2;
+
 /** Returns damage dealt to player on a failed minigame. */
 function getDamage(floor: number): number {
   return 20 + floor * 4;
@@ -43,7 +49,7 @@ export function getDataReward(floor: number): number {
 
 /** Bonus data awarded at milestone floors. Every 5th floor gets a milestone, scaling linearly. */
 export function getMilestoneBonus(floor: number): number {
-  if (floor > 0 && floor % 5 === 0) {
+  if (floor > 0 && floor % CHECKPOINT_INTERVAL === 0) {
     return floor * 5; // floor 5=25, 10=50, 15=75, 20=100, 50=250, 100=500
   }
   return 0;

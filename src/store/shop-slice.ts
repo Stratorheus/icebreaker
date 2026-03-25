@@ -58,9 +58,12 @@ export const createShopSlice: StateCreator<FullStore, [], [], ShopSlice> = (
   generateRunShop: (floor: number) => {
     const state = get();
 
-    // Vendor slot count: base 2, tier 1 = 4, tier 2 = 6
+    // Vendor slot count: base 2, scales from upgrade effects (SSOT)
     const supplyLineTier = state.purchasedUpgrades["supply-line"] ?? 0;
-    const count = supplyLineTier === 0 ? 2 : supplyLineTier === 1 ? 4 : 6;
+    const supplyUpgrade = META_UPGRADE_POOL.find((u) => u.id === "supply-line");
+    const count = supplyLineTier > 0 && supplyUpgrade
+      ? supplyUpgrade.effects[supplyLineTier - 1]?.value ?? 2
+      : 2;
     const shuffled = shuffle(RUN_SHOP_POOL);
     // (cache-primed removed — heal guarantee reduced shop variety and decision space)
     const picked = shuffled.slice(0, count);
