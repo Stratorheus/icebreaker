@@ -65,13 +65,15 @@ function getNeighbors(
 }
 
 function generateBoard(difficulty: number): GeneratedBoard {
-  const size = Math.round(5 + difficulty * 4);
+  // Grid: 4×4 (trivial) → 8×8 (insane). Smaller grids = fewer cells to uncover under time pressure.
+  const size = Math.round(4 + difficulty * 4);
   const cols = size;
   const rows = size;
   const totalCells = rows * cols;
 
-  const rawMines = Math.round(2 + difficulty * 8);
-  const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.20));
+  // Mines: 1 (trivial) → 8 (insane), capped at 18% of grid
+  const rawMines = Math.round(1 + difficulty * 7);
+  const mineCount = Math.min(rawMines, Math.floor(totalCells * 0.18));
 
   const cells: DefragCell[] = Array.from({ length: totalCells }, (_, i) => ({
     id: i, isMine: false, adjacentMines: 0,
