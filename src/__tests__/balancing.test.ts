@@ -21,12 +21,12 @@ import {
 // getMinigamesPerFloor
 // ---------------------------------------------------------------------------
 describe("getMinigamesPerFloor", () => {
-  it("floor 1 tier 0: result is in 3-5 range (difficulty ~0.17)", () => {
-    // getEffectiveDifficulty(1, 0) = min(0.1 + 1/15, 1.0) ≈ 0.167
-    // 1 + 0.167 * 19 ≈ 4.17 → rounds to 4
+  it("floor 1 tier 0: result is 1-3 (difficulty ~0.17, power curve 1.65)", () => {
+    // getEffectiveDifficulty(1, 0) ≈ 0.167
+    // 1 + 19 * (0.167 ^ 1.65) ≈ 1.93 → rounds to 2
     const result = getMinigamesPerFloor(1, 0);
-    expect(result).toBeGreaterThanOrEqual(3);
-    expect(result).toBeLessThanOrEqual(5);
+    expect(result).toBeGreaterThanOrEqual(1);
+    expect(result).toBeLessThanOrEqual(3);
   });
 
   it("high floor tier 0: caps at 20 (insane difficulty = 1.0)", () => {

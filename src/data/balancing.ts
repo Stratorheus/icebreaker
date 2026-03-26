@@ -27,10 +27,11 @@ function getCredits(timeMs: number, difficulty: number, floor: number = 1): numb
   return Math.round(base * speedBonus) + floorBonus;
 }
 
-/** Number of minigames presented on a given floor, scaled by effective difficulty. */
+/** Number of minigames presented on a given floor, scaled by effective difficulty.
+ *  Uses power curve (1.65) for gradual ramp — easy stays low, hard+ climbs steeply. */
 export function getMinigamesPerFloor(floor: number, diffReducerTier: number = 0): number {
   const difficulty = getEffectiveDifficulty(floor, diffReducerTier);
-  return Math.max(1, Math.round(1 + difficulty * 19));
+  return Math.max(1, Math.round(1 + 19 * Math.pow(difficulty, 1.65)));
 }
 
 /**
