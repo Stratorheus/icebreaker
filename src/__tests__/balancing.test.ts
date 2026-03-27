@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   getMinigamesPerFloor,
+  getFloorBonusCredits,
   getDataReward,
   getMilestoneBonus,
   getRunShopPrice,
@@ -20,20 +21,65 @@ import {
 // getMinigamesPerFloor
 // ---------------------------------------------------------------------------
 describe("getMinigamesPerFloor", () => {
-  it("returns 1 on floor 0", () => {
-    expect(getMinigamesPerFloor(0)).toBe(1);
+  it("floor 1 tier 0: result is 1-3 (difficulty ~0.17, power curve 1.65)", () => {
+    // getEffectiveDifficulty(1, 0) ≈ 0.167
+    // 1 + 19 * (0.167 ^ 1.65) ≈ 1.93 → rounds to 2
+    const result = getMinigamesPerFloor(1, 0);
+    expect(result).toBeGreaterThanOrEqual(1);
+    expect(result).toBeLessThanOrEqual(3);
   });
 
-  it("scales linearly: floor 3 → 4", () => {
-    expect(getMinigamesPerFloor(3)).toBe(4);
+  it("high floor tier 0: caps at 20 (insane difficulty = 1.0)", () => {
+    // getEffectiveDifficulty(15, 0) = 1.0 → 1 + 1.0 * 19 = 20
+    expect(getMinigamesPerFloor(15, 0)).toBe(20);
+    expect(getMinigamesPerFloor(50, 0)).toBe(20);
   });
 
-  it("caps at 8 for floor 7", () => {
-    expect(getMinigamesPerFloor(7)).toBe(8);
+  it("difficulty reducer reduces minigame count (floor 10 tier 0 vs tier 5)", () => {
+    const withoutReducer = getMinigamesPerFloor(10, 0);
+    const withReducer = getMinigamesPerFloor(10, 5);
+    expect(withReducer).toBeLessThan(withoutReducer);
   });
 
-  it("caps at 8 for floor 20 (high values)", () => {
-    expect(getMinigamesPerFloor(20)).toBe(8);
+  it("minimum is 1 even with extreme reducer tier", () => {
+    // Very high reducer tier → difficulty approaches 0.1 → 1 + 0.1*19 = 2.9 → 3
+    // But with floor 0 and any reducer: getEffectiveDifficulty(0, N) = 0.1 → 1+0.1*19=2.9→3
+    // The minimum guard ensures floor 0 never goes below 1
+    const result = getMinigamesPerFloor(0, 100);
+    expect(result).toBeGreaterThanOrEqual(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// getFloorBonusCredits
+// ---------------------------------------------------------------------------
+describe("getFloorBonusCredits", () => {
+  it("returns 0 for floor 1", () => {
+    expect(getFloorBonusCredits(1)).toBe(0);
+  });
+
+  it("returns 0 for floor 0", () => {
+    expect(getFloorBonusCredits(0)).toBe(0);
+  });
+
+  it("returns 133 for floor 5", () => {
+    // 5*25 + 5*5*0.3 = 125 + 7.5 → round(132.5) = 133
+    expect(getFloorBonusCredits(5)).toBe(133);
+  });
+
+  it("returns 280 for floor 10", () => {
+    // 10*25 + 10*10*0.3 = 250 + 30 = 280
+    expect(getFloorBonusCredits(10)).toBe(280);
+  });
+
+  it("returns 2000 for floor 50", () => {
+    // 50*25 + 50*50*0.3 = 1250 + 750 = 2000
+    expect(getFloorBonusCredits(50)).toBe(2000);
+  });
+
+  it("returns 5500 for floor 100", () => {
+    // 100*25 + 100*100*0.3 = 2500 + 3000 = 5500
+    expect(getFloorBonusCredits(100)).toBe(5500);
   });
 });
 

@@ -30,7 +30,7 @@ interface Params {
 function getParams(difficulty: number): Params {
   const gridSize = Math.round(3 + difficulty * 2);
   const openCount = Math.round(2 + difficulty * 4);
-  const flashMs = Math.round(700 - difficulty * 450);
+  const flashMs = Math.round(450 - difficulty * 250);
   return { gridSize, openCount, flashMs };
 }
 
@@ -144,9 +144,9 @@ export function PortScan(props: MinigameProps) {
 
     const openArr = Array.from(puzzle.openIndices);
     const ms = params.flashMs;
-    const gapMs = Math.max(150, ms * 0.4);
+    const gapMs = Math.max(100, ms * 0.35);
     const timeouts: ReturnType<typeof setTimeout>[] = [];
-    const initialDelay = 500;
+    const initialDelay = 350;
 
     let t = initialDelay;
     for (let rep = 0; rep < flashRepeat; rep++) {

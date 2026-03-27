@@ -15,20 +15,26 @@ interface Expression {
 }
 
 function generateExpression(difficulty: number): Expression {
-  if (difficulty <= 0.15) {
-    // d=0: single-digit add/subtract (3+5, 8-2)
+  if (difficulty <= 0.2) {
+    // Trivial/Easy: single-digit add/subtract (3+5, 8-2)
     const a = Math.floor(Math.random() * 9) + 1; // 1-9
     const op = Math.random() < 0.5 ? "+" : "-";
     const b =
       op === "+"
         ? Math.floor(Math.random() * 9) + 1 // 1-9
-        : Math.floor(Math.random() * a) + 1; // 1..a (no negative results at easy)
+        : Math.floor(Math.random() * a) + 1; // 1..a (no negative results)
     const answer = op === "+" ? a + b : a - b;
     return { display: `${a} ${op} ${b}`, answer };
   }
 
-  if (difficulty <= 0.45) {
-    // d=0.3: two-digit +/- single-digit (12+7, 25-9)
+  if (difficulty <= 0.55) {
+    // Normal/Medium: two-digit +/- single-digit, occasional small multiplication
+    if (Math.random() < 0.2) {
+      // Small multiplication (2-5 × 2-5)
+      const a = Math.floor(Math.random() * 4) + 2; // 2-5
+      const b = Math.floor(Math.random() * 4) + 2; // 2-5
+      return { display: `${a} \u00D7 ${b}`, answer: a * b };
+    }
     const a = Math.floor(Math.random() * 90) + 10; // 10-99
     const op = Math.random() < 0.5 ? "+" : "-";
     const b = Math.floor(Math.random() * 9) + 1; // 1-9
@@ -36,8 +42,8 @@ function generateExpression(difficulty: number): Expression {
     return { display: `${a} ${op} ${b}`, answer };
   }
 
-  if (difficulty <= 0.75) {
-    // d=0.6: two-digit +/- two-digit (23+34, 51-18)
+  if (difficulty <= 0.8) {
+    // Hard/Expert: two-digit +/- two-digit (23+34, 51-18)
     const a = Math.floor(Math.random() * 90) + 10; // 10-99
     const op = Math.random() < 0.5 ? "+" : "-";
     const b = Math.floor(Math.random() * 90) + 10; // 10-99
@@ -45,14 +51,12 @@ function generateExpression(difficulty: number): Expression {
     return { display: `${a} ${op} ${b}`, answer };
   }
 
-  // d=1.0: single-digit multiplication max 9x9 OR two-digit add
+  // Insane: single-digit multiplication max 9×9 OR two-digit add
   if (Math.random() < 0.5) {
-    // Multiplication
     const a = Math.floor(Math.random() * 8) + 2; // 2-9
     const b = Math.floor(Math.random() * 8) + 2; // 2-9
     return { display: `${a} \u00D7 ${b}`, answer: a * b };
   } else {
-    // Two-digit add
     const a = Math.floor(Math.random() * 90) + 10; // 10-99
     const b = Math.floor(Math.random() * 90) + 10; // 10-99
     return { display: `${a} + ${b}`, answer: a + b };
@@ -60,10 +64,10 @@ function generateExpression(difficulty: number): Expression {
 }
 
 function getExpressionCount(difficulty: number): number {
-  if (difficulty <= 0.15) return 2;
-  if (difficulty <= 0.45) return 3;
-  if (difficulty <= 0.75) return 4;
-  return 5;
+  if (difficulty <= 0.2) return 2;   // Trivial/Easy
+  if (difficulty <= 0.55) return 3;  // Normal/Medium
+  if (difficulty <= 0.8) return 4;   // Hard/Expert
+  return 5;                          // Insane
 }
 
 // -- Component ----------------------------------------------------------------
@@ -75,10 +79,10 @@ function getExpressionCount(difficulty: number): number {
  * in series. Wrong answer on confirm = immediate fail. All correct = win.
  *
  * Difficulty scaling (0-1):
- *   d=0:   single-digit add/subtract, 2 expressions
- *   d=0.3: two-digit +/- single-digit, 3 expressions
- *   d=0.6: two-digit +/- two-digit, 4 expressions
- *   d=1.0: single-digit multiplication or two-digit add, 5 expressions
+ *   Trivial/Easy (≤0.2):  single-digit add/subtract, 2 expressions
+ *   Normal/Medium (≤0.55): two-digit +/- single-digit, occasional small ×, 3 expressions
+ *   Hard/Expert (≤0.8):   two-digit +/- two-digit, 4 expressions
+ *   Insane (>0.8):        single-digit multiplication or two-digit add, 5 expressions
  */
 export function ChecksumVerify(props: MinigameProps) {
   const { difficulty, activePowerUps } = props;

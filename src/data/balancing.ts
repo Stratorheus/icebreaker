@@ -3,6 +3,12 @@
  * All math comes directly from the design spec.
  */
 
+/** Checkpoint floors occur every N floors (5, 10, 15...) */
+export const CHECKPOINT_INTERVAL = 5;
+
+/** Number of times a player must reach a checkpoint floor to unlock it for teleport */
+export const CHECKPOINT_UNLOCK_THRESHOLD = 1;
+
 /** Returns damage dealt to player on a failed minigame. */
 function getDamage(floor: number): number {
   return 20 + floor * 4;
@@ -21,9 +27,20 @@ function getCredits(timeMs: number, difficulty: number, floor: number = 1): numb
   return Math.round(base * speedBonus) + floorBonus;
 }
 
-/** Number of minigames presented on a given floor (caps at 8). */
-export function getMinigamesPerFloor(floor: number): number {
-  return Math.min(1 + floor, 8);
+/** Number of minigames presented on a given floor, scaled by effective difficulty.
+ *  Uses power curve (1.65) for gradual ramp — easy stays low, hard+ climbs steeply. */
+export function getMinigamesPerFloor(floor: number, diffReducerTier: number = 0): number {
+  const difficulty = getEffectiveDifficulty(floor, diffReducerTier);
+  return Math.max(1, Math.round(1 + 19 * Math.pow(difficulty, 1.65)));
+}
+
+/**
+ * Bonus credits awarded when starting a run from a higher floor.
+ * Returns 0 for floor 1 and below.
+ */
+export function getFloorBonusCredits(startFloor: number): number {
+  if (startFloor <= 1) return 0;
+  return Math.round(startFloor * 25 + startFloor * startFloor * 0.3);
 }
 
 /** Data (◆) rewarded for clearing a floor. Sublinear to avoid early-floor windfalls. */
@@ -33,7 +50,7 @@ export function getDataReward(floor: number): number {
 
 /** Bonus data awarded at milestone floors. Every 5th floor gets a milestone, scaling linearly. */
 export function getMilestoneBonus(floor: number): number {
-  if (floor > 0 && floor % 5 === 0) {
+  if (floor > 0 && floor % CHECKPOINT_INTERVAL === 0) {
     return floor * 5; // floor 5=25, 10=50, 15=75, 20=100, 50=250, 100=500
   }
   return 0;

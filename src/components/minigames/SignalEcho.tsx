@@ -69,7 +69,7 @@ type Phase = "display" | "input" | "success" | "fail";
  *
  * Difficulty scaling (0-1):
  *   startLength = Math.round(3 + difficulty * 2)
- *   displayMs   = Math.round(800 - difficulty * 500)
+ *   displayMs   = Math.round(400 - difficulty * 200)
  *   totalRounds = Math.round(3 + difficulty * 2)
  */
 export function SignalEcho(props: MinigameProps) {
@@ -89,7 +89,7 @@ export function SignalEcho(props: MinigameProps) {
   const params = useMemo(() => {
     // Start from 1 signal always. Trivial: 1→3 (3 rounds). Insane: 1→8+ (8 rounds).
     const startLength = 1;
-    let displayMs = Math.round(600 - difficulty * 350); // 600ms→250ms per signal
+    let displayMs = Math.round(400 - difficulty * 200); // 400ms→200ms per signal
     if (hasSlowReplay) {
       displayMs = Math.round(displayMs * 1.3);
     }
@@ -164,11 +164,11 @@ export function SignalEcho(props: MinigameProps) {
 
     const seq = sequenceRef.current;
     const ms = params.displayMs;
-    const gapMs = Math.max(150, ms * 0.4); // gap between lights
+    const gapMs = Math.max(100, ms * 0.35); // gap between lights
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
     // Small initial delay before the sequence starts
-    const initialDelay = 400;
+    const initialDelay = 300;
 
     for (let i = 0; i < seq.length; i++) {
       // Light on

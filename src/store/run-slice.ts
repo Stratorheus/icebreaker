@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { GameStatus, MinigameType, PowerUpInstance, TrainingOrigin } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { MinigameResult } from "@/types/minigame";
-import { getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
+import { CHECKPOINT_INTERVAL, getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getFloorBonusCredits, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
 import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import type { MetaSlice } from "./meta-slice";
@@ -65,9 +65,11 @@ export interface RunSlice {
   lastDamageTaken: number;
   /** Current consecutive minigame win streak (across all types). Reset on failMinigame. */
   currentWinStreak: number;
+  /** The floor the player selected at run start (1 = normal, >1 = teleported via floor select). */
+  startFloor: number;
 
   // Actions
-  startRun: () => void;
+  startRun: (startFloor?: number) => void;
   completeMinigame: (result: MinigameResult) => void;
   failMinigame: () => void;
   takeDamage: (amount: number) => void;
@@ -115,6 +117,45 @@ function pickRandom<T>(pool: T[], count: number): T[] {
 }
 
 // ---------------------------------------------------------------------------
+// Milestone resolution helper (used by completeMinigame + skipRemainingFloor)
+// ---------------------------------------------------------------------------
+
+interface MilestoneResolution {
+  nextStatus: GameStatus;
+  milestoneFloor: number;
+  milestoneDataThisRun: number;
+  shouldIncrementCheckpoint: boolean;
+}
+
+function resolveMilestone(
+  floor: number,
+  startFloor: number,
+  bestFloor: number,
+  milestoneDataSoFar: number,
+): MilestoneResolution {
+  const rawMilestone = getMilestoneBonus(floor);
+  const isTeleported = floor === startFloor && startFloor > 1;
+
+  if (rawMilestone > 0 && !isTeleported) {
+    const milestoneScale = floor > bestFloor ? 1.0 : 0.25;
+    const milestoneReward = Math.round(rawMilestone * milestoneScale);
+    return {
+      nextStatus: "milestone",
+      milestoneFloor: floor,
+      milestoneDataThisRun: milestoneDataSoFar + milestoneReward,
+      shouldIncrementCheckpoint: floor % CHECKPOINT_INTERVAL === 0,
+    };
+  }
+
+  return {
+    nextStatus: "shop",
+    milestoneFloor: 0,
+    milestoneDataThisRun: milestoneDataSoFar,
+    shouldIncrementCheckpoint: false,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Initial state (exported for reuse in tests / resets)
 // ---------------------------------------------------------------------------
 
@@ -153,6 +194,7 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   consecutiveFloorsNoShop: 0,
   lastDamageTaken: 0,
   currentWinStreak: 0,
+  startFloor: 1,
 };
 
 // Helper type: extract only action keys
@@ -172,9 +214,11 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 ) => ({
   ...initialRunState,
 
-  startRun: () => {
+  startRun: (startFloor?: number) => {
     const { unlockedMinigames, purchasedUpgrades } = get();
-    const count = getMinigamesPerFloor(1);
+    const sf = startFloor ?? 1;
+    const diffReducerTier = purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const count = getMinigamesPerFloor(sf, diffReducerTier);
     const floorMinigames = pickRandom(unlockedMinigames, count);
 
     // ── Apply meta upgrades ──────────────────────────────────────────────────
@@ -199,9 +243,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const actualMaxHp = 100 + hpBoostBonus + unlockHpBonus + overclockedBonus;
     const startHp = actualMaxHp;
 
-    // Base starting credits (25 CR) + head-start meta upgrade bonus (5 tiers: +50/+125/+300/+600/+1000)
-    // Centralized in balancing.ts: getStartingCredits(tier)
-    const startCredits = getStartingCredits(tier("head-start"));
+    // Base starting credits (25 CR) + head-start meta upgrade bonus + floor bonus for teleport
+    const startCredits = getStartingCredits(tier("head-start")) + getFloorBonusCredits(sf);
 
     // Starting inventory is empty — quick-boot and dual-core were removed
     const startInventory: PowerUpInstance[] = [];
@@ -209,7 +252,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     set({
       hp: Math.min(startHp, actualMaxHp),
       maxHp: actualMaxHp,
-      floor: 1,
+      floor: sf,
+      startFloor: sf,
       currentMinigameIndex: 0,
       floorMinigames,
       inventory: startInventory,
@@ -228,6 +272,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       dataAtRunStart: get().data,
       milestoneDataThisRun: 0,
       dataDripThisRun: 0,
+      creditsEarnedThisRun: 0,
       timeSiphonBonus: 0,
       cascadeClockPct: 0,
       consecutiveFloorsNoDamage: 0,
@@ -242,7 +287,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   completeMinigame: (result: MinigameResult) => {
     const state = get();
-    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const difficulty = getEffectiveDifficulty(state.floor, diffTier);
 
     // Minigame unlock bonus: +5% global credits per unlocked minigame beyond starting 5
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
@@ -291,18 +337,14 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     let milestoneFloor = 0;
     let milestoneDataThisRun = state.milestoneDataThisRun;
     if (isLastMinigame) {
-      const rawMilestone = getMilestoneBonus(state.floor);
-      if (rawMilestone > 0) {
-        // Fix #10: reduce milestone if player already reached this floor before
-        // First time reaching → full bonus; already reached → 25% bonus
-        const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
-        const milestoneReward = Math.round(rawMilestone * milestoneScale);
-        // Fix #11: don't award immediately — accumulate for death/quit screen
-        milestoneDataThisRun += milestoneReward;
-        nextStatus = "milestone";
-        milestoneFloor = state.floor;
-      } else {
-        nextStatus = "shop";
+      const milestone = resolveMilestone(
+        state.floor, state.startFloor, state.stats.bestFloor, state.milestoneDataThisRun,
+      );
+      nextStatus = milestone.nextStatus;
+      milestoneFloor = milestone.milestoneFloor;
+      milestoneDataThisRun = milestone.milestoneDataThisRun;
+      if (milestone.shouldIncrementCheckpoint) {
+        get().incrementCheckpointReach(state.floor);
       }
     }
 
@@ -493,7 +535,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   advanceFloor: () => {
     const state = get();
     const nextFloor = state.floor + 1;
-    const count = getMinigamesPerFloor(nextFloor);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const count = getMinigamesPerFloor(nextFloor, diffTier);
     const floorMinigames = pickRandom(state.unlockedMinigames, count);
 
     // Floor-scoped power-ups are now cleaned up at end of floor
@@ -535,7 +578,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const remaining = state.floorMinigames.length - state.currentMinigameIndex;
 
     // Calculate rewards for each remaining minigame at the given fraction
-    const difficulty = getEffectiveDifficulty(state.floor, state.purchasedUpgrades["difficulty-reducer"] ?? 0);
+    const diffTier = state.purchasedUpgrades["difficulty-reducer"] ?? 0;
+    const difficulty = getEffectiveDifficulty(state.floor, diffTier);
     const unlockBonus = Math.max(0, state.unlockedMinigames.length - STARTING_MINIGAMES.length) * 0.05;
 
     // Skips don't get speed bonus — use Infinity to neutralize it
@@ -574,16 +618,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     );
 
     // Check for milestone (floor completion)
-    const rawMilestone = getMilestoneBonus(state.floor);
-    let milestoneFloor = 0;
-    let milestoneDataThisRun = state.milestoneDataThisRun;
-    let nextStatus: GameStatus = "shop";
-
-    if (rawMilestone > 0) {
-      const milestoneScale = state.floor > state.stats.bestFloor ? 1.0 : 0.25;
-      milestoneDataThisRun += Math.round(rawMilestone * milestoneScale);
-      nextStatus = "milestone";
-      milestoneFloor = state.floor;
+    const milestone = resolveMilestone(
+      state.floor, state.startFloor, state.stats.bestFloor, state.milestoneDataThisRun,
+    );
+    const { nextStatus, milestoneFloor, milestoneDataThisRun } = milestone;
+    if (milestone.shouldIncrementCheckpoint) {
+      get().incrementCheckpointReach(state.floor);
     }
 
     // Floor-completion bookkeeping (same as completeMinigame when isLastMinigame)
