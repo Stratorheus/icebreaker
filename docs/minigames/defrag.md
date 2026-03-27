@@ -43,10 +43,9 @@ The 20% mine cap prevents degenerate boards at any difficulty. At d=1, raw mines
 
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
-| (defrag-safe-start removed) | `defrag-safe-start` | `minigame-specific` | Was: guaranteed safe first click. Now: this is built-in default behavior. The meta upgrade entry is registered in `buildMetaPowerUps` but the upgrade itself was removed from `META_UPGRADE_POOL`. | `MinigameScreen.tsx` line 389-391 (still referenced but no-op) |
-| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
-| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in smaller grid and fewer mines | `MinigameScreen.tsx` line 438-439 |
+| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` (MinigameRouter) |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` (MinigameRouter) |
+| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in smaller grid and fewer mines | `MinigameScreen.tsx` (MinigameRouter) |
 
 | Mine Radar | `mine-radar` | `minigame-specific` | After mines are placed (first click), highlights mine-containing rows (left border) and columns (top border) with a subtle orange tint. Active while `timer.progress > (1 - tierValue)` where tierValue is 0.25/0.50/0.75/1.0. 4 tiers, prices: 150/300/500/750 ◆. | `Defrag.tsx` lines 139-148 (detection), mine placement callback (row/col computation), cell render (border styles) |
 
@@ -66,7 +65,7 @@ Note: The `defrag-safe-start` upgrade was removed because safe first click becam
 - `D-pad` via `<TouchControls type="dpad" />` -- arrow key navigation
 
 ## Base Time Limit
-**40 seconds** (`BASE_TIME_LIMITS["defrag"] = 40`).
+**40 seconds** (`baseTimeLimit: 40` in `src/data/minigames/defrag.ts`).
 
 This is the longest base time of any minigame, reflecting the strategic depth of minesweeper. At d=0: full 40s. At d=1: `40 * 0.6 = 24s`. After floor 15, additional 2%-per-floor decay applies.
 
@@ -102,6 +101,6 @@ Additional timing modifiers that affect the effective timer:
 - **Protected zone size**: Currently protects the clicked cell + all neighbors (up to 9 cells total). To change, modify the `protectedSet` construction in `placeMines()` at line 103.
 - **Fail reveal duration**: Change the 600ms timeout in `uncoverCell()` at line 253. Controls how long mines are shown before fail triggers.
 - **Cell size classes**: Modify `cellSizeClass` at lines 339-344 for different visual sizing at different grid dimensions.
-- **Base time**: Change `"defrag": 40` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 281.
+- **Base time**: Change `baseTimeLimit: 40` in `src/data/minigames/defrag.ts`.
 - **Number colors**: Change `NUMBER_COLORS` at lines 29-38 to adjust the color coding for adjacency numbers.
-- **Mine Radar tuning**: Adjust tier values in `meta-upgrades.ts` (mine-radar entry) and the timer threshold formula in `Defrag.tsx`. Currently uses `timer.progress > (1 - fraction)` where fraction is 0.25/0.50/0.75/1.0. The border indicator colors can be changed in the cell render style attributes.
+- **Mine Radar tuning**: Adjust tier values in `src/data/minigames/defrag.ts` (mine-radar entry) and the timer threshold formula in `Defrag.tsx`. Currently uses `timer.progress > (1 - fraction)` where fraction is 0.25/0.50/0.75/1.0. The border indicator colors can be changed in the cell render style attributes.

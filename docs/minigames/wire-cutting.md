@@ -47,9 +47,9 @@ Additional rules are added to ensure every process in the termination order is m
 
 | Power-Up | Source | Effect Type | Behaviour |
 |----------|--------|-------------|-----------|
-| **Stream Monitor** (`wire-labels`) | Meta upgrade | `hint` | Dims non-target processes and highlights the next process to terminate. The keyboard hint bar also shows the next process key in green. |
+| **Stream Monitor** (`wire-labels`) | Meta upgrade | `wire-color-labels` | Dims non-target processes and highlights the next process to terminate. The keyboard hint bar also shows the next process key in green. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
-| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
+| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier. |
 
 ## Controls
 

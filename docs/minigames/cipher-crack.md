@@ -36,9 +36,9 @@ Word pool thresholds (0.35, 0.65) are independent of cipher method thresholds (0
 | Cipher Hint | `cipher-hint` | `hint` | Shows the first letter of the answer word below the cipher box: `Hint: starts with "X"` | `CipherCrack.tsx` lines 149-153 (detection), lines 263-267 (render) |
 | Decode Assist | `decode-assist` | `minigame-specific` | Pre-fills 25/50/75% of decoded letters at random positions. Pre-filled letters appear in green and are non-editable; the player only types the remaining positions. 3 tiers, prices: 150/300/500 ◆. | `CipherCrack.tsx` (decodeAssistFraction memo, preFilledPositions computation, nextTypableIndex helper, charDisplay rendering) |
 | Hint Module (run-shop) | `hint-module` | `hint` | Generic hint; the cipher-crack component checks for `effect.minigame === "cipher-crack"` specifically, so only the meta upgrade `cipher-hint` provides the first-letter hint | `CipherCrack.tsx` line 151 |
-| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer (applied in MinigameRouter) | `MinigameScreen.tsx` line 443 |
-| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
-| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially shifting to an easier cipher method and shorter words | `MinigameScreen.tsx` line 438-439 |
+| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer (applied in MinigameRouter) | `MinigameScreen.tsx` (MinigameRouter) |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` (MinigameRouter) |
+| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially shifting to an easier cipher method and shorter words | `MinigameScreen.tsx` (MinigameRouter) |
 
 ## Controls
 ### Desktop
@@ -50,7 +50,7 @@ Word pool thresholds (0.35, 0.65) are independent of cipher method thresholds (0
 - Each character typed into the hidden input is dispatched as a synthetic `keydown` event and then the input is cleared.
 
 ## Base Time Limit
-**12 seconds** (`BASE_TIME_LIMITS["cipher-crack"] = 12`).
+**12 seconds** (`baseTimeLimit: 12` in `src/data/minigames/cipher-crack.ts`).
 
 At d=0: full 12s. At d=1: `12 * 0.6 = 7.2s` (rounds to 7s). After floor 15, additional 2%-per-floor decay applies. Run-shop time bonuses and meta Delay Injector stack on top.
 
@@ -78,5 +78,5 @@ Additional timing modifiers that affect the effective timer:
 - **Word pool thresholds**: Change `getWordPool()` at lines 96-100. Currently: short < 0.35, short+medium < 0.65, medium+long >= 0.65.
 - **Word lists**: Add/remove words in `src/data/words.ts` under `TECH_WORDS.short`, `.medium`, `.long`.
 - **Swap position logic**: `pickRotN()` at lines 108-117 determines where the letter-swap occurs. Currently random within word length.
-- **Base time**: Change `"cipher-crack": 12` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 280.
+- **Base time**: Change `baseTimeLimit: 12` in `src/data/minigames/cipher-crack.ts`.
 - **Hint content**: The cipher hint currently shows only the first character (line 265). To show more, index deeper into `puzzle.word`.

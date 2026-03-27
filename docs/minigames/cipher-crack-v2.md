@@ -35,10 +35,10 @@ Note: The rotation amount does NOT scale with difficulty -- it is always `Math.f
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
 | Shift Marker | `shift-marker` | `minigame-specific` | Highlights the ROT shift offset in the alphabet chart with orange coloring and a descriptive label showing the shift direction. 1 tier, price: 175 ◆. | `CipherCrackV2.tsx` (hasShiftMarker memo, AlphabetChart showShiftMarker prop) |
-| Auto-Decode | `auto-decode-v2` | `hint` | Pre-fills 25/50/75% of decoded letters at random positions. Pre-filled letters appear in green and are non-editable; the player only types the remaining positions. 3 tiers, prices: 200/400/650 ◆. | `CipherCrackV2.tsx` (autoDecodeFraction memo, preFilledPositions computation, nextTypableIndex helper, charDisplay rendering) |
-| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
-| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially using shorter word pool | `MinigameScreen.tsx` line 438-439 |
+| Auto-Decode | `auto-decode-v2` | `hint` | Pre-fills 20/40/60% of decoded letters at random positions. Pre-filled letters appear in green and are non-editable; the player only types the remaining positions. 3 tiers, prices: 200/400/650 ◆. | `CipherCrackV2.tsx` (autoDecodeFraction memo, preFilledPositions computation, nextTypableIndex helper, charDisplay rendering) |
+| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` (MinigameRouter) |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` (MinigameRouter) |
+| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, potentially using shorter word pool | `MinigameScreen.tsx` (MinigameRouter) |
 
 ## Controls
 ### Desktop
@@ -49,7 +49,7 @@ Note: The rotation amount does NOT scale with difficulty -- it is always `Math.f
 - Characters are dispatched as synthetic `keydown` events.
 
 ## Base Time Limit
-**15 seconds** (`BASE_TIME_LIMITS["cipher-crack-v2"] = 15`).
+**15 seconds** (`baseTimeLimit: 15` in `src/data/minigames/cipher-crack-v2.ts`).
 
 At d=0: full 15s. At d=1: `15 * 0.6 = 9s`. After floor 15, additional 2%-per-floor decay. The 3 extra seconds compared to V1 (12s) compensate for the alphabet chart lookup overhead.
 
@@ -78,6 +78,6 @@ Additional timing modifiers that affect the effective timer:
 - **Implement reverse+ROT**: The docstring (line 115-116) describes this feature but it is not coded. To add it: reverse the word before applying ROT when `difficulty >= 0.5`.
 - **Word pool thresholds**: Change `getWordPool()` at lines 43-47.
 - **Alphabet chart layout**: Modify `AlphabetChart` at lines 68-101. Currently uses a 13-column grid split into two rows (A-M, N-Z).
-- **Base time**: Change `"cipher-crack-v2": 15` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 287.
+- **Base time**: Change `baseTimeLimit: 15` in `src/data/minigames/cipher-crack-v2.ts`.
 - **Shift Marker tuning**: The marker highlights the first N columns in the alphabet chart where N = rotN. Modify the `isMarked` condition in `AlphabetChart` to change which cells are highlighted.
-- **Auto-Decode tuning**: Adjust tier values (0.25/0.50/0.75) in `meta-upgrades.ts` (auto-decode-v2 entry). At 75% pre-fill, most letters are given away — this is intentional as the highest tier.
+- **Auto-Decode tuning**: Adjust tier values (0.20/0.40/0.60) in `src/data/minigames/cipher-crack-v2.ts` (auto-decode-v2 entry). At 60% pre-fill, most letters are given away -- this is intentional as the highest tier.

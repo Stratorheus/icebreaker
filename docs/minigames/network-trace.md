@@ -98,7 +98,7 @@ Additional timing modifiers that affect the effective timer:
 |----------------|-------|-------|
 | Maze size range | `NetworkTrace.tsx`, `const cellSize = Math.round(5 + difficulty * 6)` | Change `5` (min) or `6` (scale). Large mazes (>11) may overflow small screens. |
 | Cell pixel sizes | `NetworkTrace.tsx`, step function at line 167 | Adjust thresholds and pixel values for different screen targets |
-| Path highlight tiers | `meta-upgrades.ts`, `network-trace-highlight` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less path visibility |
+| Path highlight tiers | `src/data/minigames/network-trace.ts`, `network-trace-highlight` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less path visibility |
 | Maze algorithm | `maze-generator.ts` | Replace recursive backtracking with a different algorithm (Prim's, Kruskal's, etc.) for different maze characteristics |
 | Start/End positions | `maze-generator.ts`, return value `start: [0,0], end: [rows-1, cols-1]` | Randomize for variety |
-| Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["network-trace"]` | Currently `20` |
+| Base time limit | `src/data/minigames/network-trace.ts` `baseTimeLimit: 20` | Currently `20` |

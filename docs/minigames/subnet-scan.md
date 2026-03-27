@@ -43,7 +43,7 @@ At low difficulty, easy-to-reason prefixes (/8, /16, /24) are used where full oc
 |----------|--------|-------------|-----------|
 | **CIDR Helper** (`subnet-cidr-helper`) | Meta upgrade | `minigame-specific` | Displays the expanded IP range (e.g., `192.168.5.0 -- 192.168.5.255`) below the CIDR notation. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
-| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
+| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier. |
 
 ## Controls
 
