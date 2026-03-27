@@ -47,7 +47,7 @@ Word length categories in `TECH_WORDS`:
 |----------|--------|-------------|-----------|
 | **Autocorrect** (`reverse-trainer`, 4 tiers) | Meta upgrade | `minigame-specific` | Shows 25/50/75/100% of words in normal order (not mirrored) in Decrypt Signal. Corrected words are marked with a green checkmark. The remaining words are still mirrored. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
-| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
+| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier. |
 
 When Autocorrect is active, a fraction of words are randomly selected to display in normal order (marked with a green check). The `expectedAnswers` for corrected words are the display words themselves (no reversal needed). An "AUTOCORRECT ACTIVE" label shows the percentage.
 
@@ -105,5 +105,5 @@ Additional timing modifiers that affect the effective timer:
 | Word count range | Lines 74-76: `2 + d*3` (min), `4 + d*4` (max) | Adjust multipliers for more/fewer words |
 | Word pool composition | `getWordPool()` lines 16-26 | Change difficulty thresholds or pool mixing |
 | Word list | `src/data/words.ts` | Add/remove tech words in each length category |
-| Base time limit | `MinigameScreen.tsx` `BASE_TIME_LIMITS["type-backward"]: 18` | Increase for more time |
-| Autocorrect fractions | `meta-upgrades.ts` `reverse-trainer` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less correction |
+| Base time limit | `src/data/minigames/type-backward.ts` `baseTimeLimit: 18` | Increase for more time |
+| Autocorrect fractions | `src/data/minigames/type-backward.ts` `reverse-trainer` effects: 0.25/0.50/0.75/1.0 | Change tier values for more/less correction |

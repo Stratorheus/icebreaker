@@ -253,6 +253,24 @@ Choosing the effect type for a game-specific upgrade:
 | Widens a timing window (SlashTiming pattern) | `"window-extend"` |
 | Shows a hint or highlight | `"hint"` |
 | Reveals N items ahead in a sequence | `"peek-ahead"` |
+| Shows a preview value (e.g. answer range) | `"preview"` |
+| Provides an extra contextual hint | `"extra-hint"` |
+| Labels wires/processes with colors | `"wire-color-labels"` |
+| Shows next bracket to type | `"bracket-flash"` |
+
+### Shared layout components
+
+Use these in your component instead of building from scratch:
+
+| Component | Import | Purpose |
+|---|---|---|
+| `MinigameShell` | `@/components/layout/MinigameShell` | Wraps timer + content + controls in consistent layout |
+| `ArrowKeyHints` | `@/components/layout/ArrowKeyHints` | Desktop-only arrow key hint icons (supports `vertical` prop) |
+| `GameCell` | `@/components/layout/GameCell` | Grid cell with cursor/hover states. Use `CURSOR_CLASSES`, `HOVER_CLASSES`, `cellStyles()` |
+| `CipherDisplay` | `@/components/layout/CipherDisplay` | Letter-by-letter cipher display for typing games |
+| `HiddenMobileInput` | `@/components/layout/HiddenMobileInput` | Hidden input for triggering system keyboard on mobile |
+| `ProgressDots` | `@/components/layout/ProgressDots` | Dot progress indicator (e.g., "3/5 solved") |
+| `TimerBar` | `@/components/layout/TimerBar` | Visual timer bar (takes `progress` 0-1) |
 
 ---
 
@@ -323,18 +341,23 @@ Open `src/data/achievements.ts` and add entries to `ACHIEVEMENT_POOL`.
   icon: "target",
 },
 
-// Cumulative achievement: 25 total wins (count >= 15 uses lifetime total, not streak)
+// Cumulative achievement: 25 total wins (uses lifetime total, not streak)
 {
   id: "your-minigame-veteran",
   name: "Your Protocol Veteran",
   description: "Win Your Protocol 25 times total.",
-  condition: { type: "minigame-streak", minigame: "your-minigame-id", count: 25 },
+  condition: { type: "minigame-total-wins", minigame: "your-minigame-id", count: 25 },
   reward: 50,
   icon: "award",
 },
 ```
 
-Achievement checking is automatic — `awardNewAchievements()` runs after every minigame result. Icon names are Lucide kebab-case (browse at https://lucide.dev/icons).
+**Achievement condition types for minigames:**
+- `minigame-speed` -- won a specific minigame under a time threshold
+- `minigame-streak` -- consecutive wins of a specific minigame (resets on fail)
+- `minigame-total-wins` -- lifetime cumulative wins of a specific minigame
+
+Achievement checking is automatic -- `evaluateAndAwardAchievements()` runs after every minigame result and shop purchase. Icon names are Lucide kebab-case (browse at https://lucide.dev/icons).
 
 ---
 
@@ -357,6 +380,40 @@ Then manually test in Training mode:
 3. Play at TRIVIAL, NORMAL, and INSANE difficulty
 4. Verify win and loss both resolve cleanly (no stuck state, no double-resolve errors)
 5. On touch simulation: verify tap controls work
+
+---
+
+## Step 6 (Optional): Add Documentation
+
+Create `docs/minigames/your-minigame-id.md` following the pattern of existing minigame docs. Include:
+- Player Guide (how to play)
+- Mechanic (puzzle generation, resolution logic)
+- Difficulty Scaling table
+- Power-Up Support table
+- Controls (desktop + mobile)
+- Base Time Limit (reference `src/data/minigames/your-minigame-id.ts` for the `baseTimeLimit`)
+- Code Reference (key functions, state variables)
+- Tuning Guide
+
+---
+
+## Step 7 (Optional): Add E2E Tests
+
+Create `e2e/minigames/your-minigame-id.spec.ts`. Use `data-testid` attributes for element selection and `window.__GAME_STORE__` for state manipulation:
+
+```ts
+import { test, expect } from "@playwright/test";
+
+test("your-minigame-id basic flow", async ({ page }) => {
+  await page.goto("/");
+  // Set up state for testing
+  await page.evaluate(() => {
+    const store = (window as any).__GAME_STORE__;
+    store.setState({ /* ... */ });
+  });
+  // Test gameplay...
+});
+```
 
 ---
 

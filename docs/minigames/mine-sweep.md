@@ -95,5 +95,5 @@ Additional timing modifiers that affect the effective timer:
 | Mine count range | `generateGrid`, `const rawMines = Math.round(3 + difficulty * 7)` | Change `3` (min) or `7` (scale) |
 | Mine cap percentage | `generateGrid`, `Math.floor(totalCells * 0.4)` | Raise/lower 0.4 to adjust max mine density |
 | Preview duration range | `generateGrid`, `(3 - difficulty * 2) * 1000` | Change `3` (max seconds) or `2` (reduction scale) |
-| Memory Echo percentages | `meta-upgrades.ts`, `mine-echo` effects | Currently `[0.20, 0.30, 0.40, 0.50, 0.60]` |
-| Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["mine-sweep"]` | Currently `15` |
+| Memory Echo percentages | `src/data/minigames/mine-sweep.ts`, `mine-echo` effects | Currently `[0.20, 0.30, 0.40, 0.50, 0.60]` |
+| Base time limit | `src/data/minigames/mine-sweep.ts` `baseTimeLimit: 15` | Currently `15` |

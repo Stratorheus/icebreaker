@@ -27,10 +27,10 @@ Key functions:
 |---|---|---|---|---|
 | Calculator | `checksum-calculator` | `minigame-specific` | Shows an intermediate result hint next to the expression: the sign (if negative) plus the first digit of the answer, followed by `...`. E.g. for answer `42` shows `= 4...` | `ChecksumVerify.tsx` line 97-101 (`hasCalculator` memo), line 300-304 (render) |
 | Error Margin | `error-margin` | `hint` | Answers within ±1/±2/±3/±4/±5 of the correct value are accepted. Tolerance is shown in UI as "±N tolerance active". 5 tiers, prices: 100/200/350/500/700 ◆. | `ChecksumVerify.tsx` (`errorTolerance` memo, `withinTolerance` check in `handleConfirm`, UI indicator) |
-| Range Hint | `range-hint` | `preview` | Shows the approximate range of the answer: "Answer is between X and Y". Range is ±50%/±30%/±15% of correct answer. 3 tiers, prices: 150/300/500 ◆. | `ChecksumVerify.tsx` (`rangeHintPct` memo, range display above equals sign) |
-| Time Freeze / Clock Boost / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` line 443-444 |
-| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies total time by `1.03^tier` | `MinigameScreen.tsx` line 442-444 |
-| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Multiplies difficulty by `0.95^tier`, reducing expression complexity and count | `MinigameScreen.tsx` line 438-439 |
+| Range Hint | `range-hint` | `preview` | Shows the approximate range of the answer: "Answer is between X and Y". Range is ±10/±5/±3 of the correct answer. 3 tiers, prices: 150/300/500 ◆. | `ChecksumVerify.tsx` (`rangeHintPct` memo, range display above equals sign) |
+| Time Freeze / Clock Boost / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` (MinigameRouter) |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies total time by `1.03^tier` | `MinigameScreen.tsx` (MinigameRouter) |
+| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier, reducing expression complexity and count | `MinigameScreen.tsx` (MinigameRouter) |
 
 ## Controls
 ### Desktop
@@ -45,7 +45,7 @@ Key functions:
 - Tap "CONFIRM" button to submit (dispatches Enter keydown)
 
 ## Base Time Limit
-**15 seconds** (`BASE_TIME_LIMITS["checksum-verify"] = 15`).
+**15 seconds** (`baseTimeLimit: 15` in `src/data/minigames/checksum-verify.ts`).
 
 Scaled by difficulty: `baseTime * (1 - difficulty * 0.4)`. At d=0 the player gets the full 15s; at d=1 they get 9s. After floor 15, an additional floor-based decay of 2% per floor applies (down to 40% of the difficulty-adjusted time).
 
@@ -74,7 +74,7 @@ Additional modifiers:
 ## Tuning Guide
 - **Expression complexity**: Modify the difficulty thresholds in `generateExpression()` (lines 16, 28, 37) and the operand ranges within each band.
 - **Expression count**: Change the return values in `getExpressionCount()` (lines 60-65). Current: 2/3/4/5.
-- **Base time**: Change `"checksum-verify": 15` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 284.
+- **Base time**: Change `baseTimeLimit: 15` in `src/data/minigames/checksum-verify.ts`.
 - **Flash duration**: Correct flash is 300ms (line 163), wrong flash is 400ms (line 149). Adjust the `setTimeout` delays.
 - **Calculator hint detail**: Currently shows first digit + `...` (line 302). Could show more digits or the full answer by editing the template literal.
 - **Difficulty-to-time scaling**: Governed by `getTimeLimit()` in `src/data/balancing.ts` line 60-66. The `0.4` multiplier controls how much time shrinks at max difficulty.

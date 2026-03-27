@@ -110,4 +110,4 @@ Additional timing modifiers that affect the effective timer:
 | Flash feedback duration | `flashPanel`, `setTimeout(..., 150)` | Increase for more visible press feedback |
 | Initial display delay | Display effect, `initialDelay = 400` | Shorter for faster starts, longer for breathing room |
 | Panel colors | `PANELS` array | Adjust `color`, `dimColor`, `glowColor` per panel |
-| Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["signal-echo"]` | Currently `20` |
+| Base time limit | `src/data/minigames/signal-echo.ts` `baseTimeLimit: 20` | Currently `20` |

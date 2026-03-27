@@ -44,7 +44,7 @@ A grid of network port numbers is displayed. During the display phase, "open" po
 | **Deep Scan** (`port-scan-deep`) | Meta upgrade | `minigame-specific` | Open ports flash **twice** instead of once (`flashRepeat = 2`). A 200 ms gap separates the two full sequences. |
 | **Port Logger** (`port-logger`) | Meta upgrade | `hint` | During the select phase, shows a sorted text list of all open port numbers below the phase indicator (e.g. "Open: 22, 80, 443, 3306"). 1 tier, price: 200 ◆. |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
-| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
+| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier. |
 
 ## Controls
 
@@ -101,4 +101,4 @@ Additional timing modifiers that affect the effective timer:
 | Flash gap timing | Display effect, line 161: `max(150, flashMs * 0.4)` | Minimum 150 ms prevents overlap |
 | Port pool | `PORT_POOL` constant at top of file | Add/remove port numbers |
 | Win/fail delay | `handleToggle()`: `setTimeout(() => ..., 400)` | Visual feedback duration before resolution |
-| Deep Scan repeat count | `meta-upgrades.ts` `port-scan-deep` entry, `value: 2` | Change to flash more times |
+| Deep Scan repeat count | `src/data/minigames/port-scan.ts` `port-scan-deep` entry, `value: 2` | Change to flash more times |

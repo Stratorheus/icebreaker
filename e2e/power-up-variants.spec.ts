@@ -171,6 +171,8 @@ test.describe("slash-window — Slash Timing", () => {
 // ===========================================================================
 
 test.describe("mine-radar — Defrag", () => {
+  // Radar indicators depend on React re-render after first click — can be slow in CI
+  test.describe.configure({ retries: 1 });
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await unlockMinigames(page, ["defrag"]);

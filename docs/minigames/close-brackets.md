@@ -42,9 +42,9 @@ Note: The bracket type pool does NOT change with difficulty -- all 6 types are a
 |---|---|---|---|
 | Bracket Reducer (meta, 3 tiers) | `bracket-reducer` | `minigame-specific` | Tier 1: removes `\`. Tier 2: +`|`. Tier 3: +`[`. Excluded closers are hidden from controls. |
 | Bracket Mirror (meta) | `bracket-mirror` | `bracket-flash` | Shows the next expected closer in a highlighted box below the sequence. |
-| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` line 443 |
-| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` line 444 |
-| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in shorter bracket sequences | `MinigameScreen.tsx` line 438-439 |
+| Time bonuses (run-shop) | various | `time-bonus` | Adds seconds to timer | `MinigameScreen.tsx` (MinigameRouter) |
+| Delay Injector (meta) | `delay-injector` | `global-time-bonus` | Multiplies time by `1.03^tier` | `MinigameScreen.tsx` (MinigameRouter) |
+| Difficulty Reducer (meta) | `difficulty-reducer` | `difficulty-reduction` | Reduces effective difficulty, resulting in shorter bracket sequences | `MinigameScreen.tsx` (MinigameRouter) |
 
 ## Controls
 ### Desktop
@@ -56,7 +56,7 @@ Note: The bracket type pool does NOT change with difficulty -- all 6 types are a
 - Tapping a button dispatches the corresponding closer key.
 
 ## Base Time Limit
-**8 seconds** (`BASE_TIME_LIMITS["close-brackets"] = 8`).
+**8 seconds** (`baseTimeLimit: 8` in `src/data/minigames/close-brackets.ts`).
 
 At d=0: full 8s. At d=1: `8 * 0.6 = 4.8s` (rounds to 5s). After floor 15, additional 2%-per-floor decay applies. The short base time reflects the simple input mechanic -- the challenge is speed and accuracy under pressure.
 
@@ -86,5 +86,5 @@ Additional timing modifiers that affect the effective timer:
 - **Bracket count range**: Modify `bracketMin` and `bracketMax` formulas at lines 68-69. Currently `2 + d*4` to `4 + d*4`.
 - **Bracket types**: Add or remove entries in `BRACKET_PAIRS` (line 9) and `CLOSER_KEYS` (line 21). Also update `OPENERS` (derived automatically from `BRACKET_PAIRS` keys).
 - **Bracket Reducer tiers**: Change which types are filtered per tier in the `availableOpeners` memo. Currently: T1 removes `\`, T2 removes `|`, T3 removes `[`.
-- **Base time**: Change `"close-brackets": 8` in `BASE_TIME_LIMITS` at `src/components/screens/MinigameScreen.tsx` line 275.
+- **Base time**: Change `baseTimeLimit: 8` in `src/data/minigames/close-brackets.ts`.
 - **Touch controls**: The `TouchControls` component with `type="brackets"` is rendered at line 261. Its layout is defined in `src/components/layout/TouchControls.tsx`.

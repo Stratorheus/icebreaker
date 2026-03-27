@@ -86,6 +86,6 @@ Additional timing modifiers that affect the effective timer:
 | Grid size range | `generatePuzzle`, line `const cols = Math.round(3 + difficulty * 3)` | Change `3` (min) or `3` (scale) to adjust grid bounds |
 | Sequence length | `generatePuzzle`, line `const seqLen = Math.round(2 + difficulty * 3)` | Change `2` (min) or `3` (scale) |
 | Similar distractor threshold | `generatePuzzle`, condition `difficulty > 0.4` and probability `difficulty * 0.6` | Lower the threshold to introduce distractors earlier |
-| Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["find-symbol"]` | Currently `12` |
+| Base time limit | `src/data/minigames/find-symbol.ts` `baseTimeLimit: 12` | Currently `12` |
 | Symbol Scanner hint | `FindSymbol.tsx`, `isTargetHinted` conditional styling | Adjust brightness values for stronger/weaker hint |
 | Hex alphabet | `HEX_CHARS` constant | Swap to a different character set for themed variants |

@@ -41,7 +41,7 @@ Where `windowExtendBonus` is the sum of all `window-extend` effect values from a
 |----------|--------|-------------|-----------|
 | **Slash Window** (`slash-window`) | Meta upgrade | `window-extend` | Attack window widened by 25% (`value: 0.25`). |
 | **Delay Injector** (`delay-injector`) | Meta upgrade (global) | `global-time-bonus` | Time limit multiplied by `1.03^tier`. |
-| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Effective difficulty multiplied by `0.95^tier`. |
+| **Difficulty Reducer** (`difficulty-reducer`) | Meta upgrade (global) | `difficulty-reduction` | Pushes max difficulty 2 floors further per tier. |
 
 Only the meta Slash Window remains: `effectiveAttackWindow = base * (1 + 0.25) = base * 1.25`.
 
@@ -92,5 +92,5 @@ Additional timing modifiers that affect the effective timer:
 | Attack window range | Lines 37, 39: `800 - d * 500` and `* (1 + bonus)` | Decrease 800 or increase 500 for harder base |
 | Prepare duration range | Line 40: `500 - d * 300` | Shorter prepare = less warning |
 | Guard duration range | Lines 41-42 | Narrower range = more predictable timing |
-| Meta window-extend value | `meta-upgrades.ts` `slash-window`, `value: 0.25` | Percentage added to attack window |
+| Meta window-extend value | `src/data/minigames/slash-timing.ts` `slash-window`, `value: 0.25` | Percentage added to attack window |
 | Phase visuals | `phaseConfig` object (lines 130-161) | Colors, labels, icons, animations per phase |

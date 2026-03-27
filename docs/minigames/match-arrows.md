@@ -81,6 +81,6 @@ Additional timing modifiers that affect the effective timer:
 |----------------|-------|-------|
 | Row length range | Lines `rowMin = Math.round(3 + difficulty * 4)` and `rowMax = Math.round(5 + difficulty * 5)` | Adjust base and scale factors |
 | No-triple-repeat rule | Post-processing loop at line 74 | Remove or loosen for harder sequences |
-| Peek-ahead values | `meta-upgrades.ts` (`arrow-preview` effects: 0.20/0.30/0.40/0.50/0.60) | Increase values for more generous previews |
-| Base time limit | `MinigameScreen.tsx`, `BASE_TIME_LIMITS["match-arrows"]` | Currently `8` |
+| Peek-ahead values | `src/data/minigames/match-arrows.ts` (`arrow-preview` effects: 0.20/0.30/0.40/0.50/0.60) | Increase values for more generous previews |
+| Base time limit | `src/data/minigames/match-arrows.ts` `baseTimeLimit: 8` | Currently `8` |
 | Direction hint visibility | `hasDirectionHint` check | Always show by removing the power-up gate for an easier default |
