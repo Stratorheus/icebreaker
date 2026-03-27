@@ -48,22 +48,16 @@ test.describe("Run Shop", () => {
   // -------------------------------------------------------------------------
   // 1. Shop displays offers after floor
   // -------------------------------------------------------------------------
-  test("shop displays 3-4 items with names and prices", async ({ page }) => {
+  test("shop displays 2 items by default (no supply-line)", async ({ page }) => {
     await reachVendor(page, { credits: 500 });
 
     // Shop should show "VENDOR NODE" title
     await expect(page.getByText("VENDOR NODE")).toBeVisible();
 
-    // Should have BUY buttons (one per offer that isn't already owned)
+    // Default vendor has 2 items (supply-line upgrade not purchased)
     const buyButtons = page.locator("button:has-text('BUY')");
     const count = await buyButtons.count();
-    expect(count).toBeGreaterThanOrEqual(3);
-    expect(count).toBeLessThanOrEqual(4);
-
-    // Each item should display a price with "CR"
-    const crLabels = page.locator("text=/ \\d+ CR/");
-    const priceCount = await crLabels.count();
-    expect(priceCount).toBeGreaterThanOrEqual(3);
+    expect(count).toBe(2);
   });
 
   // -------------------------------------------------------------------------

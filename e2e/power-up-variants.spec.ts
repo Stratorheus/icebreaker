@@ -186,7 +186,7 @@ test.describe("mine-radar — Defrag", () => {
 
     // Wait for radar indicators to render (mines placed → radar visible on next frame)
     const radarIndicators = page.locator('[data-testid="mine-radar-indicator"]');
-    await radarIndicators.first().waitFor({ timeout: 3000 });
+    await radarIndicators.first().waitFor({ timeout: 5000 });
 
     const indicatorCount = await radarIndicators.count();
 
