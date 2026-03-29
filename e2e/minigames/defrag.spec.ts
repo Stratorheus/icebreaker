@@ -52,7 +52,10 @@ test.describe("Defrag", () => {
   });
 
   test("fail — click a mine cell", async ({ page }) => {
-    await openTraining(page, "Defrag", "TRIVIAL");
+    // Use HARD difficulty so the board has enough mines that first-click
+    // flood fill won't clear all safe cells and auto-win the game.
+    // TRIVIAL (4×4, 1 mine) nearly always auto-completes on first click.
+    await openTraining(page, "Defrag", "HARD");
 
     // First click is always safe (mines placed after)
     const firstCell = page.locator('[data-testid="cell"]').first();
