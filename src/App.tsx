@@ -39,9 +39,6 @@ export default function App() {
         return <Stats />;
       case "milestone":
         return <MilestoneOverlay />;
-      case "paused":
-        // Pause menu removed — quit/codex/stats accessible from vendor node only
-        return <MainMenu />;
       default:
         return <MainMenu />;
     }
