@@ -460,7 +460,7 @@ describe("getEffectiveCredits", () => {
     expect(withTier).toBe(Math.round(base * 1.03));
   });
 
-  it("speedTaxTier adds 5% flat per tier before multipliers", () => {
+  it("speedTaxTier adds flat bonus per tier (15%/25%/40%) before multipliers", () => {
     const withoutTax = getEffectiveCredits(5000, 0.5, 0, 0, 0);
     const withTax = getEffectiveCredits(5000, 0.5, 0, 1, 0);
     expect(withTax).toBeGreaterThan(withoutTax);

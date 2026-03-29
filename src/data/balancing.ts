@@ -196,7 +196,9 @@ export function getEffectiveCredits(
   floor: number = 1,
 ): number {
   const base = getCredits(timeMs, difficulty, floor);
-  const speedTaxFlat = speedTaxTier > 0 ? Math.round(base * speedTaxTier * 0.05) : 0;
+  // Values must match the Speed Tax upgrade effects in stat.ts: [0.15, 0.25, 0.40]
+  const speedTaxPct = [0, 0.15, 0.25, 0.40][Math.min(speedTaxTier, 3)] ?? 0;
+  const speedTaxFlat = speedTaxTier > 0 ? Math.round(base * speedTaxPct) : 0;
   const withFlat = base + speedTaxFlat;
   const creditMultiplier = Math.pow(1.03, creditTier);
   return Math.round(withFlat * creditMultiplier * (1 + unlockBonus));
