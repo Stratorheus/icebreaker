@@ -18,6 +18,7 @@ export function useKeyboard(keyMap: Record<string, () => void>): void {
     const handler = (event: KeyboardEvent) => {
       const action = keyMapRef.current[event.key];
       if (action) {
+        event.preventDefault();
         action();
       }
     };
@@ -42,6 +43,7 @@ export function useKeyPress(key: string, callback: () => void): void {
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (event.key === key) {
+        event.preventDefault();
         callbackRef.current();
       }
     };
