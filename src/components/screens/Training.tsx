@@ -11,13 +11,8 @@ import { ResultFlash } from "@/components/ui/ResultFlash";
 import { CountdownDisplay } from "@/components/ui/CountdownDisplay";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { CLI_PROMPT } from "@/lib/constants";
-import { DIFFICULTY_OPTIONS } from "@/data/balancing";
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const TRAINING_TIME_LIMIT = 30; // generous 30s for all trial rounds
+import { DIFFICULTY_OPTIONS, getTimeLimit } from "@/data/balancing";
+import { BASE_TIME_LIMITS } from "@/data/minigames/registry";
 
 // ---------------------------------------------------------------------------
 // Per-minigame training settings
@@ -332,6 +327,17 @@ function PickerPhase({
 }) {
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
+      {/* Fixed back button at bottom center */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
+        <button
+          type="button"
+          onClick={onBack}
+          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
+        >
+          {"[ BACK TO MENU ]"}
+        </button>
+      </div>
+
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
         <ScreenHeader
@@ -374,15 +380,6 @@ function PickerPhase({
         })}
       </div>
 
-      {/* Back button */}
-      <CyberButton
-        variant="muted"
-        prompt
-        onClick={onBack}
-        className="w-auto py-2 px-6"
-      >
-        BACK TO MENU
-      </CyberButton>
     </div>
   );
 }
@@ -732,10 +729,13 @@ function ActiveRound({
     [type, settings],
   );
 
+  // Use real time limit formula: base time scaled by difficulty (no floor/power-up scaling)
+  const timeLimit = getTimeLimit(BASE_TIME_LIMITS[type], settings.difficulty);
+
   return (
     <Component
       difficulty={settings.difficulty}
-      timeLimit={TRAINING_TIME_LIMIT}
+      timeLimit={timeLimit}
       activePowerUps={activePowerUps}
       onComplete={onComplete}
     />
