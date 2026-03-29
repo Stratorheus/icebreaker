@@ -86,7 +86,6 @@ export interface RunSlice {
   skipRemainingFloor: (rewardFraction: number) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
   setTrainingOrigin: (origin: TrainingOrigin) => void;
-  endRun: () => void;
 }
 
 type FullStore = RunSlice & MetaSlice & ShopSlice;
@@ -493,6 +492,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   takeDamage: (amount: number) => {
     const state = get();
+    if (amount <= 0) return;
     set({
       hp: Math.max(0, state.hp - amount),
       floorDamageTaken: true,
@@ -506,7 +506,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   },
 
   addCredits: (amount: number) => {
-    set((state) => ({ credits: state.credits + amount }));
+    set((state) => ({ credits: Math.max(0, state.credits + amount) }));
   },
 
   addPowerUp: (item: PowerUpInstance) => {
@@ -660,6 +660,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
 
   pauseRun: () => {
     const state = get();
+    if (state.status !== "playing" && state.status !== "shop") return;
     set({ previousStatus: state.status, status: "paused" });
   },
 
@@ -687,7 +688,4 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     set({ quitVoluntarily: true, status: "dead" });
   },
 
-  endRun: () => {
-    set({ status: "dead" });
-  },
 });
