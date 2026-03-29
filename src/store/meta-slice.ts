@@ -24,7 +24,7 @@ export interface MetaSlice {
   addData: (amount: number) => void;
   spendData: (amount: number) => boolean;
   unlockMinigame: (type: MinigameType) => void;
-  purchaseUpgrade: (id: string) => void;
+  purchaseUpgrade: (id: string, maxTier?: number) => void;
   unlockAchievement: (id: string) => void;
   revealAchievement: (id: string) => void;
   markBriefingSeen: (type: MinigameType) => void;
@@ -106,9 +106,10 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
     set({ unlockedMinigames: [...state.unlockedMinigames, type] });
   },
 
-  purchaseUpgrade: (id: string) => {
+  purchaseUpgrade: (id: string, maxTier?: number) => {
     const state = get();
     const currentTier = state.purchasedUpgrades[id] ?? 0;
+    if (maxTier !== undefined && currentTier >= maxTier) return;
     set({
       purchasedUpgrades: {
         ...state.purchasedUpgrades,
