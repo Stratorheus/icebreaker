@@ -147,6 +147,10 @@ export function RunShop() {
   const handleReroll = () => {
     if (!canReroll) return;
     addCredits(-rerollPrice);
+    // Track reroll cost so consecutiveFloorsNoShop counter works correctly
+    useGameStore.setState((s) => ({
+      creditsSpentThisShop: s.creditsSpentThisShop + rerollPrice,
+    }));
     generateRunShop(floor);
   };
 
