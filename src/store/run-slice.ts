@@ -384,10 +384,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const consecutiveFloorsNoDamage = isLastMinigame
       ? (state.floorDamageTaken ? 0 : state.consecutiveFloorsNoDamage + 1)
       : state.consecutiveFloorsNoDamage;
-    const consecutiveFloorsNoShop = isLastMinigame
-      ? (state.creditsSpentThisShop > 0 ? 0 : state.consecutiveFloorsNoShop + 1)
-      : state.consecutiveFloorsNoShop;
-
     set({
       hp: newHp,
       inventory: cleanedInventory,
@@ -410,7 +406,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       currentWinStreak: state.currentWinStreak + 1,
       floorCompletionTimestamps,
       consecutiveFloorsNoDamage,
-      consecutiveFloorsNoShop,
     });
   },
 
@@ -566,8 +561,12 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Time Siphon resets at floor advance (floor-scoped).
       // Cascade Clock does NOT reset here — it persists across floors.
       timeSiphonBonus: 0,
-      // Floor-completion counters were already updated in completeMinigame/skipRemainingFloor.
-      // Reset per-floor shop tracking for the new floor.
+      // Update consecutiveFloorsNoShop BEFORE resetting creditsSpentThisShop.
+      // This check belongs here (not in completeMinigame) because shop spending
+      // only accumulates after the player visits the vendor screen.
+      consecutiveFloorsNoShop: state.creditsSpentThisShop > 0
+        ? 0
+        : state.consecutiveFloorsNoShop + 1,
       creditsSpentThisShop: 0,
       lastDamageTaken: 0,
     });
@@ -632,10 +631,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const consecutiveFloorsNoDamage = state.floorDamageTaken
       ? 0
       : state.consecutiveFloorsNoDamage + 1;
-    const consecutiveFloorsNoShop = state.creditsSpentThisShop > 0
-      ? 0
-      : state.consecutiveFloorsNoShop + 1;
-
     set({
       hp: newHp,
       credits: state.credits + totalCredits,
@@ -653,7 +648,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       timeSiphonBonus: 0,
       floorCompletionTimestamps,
       consecutiveFloorsNoDamage,
-      consecutiveFloorsNoShop,
+      currentWinStreak: state.currentWinStreak + remaining,
       creditsSpentThisShop: 0,
     });
   },
