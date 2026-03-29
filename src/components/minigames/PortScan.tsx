@@ -229,10 +229,11 @@ export function PortScan(props: MinigameProps) {
 
       if (newCorrectCount >= puzzle.openIndices.size) {
         resolvedRef.current = true;
+        timer.pause(); // prevent handleExpire from firing during the flash delay
         setTimeout(() => complete(true), 400);
       }
     },
-    [isActive, puzzle, fail, complete],
+    [isActive, puzzle, fail, complete, timer],
   );
 
   // -- Keyboard navigation --
