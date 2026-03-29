@@ -120,7 +120,7 @@ export function useGameTimer(
     };
   }, [cancelRaf]);
 
-  const progress = totalMs > 0 ? timeLeft / totalMs : 0;
+  const progress = totalMs > 0 ? Math.min(1, timeLeft / totalMs) : 0;
 
   return { timeLeft, progress, isRunning, start, pause, addTime };
 }
