@@ -5,7 +5,6 @@ import type { PlayerStats } from "@/types/game";
 import type { Achievement, AchievementCategory } from "@/types/shop";
 import { Hexagon } from "lucide-react";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
-import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------

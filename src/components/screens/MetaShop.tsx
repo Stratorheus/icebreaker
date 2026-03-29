@@ -5,7 +5,7 @@ import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import { cn } from "@/lib/utils";
 import type { MetaUpgrade } from "@/types/shop";
 import { Hexagon } from "lucide-react";
-import { CyberButton } from "@/components/ui/CyberButton";
+
 import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------

@@ -5,7 +5,6 @@ import { ALL_MINIGAMES, UNLOCKABLE_MINIGAMES, getMinigameBriefing, getMinigameDi
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
-import { CyberButton } from "@/components/ui/CyberButton";
 
 // ---------------------------------------------------------------------------
 // Sub-components
