@@ -524,7 +524,7 @@ function formatEffect(effect: { type: string; value: number; minigame?: string }
     case "global-time-bonus":
       return `+3% time limit (multiplicative)`;
     case "difficulty-reduction":
-      return `-5% difficulty (multiplicative)`;
+      return "pushes max difficulty 2 floors further";
     // (start-random-powerup removed — quick-boot and dual-core were removed)
     case "start-hp":
       return `+${effect.value} bonus starting HP`;
@@ -557,6 +557,8 @@ function formatEffect(effect: { type: string; value: number; minigame?: string }
       return "highlights next wire";
     case "extra-hint":
       return "extra hint letter";
+    case "shop-slots":
+      return `${effect.value} vendor slots`;
     default:
       return effect.type.replace(/-/g, " ");
   }
