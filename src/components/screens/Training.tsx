@@ -232,6 +232,7 @@ export function Training() {
           settings={currentSettings}
           onSettingsChange={handleSettingsChange}
           onBegin={() => {
+            setCountdownValue(3);
             setPhase("countdown");
           }}
           onBack={handleBriefingBack}
