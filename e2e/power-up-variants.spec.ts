@@ -180,7 +180,8 @@ test.describe("mine-radar — Defrag", () => {
 
   test("tier 4 shows radar indicators with mine counts after first click", async ({ page }) => {
     await goToBriefing(page, "Defrag", { "mine-radar": 4 }, ["defrag"]);
-    await beginWithUpgrade(page, ["mine-radar"]);
+    // Use HARD difficulty so flood fill doesn't auto-win on first click (TRIVIAL = 4x4 with 1 mine)
+    await beginWithUpgrade(page, ["mine-radar"], "HARD");
 
     // Click the first cell to place mines (defrag places mines after first click)
     const cells = page.locator('[data-testid="cell"]');

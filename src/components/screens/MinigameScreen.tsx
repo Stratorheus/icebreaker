@@ -39,6 +39,10 @@ export function MinigameScreen() {
   const [lastEarnedCredits, setLastEarnedCredits] = useState(0);
   const [lastHadSpeedBonus, setLastHadSpeedBonus] = useState(false);
 
+  // Clear pending result-flash timeouts on unmount to prevent orphaned mutations
+  const resultTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (resultTimeoutRef.current) clearTimeout(resultTimeoutRef.current); }, []);
+
   // Track the floorMinigames array reference to detect re-rolls (fail
   // replaces the entry at the same index, so the array ref changes).
   const prevIndexRef = useRef(currentMinigameIndex);
@@ -93,7 +97,7 @@ export function MinigameScreen() {
           // Fix 4: Show result flash first, then skip after 1 s (same pattern as single-skip)
           setLastResult(true);
           setPhase("result");
-          setTimeout(() => {
+          resultTimeoutRef.current = setTimeout(() => {
             skipRemainingFloor(skipResult.rewardFraction);
             evaluateAndAwardAchievements();
           }, 1000);
@@ -114,7 +118,7 @@ export function MinigameScreen() {
         setLastHadSpeedBonus(false);
         setLastResult(true);
         setPhase("result");
-        setTimeout(() => {
+        resultTimeoutRef.current = setTimeout(() => {
           completeMinigame({
             success: true,
             timeMs: Infinity, // skips don't get speed bonus
@@ -163,7 +167,7 @@ export function MinigameScreen() {
       setLastEarnedCredits(earnedCredits);
 
       // After 1-second result flash, dispatch to store
-      setTimeout(() => {
+      resultTimeoutRef.current = setTimeout(() => {
         // Record minigame result for streak/total tracking first
         recordMinigameResult(result.minigame, result.success);
 

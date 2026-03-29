@@ -84,7 +84,10 @@ function generatePuzzle(difficulty: number): GeneratedPuzzle {
         continue;
       }
     }
-    cells.push(randomHexCode());
+    // Ensure filler cells don't accidentally match a target hex code
+    let filler: string;
+    do { filler = randomHexCode(); } while (targets.includes(filler));
+    cells.push(filler);
   }
 
   shuffle(cells);

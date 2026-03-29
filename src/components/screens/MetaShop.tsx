@@ -195,7 +195,7 @@ export function MetaShop() {
     const success = spendData(price);
     if (!success) return;
 
-    purchaseUpgrade(upgrade.id);
+    purchaseUpgrade(upgrade.id, upgrade.maxTier);
 
     // If this is a minigame unlock, unlock and go to training
     if (upgrade.category === "minigame-unlock") {
