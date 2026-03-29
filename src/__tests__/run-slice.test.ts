@@ -585,35 +585,40 @@ describe("consecutiveFloorsNoShop", () => {
     expect(store.getState().consecutiveFloorsNoShop).toBe(0);
   });
 
-  it("increments on completeMinigame (last) when no credits spent", () => {
+  it("increments on advanceFloor when no credits spent in shop", () => {
     const store = createTestStore();
     store.getState().startRun();
 
-    // Complete floor with no shop spending
+    // Complete floor 1 → go to shop → don't buy → advance
     store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, creditsSpentThisShop: 0 });
     store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    // Counter stays 0 after completeMinigame (shop hasn't been visited yet)
+    expect(store.getState().consecutiveFloorsNoShop).toBe(0);
+    // Player visited shop but didn't buy → advance
+    store.getState().advanceFloor();
     expect(store.getState().consecutiveFloorsNoShop).toBe(1);
 
-    // Advance and complete another floor without spending
-    store.getState().advanceFloor();
+    // Complete floor 2 → shop → don't buy → advance
     store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, creditsSpentThisShop: 0 });
     store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    store.getState().advanceFloor();
     expect(store.getState().consecutiveFloorsNoShop).toBe(2);
   });
 
-  it("resets to 0 on completeMinigame (last) when credits were spent", () => {
+  it("resets to 0 on advanceFloor when credits were spent in shop", () => {
     const store = createTestStore();
     store.getState().startRun();
 
-    // Complete floor 1 without spending
+    // Complete floor 1 → don't buy → advance → counter = 1
     store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, floor: 1, creditsSpentThisShop: 0 });
     store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    store.getState().advanceFloor();
     expect(store.getState().consecutiveFloorsNoShop).toBe(1);
 
-    // Advance, simulate buying, complete floor 2
-    store.getState().advanceFloor();
+    // Complete floor 2 → simulate buying in shop → advance → counter resets
     store.setState({ floorMinigames: ["slash-timing"], currentMinigameIndex: 0, creditsSpentThisShop: 100 });
     store.getState().completeMinigame({ success: true, timeMs: 5000, minigame: "slash-timing" });
+    store.getState().advanceFloor();
     expect(store.getState().consecutiveFloorsNoShop).toBe(0);
   });
 

@@ -45,17 +45,17 @@ export function MilestoneOverlay() {
     return () => window.removeEventListener("keydown", handler);
   }, [milestoneFloor, dismissMilestone]);
 
-  if (milestoneFloor === 0) return null;
-
-  const data = MILESTONE_DATA[milestoneFloor];
-
-  // Unknown milestone floor — dismiss via effect (not during render)
+  // Unknown milestone floor — dismiss via effect (not during render).
+  // Must be above the early return to satisfy Rules of Hooks.
   useEffect(() => {
     if (milestoneFloor !== 0 && !MILESTONE_DATA[milestoneFloor]) {
       dismissMilestone();
     }
   }, [milestoneFloor, dismissMilestone]);
 
+  if (milestoneFloor === 0) return null;
+
+  const data = MILESTONE_DATA[milestoneFloor];
   if (!data) return null;
 
   const bonus = MILESTONE_BONUS[milestoneFloor] ?? 0;

@@ -175,6 +175,7 @@ export function ChecksumVerify(props: MinigameProps) {
     if (nextIndex >= expressions.length) {
       // All expressions done -- win!
       resolvedRef.current = true;
+      timer.pause(); // prevent handleExpire from firing during the flash delay
       setTimeout(() => complete(true), 400);
     } else {
       // Move to next expression
@@ -186,7 +187,7 @@ export function ChecksumVerify(props: MinigameProps) {
         setFlash(null);
       }, 300);
     }
-  }, [isActive, expressions, fail, complete, errorTolerance]);
+  }, [isActive, expressions, fail, complete, errorTolerance, timer]);
 
   // -- Handle digit input --
   const handleDigit = useCallback(

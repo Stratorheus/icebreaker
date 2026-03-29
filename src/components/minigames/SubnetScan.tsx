@@ -337,10 +337,11 @@ export function SubnetScan(props: MinigameProps) {
 
       if (newCorrectCount >= puzzle.correctSet.size) {
         resolvedRef.current = true;
+        timer.pause(); // prevent handleExpire from firing during the flash delay
         setTimeout(() => complete(true), 400);
       }
     },
-    [isActive, puzzle, fail, complete],
+    [isActive, puzzle, fail, complete, timer],
   );
 
   const handleUp = useCallback(() => {
