@@ -1,5 +1,5 @@
 // Extends spec's 5 statuses with 'codex' and 'meta-shop' for direct navigation
-export type GameStatus = "menu" | "playing" | "shop" | "dead" | "training" | "codex" | "meta-shop" | "stats" | "milestone" | "paused";
+export type GameStatus = "menu" | "playing" | "shop" | "dead" | "training" | "codex" | "meta-shop" | "stats" | "milestone" | "paused" | "about" | "support";
 
 export type MinigameType =
   | "slash-timing"
