@@ -4,6 +4,8 @@ A cyberpunk roguelike browser minigame collection. Each run sends you through a 
 
 Inspired by the hacking minigames from [Bitburner](https://store.steampowered.com/app/1812820/Bitburner/).
 
+**▶ [Play now at icebreaker.skorupa.dev](https://icebreaker.skorupa.dev)**
+
 ![ICEBREAKER screenshot](/public/images/og-image.png)
 
 ---
@@ -123,7 +125,7 @@ icebreaker/
 
 ## License
 
-Personal project — all rights reserved.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
