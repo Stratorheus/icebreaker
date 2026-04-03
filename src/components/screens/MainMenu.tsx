@@ -162,13 +162,16 @@ export function MainMenu() {
             <CyberButton prompt onClick={() => setStatus("stats")}>
               STATS
             </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("about")}>
+              ABOUT
+            </CyberButton>
+            <CyberButton prompt onClick={() => setStatus("support")} className="border-cyber-magenta/20 text-cyber-magenta/60 hover:bg-cyber-magenta/10 hover:border-cyber-magenta/40 hover:text-cyber-magenta/90">
+              ♥ SUPPORT
+            </CyberButton>
           </div>
 
-          {/* Reset + Version */}
+          {/* Reset */}
           <div className="mt-12 flex flex-col items-center gap-2">
-            <p className="text-white/20 text-[10px] uppercase tracking-widest glitch-flicker">
-              {`v${__APP_VERSION__}`} // PROTOTYPE
-            </p>
             <button
               type="button"
               onClick={() => {
@@ -187,36 +190,23 @@ export function MainMenu() {
 
       {/* Footer */}
       <div className="mt-8 mb-4 text-center text-white/20 text-[10px] uppercase tracking-widest font-mono">
-        <span>Made by{" "}
-          <a
-            href="https://skorupa.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
-          >
-            Martin Skorupa
-          </a>
-        </span>
-        <span className="mx-1.5">&middot;</span>
         <a
-          href="https://linkedin.com/in/martin-skorupa"
+          href="https://skorupa.dev"
           target="_blank"
           rel="noopener noreferrer"
           className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
         >
-          LinkedIn
+          skorupa.dev
         </a>
         <span className="mx-1.5">&middot;</span>
-        <span>Inspired by{" "}
-          <a
-            href="https://store.steampowered.com/app/1812820/Bitburner/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
-          >
-            Bitburner
-          </a>
-        </span>
+        <a
+          href="https://github.com/Stratorheus/icebreaker"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-white/30 underline underline-offset-2 hover:text-white/50 transition-colors"
+        >
+          GitHub
+        </a>
       </div>
     </div>
   );

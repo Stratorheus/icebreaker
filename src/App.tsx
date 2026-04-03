@@ -11,6 +11,8 @@ import { Training } from "@/components/screens/Training";
 import { Stats } from "@/components/screens/Stats";
 import { Codex } from "@/components/screens/Codex";
 import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
+import { About } from "@/components/screens/About";
+import { Support } from "@/components/screens/Support";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -39,6 +41,10 @@ export default function App() {
         return <Stats />;
       case "milestone":
         return <MilestoneOverlay />;
+      case "about":
+        return <About />;
+      case "support":
+        return <Support />;
       default:
         return <MainMenu />;
     }
