@@ -5,7 +5,7 @@
 export const CLI_PROMPT = ">_\u00a0";
 
 /** Ko-fi donation page — update once account is created. */
-export const KOFI_URL = "https://ko-fi.com/stratorheus/tip";
+export const KOFI_URL = "https://ko-fi.com/stratorheus";
 
 /** Public GitHub repository. */
 export const GITHUB_REPO_URL = "https://github.com/Stratorheus/icebreaker";
