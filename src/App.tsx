@@ -21,11 +21,12 @@ import { Onboarding } from "@/components/screens/Onboarding";
 
 export default function App() {
   const status = useGameStore((s) => s.status);
+  const onboardingComplete = useGameStore((s) => s.onboardingComplete);
 
   const renderScreen = () => {
     switch (status) {
       case "menu":
-        return <MainMenu />;
+        return onboardingComplete ? <MainMenu /> : <Onboarding />;
       case "playing":
         return <MinigameScreen />;
       case "shop":
@@ -46,8 +47,6 @@ export default function App() {
         return <About />;
       case "support":
         return <Support />;
-      case "onboarding":
-        return <Onboarding />;
       default:
         return <MainMenu />;
     }
