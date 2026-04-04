@@ -280,6 +280,7 @@ export function MetaShop() {
                     "text-sm font-bold uppercase tracking-[0.2em] glitch-text",
                     config.colors.text,
                   )}
+                  style={{ "--glitch-delay": `${(cat.charCodeAt(0) * 7) % 40 / 10}s` } as React.CSSProperties}
                 >
                   {config.label}
                 </h2>

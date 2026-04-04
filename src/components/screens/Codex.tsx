@@ -39,7 +39,10 @@ function UnlockedEntry({
       >
         <div className="flex items-center gap-3">
           <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-          <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text">
+          <span
+            className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text"
+            style={{ "--glitch-delay": `${(type.charCodeAt(0) * 7 + type.charCodeAt(1) * 13) % 40 / 10}s` } as React.CSSProperties}
+          >
             {getMinigameDisplayName(type).toUpperCase()}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest hidden sm:inline">
