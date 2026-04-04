@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { injectData, setMetaUpgrades, startRunViaStore } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: inject data + upgrades into localStorage
@@ -31,6 +32,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   test("Thicker Armor tier 5 reduces fail damage by 25%", async ({ page }) => {
     // Inject thicker-armor tier 5 (25% damage reduction)
     await page.goto("/");
+    await skipOnboarding(page);
     await setMetaUpgrades(page, { "thicker-armor": 5 });
 
     await startRunViaStore(page);
@@ -60,6 +62,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
   test("Thicker Armor tier 0 (no armor) takes full damage", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await startRunViaStore(page);
 
     const hpBefore = await page.evaluate(() =>
@@ -81,6 +84,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
   test("Thicker Armor tier 1 reduces damage by 5%", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await setMetaUpgrades(page, { "thicker-armor": 1 });
     await startRunViaStore(page);
 
@@ -95,6 +99,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
   test("Thicker Armor tier 3 reduces damage by 15%", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await setMetaUpgrades(page, { "thicker-armor": 3 });
     await startRunViaStore(page);
 
@@ -112,6 +117,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // -------------------------------------------------------------------------
   test("Credit Multiplier tier 5 increases credits earned", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await setMetaUpgrades(page, { "credit-multiplier": 5 });
     await startRunViaStore(page);
 
@@ -184,6 +190,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // -------------------------------------------------------------------------
   test("Data Siphon tier 5 increases data reward on quit", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await injectMeta(page, 0, { "data-siphon": 5 });
 
     await startRunViaStore(page);
@@ -215,6 +222,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // -------------------------------------------------------------------------
   test("Data Recovery tier 6 reduces death penalty to 10%", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await injectMeta(page, 0, { "data-recovery": 6 });
 
     await startRunViaStore(page);
@@ -245,6 +253,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
 
   test("without Data Recovery, death penalty is 25%", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await startRunViaStore(page);
 
     // Kill the player
@@ -268,6 +277,7 @@ test.describe("Meta Upgrade Runtime Effects", () => {
   // -------------------------------------------------------------------------
   test("Difficulty Reducer tier 5 lowers effective difficulty", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await setMetaUpgrades(page, { "difficulty-reducer": 5 });
     await startRunViaStore(page);
 

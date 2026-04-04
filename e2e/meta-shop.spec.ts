@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { injectData } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ===========================================================================
 // META SHOP TESTS
@@ -8,6 +9,7 @@ import { injectData } from "./helpers/training";
 test.describe("Meta Shop", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   test("meta shop opens from main menu", async ({ page }) => {

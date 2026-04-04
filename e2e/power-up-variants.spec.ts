@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { openTraining, setMetaUpgrades, unlockMinigames } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: enable an upgrade in the briefing phase by data-testid
@@ -25,6 +26,7 @@ async function goToBriefing(
   minigameUnlocks?: string[],
 ) {
   await page.goto("/");
+  await skipOnboarding(page);
   if (minigameUnlocks && minigameUnlocks.length > 0) {
     await unlockMinigames(page, minigameUnlocks);
   }
@@ -175,6 +177,7 @@ test.describe("mine-radar — Defrag", () => {
   test.describe.configure({ retries: 1 });
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["defrag"]);
   });
 
@@ -245,6 +248,7 @@ test.describe("mine-echo — Memory Scan", () => {
 test.describe("error-margin — Checksum Verify", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["checksum-verify"]);
   });
 
@@ -361,6 +365,7 @@ test.describe("error-margin — Checksum Verify", () => {
 test.describe("range-hint — Checksum Verify", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["checksum-verify"]);
   });
 
@@ -400,6 +405,7 @@ test.describe("range-hint — Checksum Verify", () => {
 test.describe("port-logger — Port Scan", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["port-scan"]);
   });
 
@@ -442,6 +448,7 @@ test.describe("port-logger — Port Scan", () => {
 test.describe("port-scan-deep — Port Scan", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["port-scan"]);
   });
 
@@ -467,6 +474,7 @@ test.describe("port-scan-deep — Port Scan", () => {
 test.describe("wire-labels — Process Kill", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["wire-cutting"]);
   });
 
@@ -495,6 +503,7 @@ test.describe("wire-labels — Process Kill", () => {
 test.describe("decode-assist — Cipher Crack V1", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["cipher-crack"]);
   });
 
@@ -535,6 +544,7 @@ test.describe("decode-assist — Cipher Crack V1", () => {
 test.describe("cipher-hint — Cipher Crack V1", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["cipher-crack"]);
   });
 
@@ -571,6 +581,7 @@ test.describe("cipher-hint — Cipher Crack V1", () => {
 test.describe("shift-marker — Cipher Crack V2", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["cipher-crack-v2"]);
   });
 
@@ -590,6 +601,7 @@ test.describe("shift-marker — Cipher Crack V2", () => {
 test.describe("auto-decode-v2 — Cipher Crack V2", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["cipher-crack-v2"]);
   });
 
@@ -643,6 +655,7 @@ test.describe("reverse-trainer — Decrypt Signal", () => {
 test.describe("network-trace-highlight — Network Trace", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["network-trace"]);
   });
 

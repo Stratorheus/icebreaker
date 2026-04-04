@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { setMetaUpgrades } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: start a run and navigate to vendor (shop) via store manipulation
@@ -43,6 +44,7 @@ async function reachVendor(page: Page, options: { hp?: number; credits?: number 
 test.describe("Run Shop", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   // -------------------------------------------------------------------------

@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { openTraining, unlockMinigames } from "../helpers/training";
+import { skipOnboarding } from "../helpers/setup";
 
 const DIR_TO_KEY: Record<string, string> = {
   up: "ArrowUp",
@@ -11,6 +12,7 @@ const DIR_TO_KEY: Record<string, string> = {
 test.describe("Signal Echo", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["signal-echo"]);
   });
 

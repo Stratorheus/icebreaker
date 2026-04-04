@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { setMetaUpgrades } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: start a run from the main menu and wait for first minigame
@@ -21,6 +22,7 @@ async function startRunAndWait(page: Page) {
 test.describe("Run Economy", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   test("start run shows HUD with floor, HP, and credits", async ({ page }) => {

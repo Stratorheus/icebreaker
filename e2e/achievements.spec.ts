@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: set localStorage meta state and reload.
@@ -27,6 +28,7 @@ test.describe("Achievements", () => {
   // -------------------------------------------------------------------------
   test("total-runs achievement triggers on death", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
 
     // Set stats to 9 runs — one below veteran threshold of 10
     await setMetaState(page, {
@@ -77,6 +79,7 @@ test.describe("Achievements", () => {
   // -------------------------------------------------------------------------
   test("near-miss reveals achievement without earning it", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
 
     // Set stats to 8 runs.
     // After this run ends: totalRuns becomes 9.
@@ -135,6 +138,7 @@ test.describe("Achievements", () => {
   // -------------------------------------------------------------------------
   test("category badges displayed in Stats screen", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
 
     // Inject an earned achievement so there's something to show
     await setMetaState(page, {
@@ -155,6 +159,7 @@ test.describe("Achievements", () => {
   // -------------------------------------------------------------------------
   test("voluntary quit triggers achievements (bug fix)", async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
 
     // Set totalRuns to exactly 2 — one below rookie threshold of 3.
     // After this run ends: totalRuns becomes 3 → rookie earned.
