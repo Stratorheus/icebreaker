@@ -5,6 +5,7 @@ import type { PlayerStats } from "@/types/game";
 import type { Achievement, AchievementCategory } from "@/types/shop";
 import { Hexagon } from "lucide-react";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
@@ -218,14 +219,10 @@ export function Stats({ onBack }: { onBack?: () => void } = {}) {
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Fixed back button at bottom center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
-        >
-          {onBack ? "[ BACK TO VENDOR ]" : "[ BACK TO MENU ]"}
-        </button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-cyber-bg">
+        <CyberButton variant="muted" prompt onClick={handleBack} className="w-auto">
+          {onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
+        </CyberButton>
       </div>
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
