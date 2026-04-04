@@ -20,6 +20,10 @@ import {
 export function evaluateAndAwardAchievements(): void {
   const state = useGameStore.getState();
 
+  // On DeathScreen, stats have already been flushed by updateStats(),
+  // so run counters are already included — use 0 to avoid double-counting.
+  const isRunEnd = state.status === "dead";
+
   const ctx: AchievementCheckContext = {
     floor: state.floor,
     floorDamageTaken: state.floorDamageTaken,
@@ -35,6 +39,8 @@ export function evaluateAndAwardAchievements(): void {
     lastDamageTaken: state.lastDamageTaken,
     currentWinStreak: state.currentWinStreak,
     unlockedMinigamesCount: state.unlockedMinigames.length,
+    minigamesWonThisRun: isRunEnd ? 0 : state.minigamesWonThisRun,
+    minigamesPlayedThisRun: isRunEnd ? 0 : state.minigamesPlayedThisRun,
     earnedAchievements: state.achievements,
     stats: state.stats,
     lastMinigame: state.lastMinigameResult ?? undefined,

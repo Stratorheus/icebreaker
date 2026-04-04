@@ -109,6 +109,7 @@ export function RunShop() {
       if (e.key === " " && !confirmQuitRef.current) {
         e.preventDefault();
         advanceFloor();
+        evaluateAndAwardAchievements();
       } else if (e.key === "Escape") {
         e.preventDefault();
         setConfirmQuit((prev) => !prev);
@@ -152,6 +153,7 @@ export function RunShop() {
       creditsSpentThisShop: s.creditsSpentThisShop + rerollPrice,
     }));
     generateRunShop(floor);
+    evaluateAndAwardAchievements();
   };
 
   // Compute data reward preview for quit button (total projected: base + drip + milestones + credits)
@@ -343,7 +345,7 @@ export function RunShop() {
       {/* Continue button */}
       <button
         type="button"
-        onClick={advanceFloor}
+        onClick={() => { advanceFloor(); evaluateAndAwardAchievements(); }}
         className="
           py-3 px-10
           text-sm uppercase tracking-widest font-mono

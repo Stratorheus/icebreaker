@@ -281,6 +281,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       consecutiveFloorsNoShop: 0,
       lastDamageTaken: 0,
       currentWinStreak: 0,
+      // Reset per-minigame win streaks — streak achievements are run-scoped
+      stats: { ...get().stats, minigameWinStreaks: {} },
     });
   },
 
