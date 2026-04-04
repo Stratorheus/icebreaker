@@ -380,6 +380,10 @@ function PickerPhase({
         })}
       </div>
 
+      <p className="text-white/15 text-[10px] uppercase tracking-widest mt-4 text-center">
+        Want to revisit the system briefing? Reset it from the CODEX.
+      </p>
+
     </div>
   );
 }

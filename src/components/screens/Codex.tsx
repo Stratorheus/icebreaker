@@ -120,6 +120,7 @@ function LockedEntry({ type }: { type: MinigameType }) {
 export function Codex({ onBack }: { onBack?: () => void } = {}) {
   const setStatus = useGameStore((s) => s.setStatus);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
+  const resetOnboarding = useGameStore((s) => s.resetOnboarding);
   const handleBack = onBack ?? (() => setStatus("menu"));
 
   const unlockedSet = new Set(unlockedMinigames);
@@ -215,6 +216,17 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
           </p>
         </div>
       )}
+
+      {/* Replay briefing */}
+      <div className="w-full max-w-2xl mb-8 text-center">
+        <button
+          type="button"
+          onClick={resetOnboarding}
+          className="text-white/20 text-[10px] uppercase tracking-widest hover:text-white/40 transition-colors cursor-pointer"
+        >
+          [ REPLAY SYSTEM BRIEFING ]
+        </button>
+      </div>
 
     </div>
   );
