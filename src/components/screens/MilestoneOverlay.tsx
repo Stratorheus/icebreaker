@@ -1,24 +1,7 @@
 import { useEffect } from "react";
 import { useGameStore } from "@/store/game-store";
+import { getMilestoneBonus, getMilestoneText } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
-
-// ---------------------------------------------------------------------------
-// Milestone text & subtitle per floor
-// ---------------------------------------------------------------------------
-
-const MILESTONE_DATA: Record<number, { title: string; subtitle: string }> = {
-  5:  { title: "ICE LAYER 2 BREACHED",  subtitle: "SECONDARY FIREWALL COMPROMISED" },
-  10: { title: "ICE LAYER 3 BREACHED",  subtitle: "TERTIARY DEFENSE CRUMBLING" },
-  15: { title: "CORE ACCESS GRANTED",   subtitle: "NEURAL LATTICE EXPOSED" },
-  20: { title: "SYSTEM COMPROMISED",    subtitle: "FULL INFILTRATION ACHIEVED" },
-};
-
-const MILESTONE_BONUS: Record<number, number> = {
-  5: 50,
-  10: 100,
-  15: 200,
-  20: 500,
-};
 
 // ---------------------------------------------------------------------------
 // Component
@@ -26,7 +9,7 @@ const MILESTONE_BONUS: Record<number, number> = {
 
 /**
  * Full-screen milestone screen shown when the player completes a milestone
- * floor (5, 10, 15, 20). Dismisses on any keypress or click, then
+ * floor (every 5th floor). Dismisses on any keypress or click, then
  * transitions to the vendor/shop screen.
  */
 export function MilestoneOverlay() {
@@ -45,20 +28,10 @@ export function MilestoneOverlay() {
     return () => window.removeEventListener("keydown", handler);
   }, [milestoneFloor, dismissMilestone]);
 
-  // Unknown milestone floor — dismiss via effect (not during render).
-  // Must be above the early return to satisfy Rules of Hooks.
-  useEffect(() => {
-    if (milestoneFloor !== 0 && !MILESTONE_DATA[milestoneFloor]) {
-      dismissMilestone();
-    }
-  }, [milestoneFloor, dismissMilestone]);
-
   if (milestoneFloor === 0) return null;
 
-  const data = MILESTONE_DATA[milestoneFloor];
-  if (!data) return null;
-
-  const bonus = MILESTONE_BONUS[milestoneFloor] ?? 0;
+  const data = getMilestoneText(milestoneFloor);
+  const bonus = getMilestoneBonus(milestoneFloor);
 
   return (
     <div
