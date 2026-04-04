@@ -7,6 +7,7 @@ import type { MetaUpgrade } from "@/types/shop";
 import { Hexagon } from "lucide-react";
 
 import { CLI_PROMPT } from "@/lib/constants";
+import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -202,6 +203,7 @@ export function MetaShop() {
       const effect = upgrade.effects[currentTier];
       if (effect?.minigame) {
         unlockMinigame(effect.minigame);
+        evaluateAndAwardAchievements();
         setTrainingMinigame(effect.minigame);
         setTrainingOrigin("meta-shop");
         setStatus("training");

@@ -23,6 +23,9 @@ export interface AchievementCheckContext {
   lastDamageTaken: number;
   currentWinStreak: number;
   unlockedMinigamesCount: number;
+  // Current run counts (not yet flushed to stats)
+  minigamesWonThisRun: number;
+  minigamesPlayedThisRun: number;
   // Meta state
   earnedAchievements: string[];
   stats: PlayerStats;
@@ -78,7 +81,7 @@ function evaluateCondition(
       return ctx.stats.totalRuns >= condition.count;
 
     case "total-minigames":
-      return ctx.stats.totalMinigamesPlayed >= condition.count;
+      return (ctx.stats.totalMinigamesPlayed + ctx.minigamesPlayedThisRun) >= condition.count;
 
     case "consecutive-floors-no-damage":
       return ctx.consecutiveFloorsNoDamage >= condition.count;
@@ -115,7 +118,7 @@ function evaluateCondition(
       return ctx.unlockedMinigamesCount >= ALL_MINIGAMES.length;
 
     case "total-minigames-won":
-      return ctx.stats.totalMinigamesWon >= condition.count;
+      return (ctx.stats.totalMinigamesWon + ctx.minigamesWonThisRun) >= condition.count;
 
     case "minigame-win-streak":
       return ctx.currentWinStreak >= condition.count;
@@ -172,13 +175,13 @@ function evaluateNearMiss(
       return ctx.stats.totalRuns >= condition.count * 0.8;
 
     case "total-minigames":
-      return ctx.stats.totalMinigamesPlayed >= condition.count * 0.8;
+      return (ctx.stats.totalMinigamesPlayed + ctx.minigamesPlayedThisRun) >= condition.count * 0.8;
 
     case "total-data-earned":
       return ctx.stats.totalDataEarned >= condition.amount * 0.8;
 
     case "total-minigames-won":
-      return ctx.stats.totalMinigamesWon >= condition.count * 0.8;
+      return (ctx.stats.totalMinigamesWon + ctx.minigamesWonThisRun) >= condition.count * 0.8;
 
     case "shop-spending":
       return ctx.creditsSpentThisShop >= condition.amount * 0.7;

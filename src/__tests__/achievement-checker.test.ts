@@ -44,6 +44,8 @@ function makeCtx(overrides: Partial<AchievementCheckContext> = {}): AchievementC
     lastDamageTaken: 0,
     currentWinStreak: 0,
     unlockedMinigamesCount: 5,
+    minigamesWonThisRun: 0,
+    minigamesPlayedThisRun: 0,
     ...overrides,
   };
 }
