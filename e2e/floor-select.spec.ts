@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { setMetaUpgrades } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: inject checkpointReaches into localStorage and reload
@@ -22,6 +23,7 @@ async function injectCheckpoints(page: Page, reaches: Record<string, number>) {
 test.describe("Floor Select", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   // -------------------------------------------------------------------------
@@ -199,6 +201,7 @@ test.describe("Floor Select", () => {
 test.describe("Vendor Shop Slots", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   // -------------------------------------------------------------------------

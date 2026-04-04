@@ -19,6 +19,8 @@ export interface MetaSlice {
   seenBriefings: MinigameType[];
   /** How many times each checkpoint floor has been reached (for floor-select unlock gating). */
   checkpointReaches: Record<number, number>;
+  onboardingComplete: boolean;
+  hintsShown: Record<string, boolean>;
 
   // Actions
   addData: (amount: number) => void;
@@ -33,6 +35,9 @@ export interface MetaSlice {
   recordMinigameResult: (type: MinigameType, won: boolean) => void;
   getUpgradeTier: (id: string) => number;
   incrementCheckpointReach: (floor: number) => void;
+  completeOnboarding: () => void;
+  resetOnboarding: () => void;
+  markHintShown: (id: string) => void;
 }
 
 type FullStore = RunSlice & MetaSlice & ShopSlice;
@@ -62,6 +67,8 @@ export const initialMetaState = {
   stats: { ...initialStats },
   seenBriefings: [] as MinigameType[],
   checkpointReaches: {} as Record<number, number>,
+  onboardingComplete: false,
+  hintsShown: {} as Record<string, boolean>,
 };
 
 // ---------------------------------------------------------------------------
@@ -77,6 +84,8 @@ export const META_PERSIST_KEYS = [
   "stats",
   "seenBriefings",
   "checkpointReaches",
+  "onboardingComplete",
+  "hintsShown",
 ] as const;
 
 // ---------------------------------------------------------------------------
@@ -168,5 +177,18 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
     const state = get();
     const current = state.checkpointReaches[floor] ?? 0;
     set({ checkpointReaches: { ...state.checkpointReaches, [floor]: current + 1 } });
+  },
+
+  completeOnboarding: () => {
+    set({ onboardingComplete: true });
+  },
+
+  resetOnboarding: () => {
+    set({ onboardingComplete: false, hintsShown: {} });
+  },
+
+  markHintShown: (id: string) => {
+    const state = get();
+    set({ hintsShown: { ...state.hintsShown, [id]: true } });
   },
 });

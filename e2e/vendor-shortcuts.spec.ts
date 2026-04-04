@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { skipOnboarding } from "./helpers/setup";
 
 // ---------------------------------------------------------------------------
 // Helper: start a run and navigate directly to the vendor (shop) screen.
@@ -35,6 +36,7 @@ async function reachVendor(
 test.describe("Vendor keyboard shortcuts", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   // -------------------------------------------------------------------------

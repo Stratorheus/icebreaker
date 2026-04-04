@@ -13,6 +13,7 @@ import { Codex } from "@/components/screens/Codex";
 import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
 import { About } from "@/components/screens/About";
 import { Support } from "@/components/screens/Support";
+import { Onboarding } from "@/components/screens/Onboarding";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -20,11 +21,12 @@ import { Support } from "@/components/screens/Support";
 
 export default function App() {
   const status = useGameStore((s) => s.status);
+  const onboardingComplete = useGameStore((s) => s.onboardingComplete);
 
   const renderScreen = () => {
     switch (status) {
       case "menu":
-        return <MainMenu />;
+        return onboardingComplete ? <MainMenu /> : <Onboarding />;
       case "playing":
         return <MinigameScreen />;
       case "shop":

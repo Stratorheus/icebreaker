@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { injectData, startRunViaStore, setMetaUpgrades, unlockMinigames } from "./helpers/training";
+import { skipOnboarding } from "./helpers/setup";
 
 // ===========================================================================
 // MINIGAME UNLOCK VERIFICATION
@@ -8,6 +9,7 @@ import { injectData, startRunViaStore, setMetaUpgrades, unlockMinigames } from "
 test.describe("Minigame Unlock", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
   });
 
   // -------------------------------------------------------------------------

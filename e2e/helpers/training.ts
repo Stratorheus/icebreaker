@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { skipOnboarding } from "./setup";
 
 /**
  * Inject data balance into localStorage and reload.
@@ -30,6 +31,7 @@ export async function startRunViaStore(page: Page) {
  */
 export async function openTraining(page: Page, minigameDisplayName: string, difficulty = "NORMAL") {
   await page.goto("/");
+  await skipOnboarding(page);
   await page.getByText("TRAINING").click();
   await page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: minigameDisplayName }).click();
   await page.locator(`[data-testid="difficulty-option"][data-value="${difficulty}"]`).click();
@@ -89,6 +91,7 @@ export async function openTrainingWithUpgrades(
 ) {
   await setMetaUpgrades(page, upgrades);
   await page.goto("/");
+  await skipOnboarding(page);
   await page.getByText("TRAINING").click();
   await page.locator('[data-testid="minigame-picker-item"]').filter({ hasText: minigameDisplayName }).click();
   for (const name of upgradeNamesToEnable) {

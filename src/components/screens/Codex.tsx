@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
 import { ALL_MINIGAMES, UNLOCKABLE_MINIGAMES, getMinigameBriefing, getMinigameDisplayName } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -37,7 +39,10 @@ function UnlockedEntry({
       >
         <div className="flex items-center gap-3">
           <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-          <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text">
+          <span
+            className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text"
+            style={{ "--glitch-delay": `${(type.charCodeAt(0) * 7 + type.charCodeAt(1) * 13) % 40 / 10}s` } as React.CSSProperties}
+          >
             {getMinigameDisplayName(type).toUpperCase()}
           </span>
           <span className="text-white/20 text-[10px] uppercase tracking-widest hidden sm:inline">
@@ -120,6 +125,7 @@ function LockedEntry({ type }: { type: MinigameType }) {
 export function Codex({ onBack }: { onBack?: () => void } = {}) {
   const setStatus = useGameStore((s) => s.setStatus);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
+  const resetOnboarding = useGameStore((s) => s.resetOnboarding);
   const handleBack = onBack ?? (() => setStatus("menu"));
 
   const unlockedSet = new Set(unlockedMinigames);
@@ -147,14 +153,10 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Fixed back button at bottom center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
-        >
-          {onBack ? "[ BACK TO VENDOR ]" : "[ BACK TO MENU ]"}
-        </button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-cyber-bg">
+        <CyberButton variant="muted" prompt onClick={handleBack} className="w-auto">
+          {onBack ? "BACK TO VENDOR" : "BACK TO MENU"}
+        </CyberButton>
       </div>
       {/* Header */}
       <div className="w-full max-w-2xl mb-8">
@@ -213,6 +215,25 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
               META SHOP
             </button>
           </p>
+        </div>
+      )}
+
+      {/* Replay briefing — only from menu, not during a run */}
+      {!onBack && (
+        <div className="w-full max-w-2xl mb-8">
+          <CyberButton
+            variant="muted"
+            prompt
+            onClick={() => {
+              resetOnboarding();
+              toast("System briefing reset. It will replay when you return to the menu.", {
+                duration: 4000,
+                className: "font-mono text-xs uppercase tracking-wider",
+              });
+            }}
+          >
+            REPLAY SYSTEM BRIEFING
+          </CyberButton>
         </div>
       )}
 

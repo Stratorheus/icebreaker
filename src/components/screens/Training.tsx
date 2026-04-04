@@ -328,14 +328,10 @@ function PickerPhase({
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16">
       {/* Fixed back button at bottom center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-        <button
-          type="button"
-          onClick={onBack}
-          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
-        >
-          {"[ BACK TO MENU ]"}
-        </button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-cyber-bg">
+        <CyberButton variant="muted" prompt onClick={onBack} className="w-auto">
+          BACK TO MENU
+        </CyberButton>
       </div>
 
       {/* Header */}
@@ -368,7 +364,10 @@ function PickerPhase({
             >
               <div className="flex items-center gap-3">
                 <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-                <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider">
+                <span
+                  className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text"
+                  style={{ "--glitch-delay": `${(type.charCodeAt(0) * 7 + type.charCodeAt(1) * 13) % 40 / 10}s` } as React.CSSProperties}
+                >
                   {getMinigameDisplayName(type).toUpperCase()}
                 </span>
               </div>
@@ -379,6 +378,10 @@ function PickerPhase({
           );
         })}
       </div>
+
+      <p className="text-white/15 text-[10px] uppercase tracking-widest mt-4 text-center">
+        Want to revisit the system briefing? Reset it from the CODEX.
+      </p>
 
     </div>
   );

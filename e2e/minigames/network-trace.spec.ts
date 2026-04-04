@@ -1,5 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { openTraining, unlockMinigames } from "../helpers/training";
+import { skipOnboarding } from "../helpers/setup";
 
 // BFS solver — finds shortest path through the maze and returns arrow key sequence
 async function solveMaze(page: Page): Promise<string[]> {
@@ -60,6 +61,7 @@ test.describe("Network Trace", () => {
   test.setTimeout(60_000);
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["network-trace"]);
   });
 

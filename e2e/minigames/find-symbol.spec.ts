@@ -1,10 +1,12 @@
 import { test, expect } from "@playwright/test";
 import { openTraining, unlockMinigames } from "../helpers/training";
+import { skipOnboarding } from "../helpers/setup";
 
 test.describe("Address Lookup (FindSymbol)", () => {
   test.beforeEach(async ({ page }) => {
     // FindSymbol is not a starting minigame — unlock it first
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["find-symbol"]);
   });
 

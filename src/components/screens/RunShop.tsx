@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { cn } from "@/lib/utils";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { showHintOnce } from "@/lib/hints";
 import { getCreditsSaved, getEffectiveDataReward, getEffectiveDifficulty, getDifficultyLabel } from "@/data/balancing";
 import { Hexagon } from "lucide-react";
 import { Coins } from "lucide-react";
@@ -138,6 +139,7 @@ export function RunShop() {
     // Floor was just cleared — evaluate floor-reached, floor-no-powerups,
     // speed-consecutive-floors, and other floor-scoped conditions.
     evaluateAndAwardAchievements();
+    showHintOnce("hint-run-shop", "TIP: Buy power-ups to survive longer. Unspent credits convert to bonus DATA.");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

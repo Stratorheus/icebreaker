@@ -110,8 +110,11 @@
 }
 
 /* Glitch text effect — subtle chromatic aberration on titles */
+/* animation-delay randomized via --glitch-delay custom property.
+   Set inline or let the default hash-based value desync animations. */
 .glitch-text {
   animation: glitch-text 4s ease-in-out infinite;
+  animation-delay: var(--glitch-delay, 0s);
   position: relative;
 }
 
@@ -141,6 +144,7 @@
 /* Stronger glitch — for milestone/death screens */
 .glitch-text-strong {
   animation: glitch-text-strong 3s ease-in-out infinite;
+  animation-delay: var(--glitch-delay, 0s);
   position: relative;
 }
 
@@ -170,6 +174,7 @@
 /* Flicker effect for labels */
 .glitch-flicker {
   animation: glitch-flicker 5s steps(1) infinite;
+  animation-delay: var(--glitch-delay, 0s);
 }
 
 @keyframes glitch-flicker {

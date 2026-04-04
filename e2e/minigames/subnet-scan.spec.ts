@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { openTraining, unlockMinigames } from "../helpers/training";
+import { skipOnboarding } from "../helpers/setup";
 
 test.describe("Subnet Scan", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
+    await skipOnboarding(page);
     await unlockMinigames(page, ["subnet-scan"]);
   });
 

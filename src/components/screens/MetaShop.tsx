@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGameStore } from "@/store/game-store";
 import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
@@ -7,7 +7,9 @@ import type { MetaUpgrade } from "@/types/shop";
 import { Hexagon } from "lucide-react";
 
 import { CLI_PROMPT } from "@/lib/constants";
+import { CyberButton } from "@/components/ui/CyberButton";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { showHintOnce } from "@/lib/hints";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -138,6 +140,10 @@ export function MetaShop() {
   const setTrainingOrigin = useGameStore((s) => s.setTrainingOrigin);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
 
+  useEffect(() => {
+    showHintOnce("hint-meta-shop", "TIP: Unlock new PROTOCOLS here to add them to your run rotation.");
+  }, []);
+
   const handleBack = () => {
     if (trainingMinigame) {
       setStatus("training"); // return to training briefing
@@ -222,14 +228,10 @@ export function MetaShop() {
       </p>
 
       {/* Fixed back button at bottom center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
-        >
-          {trainingMinigame ? "[ BACK TO TRAINING ]" : "[ BACK TO MENU ]"}
-        </button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-cyber-bg">
+        <CyberButton variant="muted" prompt onClick={handleBack} className="w-auto">
+          {trainingMinigame ? "BACK TO TRAINING" : "BACK TO MENU"}
+        </CyberButton>
       </div>
 
       {/* Data balance + price multiplier */}
@@ -278,6 +280,7 @@ export function MetaShop() {
                     "text-sm font-bold uppercase tracking-[0.2em] glitch-text",
                     config.colors.text,
                   )}
+                  style={{ "--glitch-delay": `${(cat.charCodeAt(0) * 7) % 40 / 10}s` } as React.CSSProperties}
                 >
                   {config.label}
                 </h2>

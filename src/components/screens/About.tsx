@@ -1,5 +1,6 @@
 import { useGameStore } from "@/store/game-store";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 import { KOFI_URL, GITHUB_REPO_URL } from "@/lib/constants";
 
 // ---------------------------------------------------------------------------
@@ -29,14 +30,10 @@ export function About() {
   return (
     <div className="min-h-screen flex flex-col items-center px-4 pt-12 pb-16 overflow-y-auto">
       {/* Fixed back button at bottom center */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10">
-        <button
-          type="button"
-          onClick={() => setStatus("menu")}
-          className="px-5 py-2 text-[10px] font-mono uppercase tracking-widest text-white/50 hover:text-cyber-cyan border border-white/10 hover:border-cyber-cyan/40 bg-cyber-bg transition-colors cursor-pointer"
-        >
-          [ BACK TO MENU ]
-        </button>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-10 bg-cyber-bg">
+        <CyberButton variant="muted" prompt onClick={() => setStatus("menu")} className="w-auto">
+          BACK TO MENU
+        </CyberButton>
       </div>
 
       {/* Header */}
@@ -56,7 +53,7 @@ export function About() {
         <div className="space-y-3 text-sm text-white/60">
           <p>
             Created by{" "}
-            <ExtLink href="https://skorupa.dev">Martin Skorupa</ExtLink>
+            <ExtLink href="https://skorupa.dev">Martin Skořupa</ExtLink>
           </p>
           <p>
             Inspired by the hacking minigames in{" "}
