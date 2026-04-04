@@ -56,6 +56,26 @@ export function getMilestoneBonus(floor: number): number {
   return 0;
 }
 
+/** Milestone display text for any milestone floor. */
+export function getMilestoneText(floor: number): { title: string; subtitle: string } {
+  const layer = floor / CHECKPOINT_INTERVAL;
+  if (layer <= 4) {
+    // Hand-crafted text for early milestones
+    const early: Record<number, { title: string; subtitle: string }> = {
+      1: { title: "ICE LAYER 2 BREACHED",  subtitle: "SECONDARY FIREWALL COMPROMISED" },
+      2: { title: "ICE LAYER 3 BREACHED",  subtitle: "TERTIARY DEFENSE CRUMBLING" },
+      3: { title: "CORE ACCESS GRANTED",   subtitle: "NEURAL LATTICE EXPOSED" },
+      4: { title: "SYSTEM COMPROMISED",    subtitle: "FULL INFILTRATION ACHIEVED" },
+    };
+    return early[layer];
+  }
+  // Dynamic text for deep runs
+  return {
+    title: `DEPTH ${floor} REACHED`,
+    subtitle: `ICE LAYER ${layer + 1} BREACHED — DEEP INFILTRATION`,
+  };
+}
+
 /** Price of a run-shop item scaled to the current floor depth. Quadratic scaling keeps late-game shops expensive. */
 export function getRunShopPrice(basePrice: number, floor: number): number {
   return Math.round(basePrice * (1 + floor * 0.25) * (1 + floor * floor * 0.01));
