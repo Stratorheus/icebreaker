@@ -364,7 +364,10 @@ function PickerPhase({
             >
               <div className="flex items-center gap-3">
                 <span className="text-cyber-cyan text-[10px] select-none">{">"}</span>
-                <span className="text-cyber-cyan text-sm font-heading uppercase tracking-wider">
+                <span
+                  className="text-cyber-cyan text-sm font-heading uppercase tracking-wider glitch-text"
+                  style={{ "--glitch-delay": `${(type.charCodeAt(0) * 7 + type.charCodeAt(1) * 13) % 40 / 10}s` } as React.CSSProperties}
+                >
                   {getMinigameDisplayName(type).toUpperCase()}
                 </span>
               </div>
