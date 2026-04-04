@@ -13,6 +13,7 @@ import { Codex } from "@/components/screens/Codex";
 import { MilestoneOverlay } from "@/components/screens/MilestoneOverlay";
 import { About } from "@/components/screens/About";
 import { Support } from "@/components/screens/Support";
+import { Onboarding } from "@/components/screens/Onboarding";
 
 // ---------------------------------------------------------------------------
 // App — status-based screen router
@@ -45,6 +46,8 @@ export default function App() {
         return <About />;
       case "support":
         return <Support />;
+      case "onboarding":
+        return <Onboarding />;
       default:
         return <MainMenu />;
     }
