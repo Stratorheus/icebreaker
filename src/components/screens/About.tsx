@@ -53,7 +53,7 @@ export function About() {
         <div className="space-y-3 text-sm text-white/60">
           <p>
             Created by{" "}
-            <ExtLink href="https://skorupa.dev">Martin Skorupa</ExtLink>
+            <ExtLink href="https://skorupa.dev">Martin Skořupa</ExtLink>
           </p>
           <p>
             Inspired by the hacking minigames in{" "}
