@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 
 const STEPS = [
   "You're a hacker breaching corporate ICE. Each RUN is a gauntlet of timed hacking protocols. Fail one = you take damage. HP hits zero = run over.",
   "Survive floors to earn DATA. Spend DATA in the META SHOP — permanent upgrades, new protocols, and more. The further you go, the more you earn.",
-  "Hit START RUN when you're ready. Good luck, operator.",
+  "Hit START RUN when you're ready. You can replay this briefing anytime from the CODEX. Good luck, operator.",
 ];
 
 export function Onboarding() {
@@ -65,13 +66,11 @@ export function Onboarding() {
           Click or press Space to continue
         </p>
       ) : (
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); completeOnboarding(); }}
-          className="px-8 py-3 text-sm font-mono uppercase tracking-widest border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan/10 hover:border-cyber-cyan/70 transition-colors cursor-pointer"
-        >
-          [ BEGIN ]
-        </button>
+        <div className="w-64" onClick={(e) => e.stopPropagation()}>
+          <CyberButton variant="primary" prompt onClick={completeOnboarding}>
+            BEGIN
+          </CyberButton>
+        </div>
       )}
     </div>
   );

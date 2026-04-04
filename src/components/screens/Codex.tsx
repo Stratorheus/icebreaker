@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import { useGameStore } from "@/store/game-store";
 import type { MinigameType } from "@/types/game";
 import { ALL_MINIGAMES, UNLOCKABLE_MINIGAMES, getMinigameBriefing, getMinigameDisplayName } from "@/data/minigames/registry";
 import type { MinigameBriefing } from "@/data/minigames/types";
 import { useTouchDevice } from "@/hooks/use-touch-device";
 import { ScreenHeader } from "@/components/ui/ScreenHeader";
+import { CyberButton } from "@/components/ui/CyberButton";
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -219,14 +221,20 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
 
       {/* Replay briefing — only from menu, not during a run */}
       {!onBack && (
-        <div className="w-full max-w-2xl mb-8 text-center">
-          <button
-            type="button"
-            onClick={resetOnboarding}
-            className="text-white/20 text-[10px] uppercase tracking-widest hover:text-white/40 transition-colors cursor-pointer"
+        <div className="w-full max-w-2xl mb-8">
+          <CyberButton
+            variant="muted"
+            prompt
+            onClick={() => {
+              resetOnboarding();
+              toast("System briefing reset. It will replay when you return to the menu.", {
+                duration: 4000,
+                className: "font-mono text-xs uppercase tracking-wider",
+              });
+            }}
           >
-            [ REPLAY SYSTEM BRIEFING ]
-          </button>
+            REPLAY SYSTEM BRIEFING
+          </CyberButton>
         </div>
       )}
 
