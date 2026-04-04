@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGameStore } from "@/store/game-store";
 import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
@@ -8,6 +8,7 @@ import { Hexagon } from "lucide-react";
 
 import { CLI_PROMPT } from "@/lib/constants";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { showHintOnce } from "@/lib/hints";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -137,6 +138,10 @@ export function MetaShop() {
   const setTrainingMinigame = useGameStore((s) => s.setTrainingMinigame);
   const setTrainingOrigin = useGameStore((s) => s.setTrainingOrigin);
   const unlockedMinigames = useGameStore((s) => s.unlockedMinigames);
+
+  useEffect(() => {
+    showHintOnce("hint-meta-shop", "TIP: Unlock new PROTOCOLS here to add them to your run rotation.");
+  }, []);
 
   const handleBack = () => {
     if (trainingMinigame) {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { getCreditsSaved, getDeathPenaltyPct, getEffectiveDataReward } from "@/data/balancing";
 import { evaluateAndAwardAchievements } from "@/hooks/use-achievement-check";
+import { showHintOnce } from "@/lib/hints";
 import { Hexagon } from "lucide-react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
@@ -102,6 +103,7 @@ export function DeathScreen() {
     const achBonus = actualTotal - dataAfterPenalty;
     setAchievementBonus(Math.max(0, achBonus));
     setTotalDataEarned(actualTotal);
+    showHintOnce("hint-death", "TIP: Spend your DATA in the META SHOP to unlock new protocols and get stronger.");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

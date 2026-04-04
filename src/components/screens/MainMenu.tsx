@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGameStore } from "@/store/game-store";
 import { Hexagon } from "lucide-react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { CLI_PROMPT } from "@/lib/constants";
+import { showHintOnce } from "@/lib/hints";
 import {
   CHECKPOINT_INTERVAL,
   CHECKPOINT_UNLOCK_THRESHOLD,
@@ -45,6 +46,12 @@ export function MainMenu() {
     }
     return { unlockedCheckpoints: unlocked, lockedCheckpoints: locked };
   }, [checkpointReaches, stats.bestFloor]);
+
+  useEffect(() => {
+    if (stats.totalRuns >= 1) {
+      showHintOnce("hint-menu-return", "TIP: Try TRAINING to practice any protocol, or CODEX to read the rules.");
+    }
+  }, [stats.totalRuns]);
 
   const handleStartRun = () => {
     if (unlockedCheckpoints.length > 1) {
