@@ -217,16 +217,18 @@ export function Codex({ onBack }: { onBack?: () => void } = {}) {
         </div>
       )}
 
-      {/* Replay briefing */}
-      <div className="w-full max-w-2xl mb-8 text-center">
-        <button
-          type="button"
-          onClick={resetOnboarding}
-          className="text-white/20 text-[10px] uppercase tracking-widest hover:text-white/40 transition-colors cursor-pointer"
-        >
-          [ REPLAY SYSTEM BRIEFING ]
-        </button>
-      </div>
+      {/* Replay briefing — only from menu, not during a run */}
+      {!onBack && (
+        <div className="w-full max-w-2xl mb-8 text-center">
+          <button
+            type="button"
+            onClick={resetOnboarding}
+            className="text-white/20 text-[10px] uppercase tracking-widest hover:text-white/40 transition-colors cursor-pointer"
+          >
+            [ REPLAY SYSTEM BRIEFING ]
+          </button>
+        </div>
+      )}
 
     </div>
   );

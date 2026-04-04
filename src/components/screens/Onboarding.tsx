@@ -15,10 +15,8 @@ export function Onboarding() {
   const advance = useCallback(() => {
     if (step < STEPS.length - 1) {
       setStep((s) => s + 1);
-    } else {
-      completeOnboarding();
     }
-  }, [step, completeOnboarding]);
+  }, [step]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
