@@ -36,7 +36,8 @@ The speed bonus applies when the player completes the minigame in under 10 secon
 **Meta upgrade modifiers applied on top (in `getEffectiveCredits`):**
 
 ```
-speedTaxFlat    = round(base * speedTaxTier * 0.05)        // flat, added before multipliers
+speedTaxPct     = [0, 0.15, 0.25, 0.40][min(speedTaxTier, 3)]  // lookup table
+speedTaxFlat    = speedTaxTier > 0 ? round(base * speedTaxPct) : 0
 withFlat        = base + speedTaxFlat
 creditMultiplier = 1.03^creditTier                         // multiplicative
 unlockBonus     = (unlockedMinigames - 5) * 0.05           // +5% per extra unlock
@@ -48,7 +49,7 @@ effectiveCredits = round(withFlat * creditMultiplier * (1 + unlockBonus))
 |---|---|
 | Credit Multiplier (stackable) | `x 1.03^tier` multiplicative |
 | Minigame unlocks (beyond 5 starting) | `+5%` per extra unlock, multiplicative with Credit Multiplier |
-| Speed Tax (tiered 1-3) | Flat `+round(base * tier * 0.05)` added before percentage multipliers |
+| Speed Tax (tiered 1-3) | Flat `+round(base * pct)` added before percentage multipliers (15% / 25% / 40% for tiers 1/2/3) |
 
 **Starting credits:**
 - Base: 25 CR at run start (guaranteed minimum so floor 1 shop is usable).
@@ -414,7 +415,7 @@ Time-bonus power-ups from run shop are added separately by the `useMinigame` hoo
 | Upgrade | Tier 1 | Tier 2 | Tier 3 | Tier 4 | Tier 5 | Tier 6 | Effect |
 |---|---|---|---|---|---|---|---|
 | Thicker Armor | 100 | 200 | 350 | 500 | 750 | -- | Damage -5/10/15/20/25% |
-| Speed Tax | 100 | 250 | 500 | -- | -- | -- | Flat +round(base * tier * 0.05) per win |
+| Speed Tax | 100 | 250 | 500 | -- | -- | -- | Flat +round(base * pct) per win (15% / 25% / 40% for tiers 1/2/3) |
 | Data Recovery | 100 | 200 | 300 | 400 | 550 | 750 | Death penalty 22.5/20/17.5/15/12.5/10% |
 | Cascade Clock | 150 | 300 | 500 | 750 | 1000 | -- | +2% base timer per win, cap 10/20/30/40/50% |
 | Supply Line | 300 | 600 | -- | -- | -- | -- | Vendor inventory: 4/6 items |
@@ -458,7 +459,6 @@ price = round((200 + unlocksOwned * 100) * (1 + totalPurchasesMade * 0.15))
 | Autocorrect | Decrypt Signal | 4 | 150/300/500/750 | Shows 25/50/75/100% of words normally |
 | Path Highlight | Network Trace | 4 | 150/300/500/750 | Shows path for 25/50/75/100% of timer |
 | Slow Replay | Signal Echo | 1 | 200 | Sequence 30% slower |
-| Calculator | Checksum Verify | 1 | 175 | Shows first digit of answer |
 | Error Margin | Checksum Verify | 5 | 100/200/350/500/700 | Accept +/-1/+/-2/+/-3/+/-4/+/-5 tolerance |
 | Range Hint | Checksum Verify | 3 | 150/300/500 | Shows answer range (+/-10/+/-5/+/-3) |
 | Deep Scan | Port Scan | 1 | 200 | Ports flash twice |

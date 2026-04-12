@@ -34,7 +34,7 @@ icebreaker/
 │   │   ├── minigames/       # One file per minigame component (15 total)
 │   │   ├── screens/         # Full-screen views (MainMenu, RunShop, DeathScreen,
 │   │   │                    # MetaShop, Training, Codex, Stats, MinigameScreen,
-│   │   │                    # MilestoneOverlay, PauseMenu)
+│   │   │                    # MilestoneOverlay, About, Support, Onboarding)
 │   │   └── ui/              # CyberButton, ScreenHeader, ResultFlash,
 │   │                        # CountdownDisplay, ConfirmDialog
 │   ├── data/

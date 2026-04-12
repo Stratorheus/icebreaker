@@ -33,8 +33,6 @@ export interface RunSlice {
   trainingOrigin: TrainingOrigin;
   /** Set to a milestone floor number (every 5th floor) to trigger the overlay; 0 = no milestone. */
   milestoneFloor: number;
-  /** Tracks the status before entering pause, so we can resume to the correct screen. */
-  previousStatus: GameStatus | null;
   /** Number of run-shop items bought this run (for price scaling). */
   itemsBoughtThisRun: number;
   /** True when the player voluntarily quit the run (shows different death screen). */
@@ -80,8 +78,6 @@ export interface RunSlice {
   advanceFloor: () => void;
   dismissMilestone: () => void;
   quitRun: () => void;
-  pauseRun: () => void;
-  resumeRun: () => void;
   setStatus: (status: GameStatus) => void;
   skipRemainingFloor: (rewardFraction: number) => void;
   setTrainingMinigame: (type: MinigameType | null) => void;
@@ -158,7 +154,7 @@ function resolveMilestone(
 // Initial state (exported for reuse in tests / resets)
 // ---------------------------------------------------------------------------
 
-export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
+const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   hp: 100,
   maxHp: 100,
   floor: 1,
@@ -177,7 +173,6 @@ export const initialRunState: Omit<RunSlice, keyof RunSliceActions> = {
   trainingMinigame: null,
   trainingOrigin: null,
   milestoneFloor: 0,
-  previousStatus: null,
   itemsBoughtThisRun: 0,
   quitVoluntarily: false,
   dataAtRunStart: 0,
@@ -658,18 +653,6 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   dismissMilestone: () => {
     // After dismissing milestone overlay, proceed to vendor/shop screen
     set({ milestoneFloor: 0, status: "shop" });
-  },
-
-  pauseRun: () => {
-    const state = get();
-    if (state.status !== "playing" && state.status !== "shop") return;
-    set({ previousStatus: state.status, status: "paused" });
-  },
-
-  resumeRun: () => {
-    const state = get();
-    const target = state.previousStatus ?? "playing";
-    set({ status: target, previousStatus: null });
   },
 
   setStatus: (status: GameStatus) => {

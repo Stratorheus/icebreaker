@@ -140,3 +140,9 @@ export const TECH_WORDS = {
     "timestamp",
   ],
 } as const;
+
+export function getWordPool(difficulty: number): readonly string[] {
+  if (difficulty < 0.35) return TECH_WORDS.short;
+  if (difficulty < 0.65) return [...TECH_WORDS.short, ...TECH_WORDS.medium];
+  return [...TECH_WORDS.medium, ...TECH_WORDS.long];
+}

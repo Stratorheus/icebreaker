@@ -51,7 +51,7 @@ export function getDataReward(floor: number): number {
 /** Bonus data awarded at milestone floors. Every 5th floor gets a milestone, scaling linearly. */
 export function getMilestoneBonus(floor: number): number {
   if (floor > 0 && floor % CHECKPOINT_INTERVAL === 0) {
-    return floor * 5; // floor 5=25, 10=50, 15=75, 20=100, 50=250, 100=500
+    return floor * 5;
   }
   return 0;
 }

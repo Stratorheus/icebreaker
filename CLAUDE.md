@@ -5,12 +5,12 @@
 | Layer | Technology | Version |
 |---|---|---|
 | Framework | React | 19 |
-| Language | TypeScript | ~5.7 |
-| Bundler | Vite | 6 |
+| Language | TypeScript | 6 |
+| Bundler | Vite | 8 |
 | Styling | Tailwind CSS | v4 |
 | State | Zustand | 5 |
 | Animation | Motion (framer-motion) | 12 |
-| Icons | Lucide React | 0.469 |
+| Icons | Lucide React | 1.8 |
 | Toasts | Sonner | 2 |
 | Unit Tests | Vitest | 4 |
 | E2E Tests | Playwright | 1.58 |
@@ -25,7 +25,7 @@
 | Hook files | kebab-case with `use-` prefix | `use-minigame.ts`, `use-keyboard.ts` |
 | Minigame IDs | kebab-case string literal | `"slash-timing"`, `"cipher-crack-v2"` |
 | CSS classes | Tailwind utilities, `cn()` for conditional | `cn("text-cyber-cyan", active && "ring-2")` |
-| Exports | Named exports only, no default exports | `export function SlashTiming(...)` |
+| Exports | Named exports (exception: `App.tsx` uses default export per Vite convention) | `export function SlashTiming(...)` |
 
 ## Design System Tokens
 
@@ -96,10 +96,11 @@ The app is a single-page state machine with no URL routing. All screens are driv
 
 ```ts
 type GameStatus = "menu" | "playing" | "shop" | "dead" | "training"
-                | "codex" | "meta-shop" | "stats" | "milestone" | "paused";
+                | "codex" | "meta-shop" | "stats" | "milestone"
+                | "about" | "support";
 ```
 
-Navigate between screens with `setStatus("target")`. `App.tsx` renders the matching screen component via a switch statement.
+Navigate between screens with `setStatus("target")`. `App.tsx` renders the matching screen component via a switch statement. First-time visitors see the `Onboarding` screen (gated in the `"menu"` case via `onboardingComplete` flag).
 
 ## Key Architectural Patterns
 
@@ -192,7 +193,7 @@ Three GitHub Actions workflows in `.github/workflows/`:
 |---|---|---|
 | `ci.yml` | Push to non-main branches | Typecheck + unit tests + build |
 | `pr.yml` | PR to main | Typecheck + unit tests + E2E + version bump check |
-| `cd.yml` | Push to main | Deploy to Fly.io |
+| `cd.yml` | Push to main | Deploy to Fly.io + itch.io (if `ITCH_ENABLED`) |
 
 **Version bump requirement:** PRs to main must bump `package.json` version. Use `npm version patch`, `npm version minor`, or `npm version major` before merging. The `pr.yml` workflow includes a `version-check` job that fails if the version is unchanged.
 

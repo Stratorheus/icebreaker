@@ -25,29 +25,11 @@
     monospace;
 }
 
-/* shadcn/ui CSS variables — dark (zinc base) */
+/* Base CSS variables — used by shadcn/ui primitives */
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
     --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --radius: 0.5rem;
   }
 }
 
@@ -186,6 +168,19 @@
   95.5% { opacity: 1; }
   97% { opacity: 0.5; }
   97.5% { opacity: 1; }
+}
+
+/* Subtle ambient glitch — secondary text, labels */
+.glitch-subtle {
+  animation: glitch-subtle 8s steps(1) infinite;
+  animation-delay: var(--glitch-delay, 0s);
+}
+
+@keyframes glitch-subtle {
+  0%, 100% { opacity: 1; }
+  94% { opacity: 1; }
+  94.5% { opacity: 0.7; }
+  95% { opacity: 1; }
 }
 
 /* ── Touch/Desktop visibility ──────────────────────────────── */

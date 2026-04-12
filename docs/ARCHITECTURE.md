@@ -34,7 +34,8 @@ Status values driving the router (`GameStatus`):
 
 ```ts
 type GameStatus = "menu" | "playing" | "shop" | "dead" | "training"
-                | "codex" | "meta-shop" | "stats" | "milestone" | "paused";
+                | "codex" | "meta-shop" | "stats" | "milestone"
+                | "about" | "support";
 ```
 
 `App.tsx` renders the appropriate screen component based on `status`. There is no client-side URL routing; the entire app is a single-page state machine. Navigation is done via `setStatus()`.
@@ -57,15 +58,15 @@ Owns all ephemeral per-run state. Reset on every `startRun()`.
 
 Key state: `hp`, `maxHp`, `floor`, `startFloor`, `currentMinigameIndex`, `floorMinigames`, `inventory` (power-ups), `credits`, `creditsEarnedThisRun`, `runScore`, `status`, `milestoneFloor`, `milestoneDataThisRun`, `dataDripThisRun`, `itemsBoughtThisRun`, `quitVoluntarily`, `floorDamageTaken`, `runDamageTaken`, `timeSiphonBonus`, `cascadeClockPct`, `consecutiveFloorsNoDamage`, `floorCompletionTimestamps`, `lastMinigameResult`, `creditsSpentThisShop`, `consecutiveFloorsNoShop`, `lastDamageTaken`, `currentWinStreak`, `trainingMinigame`, `trainingOrigin`, `previousStatus`, `powerUpsUsedThisFloor`, `minigamesWonThisRun`, `minigamesPlayedThisRun`, `dataAtRunStart`, `runStartTime`.
 
-Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `skipRemainingFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `pauseRun`, `resumeRun`, `quitRun`, `endRun`, `dismissMilestone`, `setStatus`, `setTrainingMinigame`, `setTrainingOrigin`.
+Key actions: `startRun`, `completeMinigame`, `failMinigame`, `advanceFloor`, `skipRemainingFloor`, `takeDamage`, `heal`, `addCredits`, `addPowerUp`, `usePowerUp`, `quitRun`, `endRun`, `dismissMilestone`, `setStatus`, `setTrainingMinigame`, `setTrainingOrigin`.
 
 ### MetaSlice (`src/store/meta-slice.ts`)
 
 Owns all persistent progression state. Survives across runs and browser sessions.
 
-Key state: `data` (persistent currency), `unlockedMinigames`, `purchasedUpgrades` (`Record<string, number>` mapping upgrade IDs to tier), `achievements` (array of unlocked IDs), `revealedAchievements` (near-miss achievements shown to player), `stats` (`PlayerStats`), `seenBriefings`, `checkpointReaches` (`Record<number, number>` tracking how many times each checkpoint floor has been reached).
+Key state: `data` (persistent currency), `unlockedMinigames`, `purchasedUpgrades` (`Record<string, number>` mapping upgrade IDs to tier), `achievements` (array of unlocked IDs), `revealedAchievements` (near-miss achievements shown to player), `stats` (`PlayerStats`), `seenBriefings`, `checkpointReaches` (`Record<number, number>` tracking how many times each checkpoint floor has been reached), `onboardingComplete` (boolean), `hintsShown` (`Record<string, boolean>` tracking one-time contextual hints).
 
-Key actions: `addData`, `spendData`, `unlockMinigame`, `purchaseUpgrade`, `unlockAchievement`, `revealAchievement`, `markBriefingSeen`, `updateStats`, `recordMinigameResult`, `getUpgradeTier`, `incrementCheckpointReach`.
+Key actions: `addData`, `spendData`, `unlockMinigame`, `purchaseUpgrade`, `unlockAchievement`, `revealAchievement`, `markBriefingSeen`, `updateStats`, `recordMinigameResult`, `getUpgradeTier`, `incrementCheckpointReach`, `completeOnboarding`, `resetOnboarding`, `markHintShown`.
 
 ### ShopSlice (`src/store/shop-slice.ts`)
 
@@ -84,6 +85,7 @@ const META_PERSIST_KEYS = [
   "data", "unlockedMinigames", "purchasedUpgrades",
   "achievements", "revealedAchievements", "stats",
   "seenBriefings", "checkpointReaches",
+  "onboardingComplete", "hintsShown",
 ] as const;
 ```
 
@@ -645,7 +647,7 @@ export const UNLOCKABLE_MINIGAMES  // minigames with starting: false
 export const ALL_MINIGAMES         // all IDs in order
 ```
 
-Helper functions: `getMinigameDisplayName(type)`, `getMinigameBriefing(type)`, `getMinigameHint(type, isTouch)`.
+Helper functions: `getMinigameDisplayName(type)`, `getMinigameBriefing(type)`.
 
 ### buildMetaPowerUps -- Generic, No Switch
 
