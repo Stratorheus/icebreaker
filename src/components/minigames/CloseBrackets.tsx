@@ -73,13 +73,13 @@ export function CloseBrackets(props: MinigameProps) {
     return excluded;
   }, [bracketReducerTier]);
 
-  // Bracket count: range-based, 2-4 (d=0) -> 6-8 (d=1)
-  const bracketMin = Math.round(2 + difficulty * 4);
-  const bracketMax = Math.round(4 + difficulty * 4);
-  const bracketCount = bracketMin + Math.floor(Math.random() * (bracketMax - bracketMin + 1));
-
-  // Generate a random opening sequence on mount
+  // Generate a random opening sequence on mount. Bracket count is randomized
+  // once inside the useMemo so it stays in sync with the generated sequence
+  // across re-renders.
   const sequence = useMemo(() => {
+    const bracketMin = Math.round(2 + difficulty * 4);
+    const bracketMax = Math.round(4 + difficulty * 4);
+    const bracketCount = bracketMin + Math.floor(Math.random() * (bracketMax - bracketMin + 1));
     const seq: string[] = [];
     for (let i = 0; i < bracketCount; i++) {
       seq.push(availableOpeners[Math.floor(Math.random() * availableOpeners.length)]);

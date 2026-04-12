@@ -23,12 +23,16 @@ export function Onboarding() {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
-        advance();
+        if (step < STEPS.length - 1) {
+          setStep((s) => s + 1);
+        } else {
+          completeOnboarding();
+        }
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [advance]);
+  }, [step, completeOnboarding]);
 
   return (
     <div

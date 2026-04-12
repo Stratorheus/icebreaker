@@ -59,20 +59,20 @@ export function getMilestoneBonus(floor: number): number {
 /** Milestone display text for any milestone floor. */
 export function getMilestoneText(floor: number): { title: string; subtitle: string } {
   const layer = floor / CHECKPOINT_INTERVAL;
-  if (layer <= 4) {
-    // Hand-crafted text for early milestones
-    const early: Record<number, { title: string; subtitle: string }> = {
-      1: { title: "ICE LAYER 2 BREACHED",  subtitle: "SECONDARY FIREWALL COMPROMISED" },
-      2: { title: "ICE LAYER 3 BREACHED",  subtitle: "TERTIARY DEFENSE CRUMBLING" },
-      3: { title: "CORE ACCESS GRANTED",   subtitle: "NEURAL LATTICE EXPOSED" },
-      4: { title: "SYSTEM COMPROMISED",    subtitle: "FULL INFILTRATION ACHIEVED" },
-    };
+  // Hand-crafted text for early milestones (layers 1-4)
+  const early: Record<number, { title: string; subtitle: string }> = {
+    1: { title: "ICE LAYER 2 BREACHED",  subtitle: "SECONDARY FIREWALL COMPROMISED" },
+    2: { title: "ICE LAYER 3 BREACHED",  subtitle: "TERTIARY DEFENSE CRUMBLING" },
+    3: { title: "CORE ACCESS GRANTED",   subtitle: "NEURAL LATTICE EXPOSED" },
+    4: { title: "SYSTEM COMPROMISED",    subtitle: "FULL INFILTRATION ACHIEVED" },
+  };
+  if (Number.isInteger(layer) && layer >= 1 && layer <= 4) {
     return early[layer];
   }
-  // Dynamic text for deep runs
+  // Dynamic text for deep runs (or fallback for non-milestone floors)
   return {
     title: `DEPTH ${floor} REACHED`,
-    subtitle: `ICE LAYER ${layer + 1} BREACHED — DEEP INFILTRATION`,
+    subtitle: `ICE LAYER ${Math.max(1, Math.floor(layer) + 1)} BREACHED — DEEP INFILTRATION`,
   };
 }
 

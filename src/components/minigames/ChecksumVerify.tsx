@@ -89,6 +89,12 @@ export function ChecksumVerify(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("checksum-verify", props);
 
   const resolvedRef = useRef(false);
+  const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (delayRef.current) clearTimeout(delayRef.current);
+    };
+  }, []);
 
   // Touch device: hidden input for system keyboard
   const isTouch = useTouchDevice();
@@ -164,7 +170,7 @@ export function ChecksumVerify(props: MinigameProps) {
       // Wrong answer -- immediate fail
       resolvedRef.current = true;
       setFlash("wrong");
-      setTimeout(() => fail(), 400);
+      delayRef.current = setTimeout(() => fail(), 400);
       return;
     }
 
@@ -175,8 +181,8 @@ export function ChecksumVerify(props: MinigameProps) {
     if (nextIndex >= expressions.length) {
       // All expressions done -- win!
       resolvedRef.current = true;
-      timer.pause(); // prevent handleExpire from firing during the flash delay
-      setTimeout(() => complete(true), 400);
+      timer.pause();
+      delayRef.current = setTimeout(() => complete(true), 400);
     } else {
       // Move to next expression
       setTimeout(() => {

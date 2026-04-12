@@ -130,6 +130,12 @@ export function Defrag(props: MinigameProps) {
   }, [activePowerUps]);
 
   const resolvedRef = useRef(false);
+  const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (delayRef.current) clearTimeout(delayRef.current);
+    };
+  }, []);
 
   const firstClickRef = useRef(true);
   const minesPlacedRef = useRef(false);
@@ -250,7 +256,7 @@ export function Defrag(props: MinigameProps) {
       if (cell.isMine) {
         resolvedRef.current = true;
         setShowMines(true);
-        setTimeout(() => {
+        delayRef.current = setTimeout(() => {
           fail();
         }, 600);
         return;

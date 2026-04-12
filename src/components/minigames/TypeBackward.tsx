@@ -66,13 +66,12 @@ export function TypeBackward(props: MinigameProps) {
     return pu ? pu.effect.value : 0;
   }, [activePowerUps]);
 
-  // Number of words: range-based, 2-4 (d=0) -> 5-8 (d=1)
-  const wordCountMin = Math.round(2 + difficulty * 3);
-  const wordCountMax = Math.round(4 + difficulty * 4);
-  const wordCount = wordCountMin + Math.floor(Math.random() * (wordCountMax - wordCountMin + 1));
-
-  // Generate word sequence on mount
+  // Generate word sequence on mount. Word count is randomized inside the
+  // useMemo so it stays in sync with the generated sequence across re-renders.
   const originalWords = useMemo(() => {
+    const wordCountMin = Math.round(2 + difficulty * 3);
+    const wordCountMax = Math.round(4 + difficulty * 4);
+    const wordCount = wordCountMin + Math.floor(Math.random() * (wordCountMax - wordCountMin + 1));
     const pool = getWordPool(difficulty);
     return pickRandom(pool, wordCount);
     // eslint-disable-next-line react-hooks/exhaustive-deps

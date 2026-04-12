@@ -1,6 +1,6 @@
 # syntax = docker/dockerfile:1
 
-ARG NODE_VERSION=22.14.0
+ARG NODE_VERSION=24.7.0
 FROM node:${NODE_VERSION}-slim AS base
 
 LABEL fly_launch_runtime="Vite"
@@ -22,10 +22,8 @@ COPY . .
 
 RUN npm run build
 
-RUN npm prune --omit=dev
-
 # Production stage — nginx serves static files
-FROM nginx
+FROM nginx:1.27-alpine
 
 COPY --from=build /app/dist /usr/share/nginx/html
 
