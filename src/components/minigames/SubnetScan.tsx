@@ -249,6 +249,12 @@ export function SubnetScan(props: MinigameProps) {
   const { timer, complete, fail, isActive } = useMinigame("subnet-scan", props);
 
   const resolvedRef = useRef(false);
+  const delayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (delayRef.current) clearTimeout(delayRef.current);
+    };
+  }, []);
   const isTouch = useTouchDevice();
 
   // CIDR Helper module: show expanded IP range
@@ -321,7 +327,7 @@ export function SubnetScan(props: MinigameProps) {
           next.add(addr);
           return next;
         });
-        setTimeout(() => fail(), 400);
+        delayRef.current = setTimeout(() => fail(), 400);
         return;
       }
 
@@ -338,7 +344,7 @@ export function SubnetScan(props: MinigameProps) {
       if (newCorrectCount >= puzzle.correctSet.size) {
         resolvedRef.current = true;
         timer.pause(); // prevent handleExpire from firing during the flash delay
-        setTimeout(() => complete(true), 400);
+        delayRef.current = setTimeout(() => complete(true), 400);
       }
     },
     [isActive, puzzle, fail, complete, timer],

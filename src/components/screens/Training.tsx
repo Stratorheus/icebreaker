@@ -53,6 +53,14 @@ export function Training() {
   const [roundResults, setRoundResults] = useState<boolean[]>([]);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
+  // Cleanup ref for round-result transition delay
+  const roundDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    return () => {
+      if (roundDelayRef.current) clearTimeout(roundDelayRef.current);
+    };
+  }, []);
+
   // Per-minigame settings — remembered across picker/briefing/result within the same Training session
   const [perMinigameSettings, setPerMinigameSettings] = useState<
     Partial<Record<MinigameType, MinigameTrainingSettings>>
@@ -177,7 +185,7 @@ export function Training() {
       setRoundResults((prev) => [...prev, success]);
       setPhase("round-result");
 
-      setTimeout(() => {
+      roundDelayRef.current = setTimeout(() => {
         setRound((r) => r + 1);
         setCountdownValue(3);
         setPhase("countdown");
