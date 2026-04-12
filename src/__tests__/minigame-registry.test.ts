@@ -8,7 +8,6 @@ import {
   ALL_MINIGAMES,
   getMinigameDisplayName,
   getMinigameBriefing,
-  getMinigameHint,
   buildMetaPowerUps,
 } from "@/data/minigames/registry";
 import type { MinigameType } from "@/types/game";
@@ -173,18 +172,6 @@ describe("getMinigameBriefing", () => {
   it("returns the briefing object for a minigame", () => {
     const briefing = getMinigameBriefing("slash-timing");
     expect(briefing).toBe(MINIGAME_REGISTRY["slash-timing"].briefing);
-  });
-});
-
-describe("getMinigameHint", () => {
-  it("returns desktop hint when isTouch=false", () => {
-    const hint = getMinigameHint("slash-timing", false);
-    expect(hint).toBe(MINIGAME_REGISTRY["slash-timing"].briefing.hint.desktop);
-  });
-
-  it("returns touch hint when isTouch=true", () => {
-    const hint = getMinigameHint("slash-timing", true);
-    expect(hint).toBe(MINIGAME_REGISTRY["slash-timing"].briefing.hint.touch);
   });
 });
 

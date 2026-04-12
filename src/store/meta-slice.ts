@@ -58,7 +58,7 @@ const initialStats: PlayerStats = {
   minigameWinsTotal: {},
 };
 
-export const initialMetaState = {
+const initialMetaState = {
   data: 0,
   unlockedMinigames: [...STARTING_MINIGAMES],
   purchasedUpgrades: {} as Record<string, number>,

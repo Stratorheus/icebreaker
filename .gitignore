@@ -31,6 +31,7 @@ dist-ssr/
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
@@ -40,6 +41,7 @@ dist-ssr/
 # TypeScript build info
 *.tsbuildinfo
 
-# Playwright test artifacts
+# Test artifacts
 test-results/
 playwright-report/
+coverage/

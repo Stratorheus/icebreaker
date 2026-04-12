@@ -14,12 +14,14 @@ Inspired by the hacking minigames from [Bitburner](https://store.steampowered.co
 
 - **15 minigames** — 5 available from the start, 10 more unlockable through meta progression
   - Slash Timing, Code Inject, Decrypt Signal, Packet Route, Memory Scan
-  - Address Lookup, Wire Cutting, Cipher Crack V1 & V2, Defrag, Network Trace
+  - Address Lookup, Process Kill, Cipher Crack V1 & V2, Defrag, Network Trace
   - Signal Echo, Checksum Verify, Port Scan, Subnet Scan
+- **70 achievements** across 7 categories — progression, skill, speed, economy, survival, playstyle, and cumulative milestones
 - **Meta progression** — earn DATA across runs; spend it in the Meta Shop to unlock minigames, buy permanent upgrades, and expand your power-up pool
 - **Run shop** — pick power-ups between floors to modify timing windows, shield against damage, skip dangerous challenges, and more
 - **Training mode** — practice individual minigames outside of a run
 - **Codex** — in-game reference for all minigame rules
+- **Stats** — lifetime statistics, per-minigame breakdowns, and achievement gallery
 - **Mobile-ready** — touch controls supported across all minigames
 - **Cyberpunk aesthetic** — glitch effects, cyan/magenta palette, Audiowide heading font, terminal-style UI
 
@@ -30,8 +32,8 @@ Inspired by the hacking minigames from [Bitburner](https://store.steampowered.co
 | Layer | Technology |
 |---|---|
 | Framework | React 19 |
-| Language | TypeScript 5.7 |
-| Build tool | Vite 6 |
+| Language | TypeScript 6 |
+| Build tool | Vite 8 |
 | Styling | Tailwind CSS 4 |
 | State management | Zustand 5 |
 | Animations | Motion (Framer Motion) 12 |
@@ -104,16 +106,19 @@ fly deploy
 icebreaker/
 ├── src/
 │   ├── components/
-│   │   ├── minigames/     # One component per minigame type
-│   │   ├── screens/       # Top-level screens (MainMenu, Shop, Codex, Stats…)
-│   │   ├── layout/        # Shell, HUD, transitions
-│   │   └── ui/            # shadcn/ui primitives
-│   ├── data/              # Static game data (minigame names, power-up defs…)
+│   │   ├── minigames/     # One component per minigame (15 total)
+│   │   ├── screens/       # Full-screen views (MainMenu, MetaShop, Codex, Stats…)
+│   │   ├── layout/        # MinigameShell, HUD, TimerBar, TouchControls…
+│   │   └── ui/            # CyberButton, ScreenHeader, ResultFlash…
+│   ├── data/              # Static game data, balancing formulas, minigame configs
 │   ├── hooks/             # Custom React hooks
-│   ├── lib/               # Shared utilities
-│   ├── store/             # Zustand store (game-store.ts)
-│   ├── types/             # TypeScript types (game.ts)
+│   ├── lib/               # Shared utilities, achievement checker
+│   ├── store/             # Zustand store (run-slice, meta-slice, shop-slice)
+│   ├── types/             # TypeScript types (game.ts, minigame.ts, shop.ts)
+│   ├── __tests__/         # Unit tests (Vitest)
 │   └── App.tsx            # Root component / screen router
+├── e2e/                   # E2E tests (Playwright)
+├── docs/                  # Architecture, economy, minigame docs
 ├── public/                # Static assets (fonts, images, OG image)
 ├── Dockerfile
 ├── fly.toml
@@ -131,6 +136,6 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Credits
 
-- **Martin Skorupa** — [skorupa.dev](https://skorupa.dev) · [LinkedIn](https://linkedin.com/in/martin-skorupa)
+- **Martin Skorupa** — [skorupa.dev](https://skorupa.dev) · [LinkedIn](https://linkedin.com/in/martin-skorupa) · [Ko-fi](https://ko-fi.com/stratorheus)
 - Inspired by the hacking minigames in **Bitburner** by danielyxie
 - [Audiowide](https://fonts.google.com/specimen/Audiowide) font by Astigmatic — licensed under SIL Open Font License 1.1

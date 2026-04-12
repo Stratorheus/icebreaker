@@ -1,8 +1,14 @@
 {
   "name": "icebreaker",
   "private": true,
-  "version": "1.6.11",
+  "version": "1.7.0",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Stratorheus/icebreaker"
+  },
+  "homepage": "https://icebreaker.skorupa.dev",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -14,13 +20,13 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "lucide-react": "^0.469.0",
+    "lucide-react": "^1.8.0",
     "motion": "^12.0.0",
     "radix-ui": "^1.4.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^2.6.0",
+    "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.2.5",
     "zustand": "^5.0.0"
   },
@@ -33,11 +39,11 @@
     "@types/node": "^25.5.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.0.1",
     "jsdom": "^29.0.1",
     "tailwindcss": "^4.0.0",
-    "typescript": "~5.7.2",
-    "vite": "^6.2.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.8",
     "vitest": "^4.1.0"
   }
 }

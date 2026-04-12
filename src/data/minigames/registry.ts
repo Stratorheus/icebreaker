@@ -64,11 +64,6 @@ export function getMinigameBriefing(type: MinigameType): MinigameBriefing {
   return MINIGAME_REGISTRY[type].briefing;
 }
 
-export function getMinigameHint(type: MinigameType, isTouch: boolean): string {
-  const b = MINIGAME_REGISTRY[type].briefing;
-  return isTouch ? b.hint.touch : b.hint.desktop;
-}
-
 /**
  * Build synthetic PowerUpInstances from a minigame's meta upgrades.
  *

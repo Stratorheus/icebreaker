@@ -25,7 +25,6 @@ Key functions:
 
 | Name | ID | Effect Type | What It Does | Code Location |
 |---|---|---|---|---|
-| Calculator | `checksum-calculator` | `minigame-specific` | Shows an intermediate result hint next to the expression: the sign (if negative) plus the first digit of the answer, followed by `...`. E.g. for answer `42` shows `= 4...` | `ChecksumVerify.tsx` line 97-101 (`hasCalculator` memo), line 300-304 (render) |
 | Error Margin | `error-margin` | `hint` | Answers within ±1/±2/±3/±4/±5 of the correct value are accepted. Tolerance is shown in UI as "±N tolerance active". 5 tiers, prices: 100/200/350/500/700 ◆. | `ChecksumVerify.tsx` (`errorTolerance` memo, `withinTolerance` check in `handleConfirm`, UI indicator) |
 | Range Hint | `range-hint` | `preview` | Shows the approximate range of the answer: "Answer is between X and Y". Range is ±10/±5/±3 of the correct answer. 3 tiers, prices: 150/300/500 ◆. | `ChecksumVerify.tsx` (`rangeHintPct` memo, range display above equals sign) |
 | Time Freeze / Clock Boost / etc. | various | `time-bonus` | Adds bonus seconds to the timer (applied externally in `MinigameRouter`) | `MinigameScreen.tsx` (MinigameRouter) |
@@ -69,12 +68,10 @@ Additional modifiers:
   - `currentIndex` / `currentIndexRef` — which expression is active
   - `input` / `inputRef` — current typed string
   - `flash` — `"correct" | "wrong" | null` for visual feedback
-  - `hasCalculator` — boolean, true if Calculator power-up is active
 
 ## Tuning Guide
 - **Expression complexity**: Modify the difficulty thresholds in `generateExpression()` (lines 16, 28, 37) and the operand ranges within each band.
 - **Expression count**: Change the return values in `getExpressionCount()` (lines 60-65). Current: 2/3/4/5.
 - **Base time**: Change `baseTimeLimit: 15` in `src/data/minigames/checksum-verify.ts`.
 - **Flash duration**: Correct flash is 300ms (line 163), wrong flash is 400ms (line 149). Adjust the `setTimeout` delays.
-- **Calculator hint detail**: Currently shows first digit + `...` (line 302). Could show more digits or the full answer by editing the template literal.
 - **Difficulty-to-time scaling**: Governed by `getTimeLimit()` in `src/data/balancing.ts` line 60-66. The `0.4` multiplier controls how much time shrinks at max difficulty.

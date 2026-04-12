@@ -5,7 +5,7 @@ import { useCipherMinigame } from "@/hooks/use-cipher-minigame";
 import { MinigameShell } from "@/components/layout/MinigameShell";
 import { HiddenMobileInput } from "@/components/layout/HiddenMobileInput";
 import { CipherDisplay } from "@/components/layout/CipherDisplay";
-import { TECH_WORDS } from "@/data/words";
+import { getWordPool } from "@/data/words";
 
 // ---------------------------------------------------------------------------
 // Cipher helpers (ROT only)
@@ -42,11 +42,6 @@ function buildExamples(_method: CipherMethod): string[] {
 // Word pool + method selection
 // ---------------------------------------------------------------------------
 
-function getWordPool(difficulty: number): readonly string[] {
-  if (difficulty < 0.35) return TECH_WORDS.short;
-  if (difficulty < 0.65) return [...TECH_WORDS.short, ...TECH_WORDS.medium];
-  return [...TECH_WORDS.medium, ...TECH_WORDS.long];
-}
 
 function pickMethod(_difficulty: number): CipherMethod {
   return "rot";

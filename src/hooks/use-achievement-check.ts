@@ -65,14 +65,3 @@ export function evaluateAndAwardAchievements(): void {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Hook — returns a stable callback for use in components
-// ---------------------------------------------------------------------------
-
-/**
- * Returns a stable `check` function. Components call this at the right moment
- * to evaluate and award achievements.
- */
-export function useAchievementCheck() {
-  return { evaluateAndAwardAchievements };
-}
