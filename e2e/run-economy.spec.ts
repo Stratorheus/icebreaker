@@ -90,35 +90,31 @@ test.describe("Run Economy", () => {
   });
 
   test("death screen (voluntary quit) shows data breakdown", async ({ page }) => {
-    // Use evaluate to directly set the game into dead/voluntary quit state
-    // after starting a run, to avoid waiting for minigames
     await startRunAndWait(page);
 
-    // Directly set status to dead with quitVoluntarily=true via store
+    // Force the run into voluntary-quit death state via the store
     await page.evaluate(() => {
       const store = (window as any).__GAME_STORE__;
-      if (store) {
-        store.setState({ status: "dead", quitVoluntarily: true });
-      }
+      store.setState({ status: "dead", quitVoluntarily: true });
     });
 
-    // If direct store access doesn't work, fall back to verifying the run started
-    // We can't easily quit from mid-minigame, so just check the game is running
-    const header = page.locator("header");
-    const isRunning = await header.isVisible().catch(() => false);
-    if (isRunning) {
-      // Just verify the run started correctly with HUD visible
-      // BASE_HP = 100, see run-slice.ts startRun
-      await expect(header).toContainText("100/100");
-    }
+    // Death screen replaces the HUD
+    await expect(page.locator("header")).toBeHidden({ timeout: 5000 });
+
+    // Voluntary-quit title + subtitle prove we're on the death screen in quit mode
+    await expect(page.getByRole("heading", { name: "RUN TERMINATED" })).toBeVisible();
+    await expect(page.getByText("VOLUNTARY DISCONNECT")).toBeVisible();
+
+    // Data breakdown header row — baseline assertion that summary rendered
+    await expect(page.getByText("FLOOR REACHED")).toBeVisible();
+    await expect(page.getByText("FLOOR REWARD")).toBeVisible();
+
+    // Voluntary quit = no death penalty row
+    await expect(page.getByText(/DEATH PENALTY/)).toHaveCount(0);
   });
 
   test("data balance shown in main menu", async ({ page }) => {
-    // Main menu shows data balance with hex icon
-    const dataDisplay = page.locator("text=/\\d+/").first();
     await expect(page.getByText("START RUN")).toBeVisible({ timeout: 5000 });
-
-    // Default data is 0
     await expect(page.locator('[data-testid="main-menu"]')).toBeVisible();
   });
 
