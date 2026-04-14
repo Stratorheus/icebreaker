@@ -1,12 +1,22 @@
 # ICEBREAKER — Neural Intrusion System
 
+[![Play now](https://img.shields.io/badge/▶_PLAY_NOW-icebreaker.skorupa.dev-00ffff?style=for-the-badge&labelColor=06060e)](https://icebreaker.skorupa.dev)
+[![License: MIT](https://img.shields.io/badge/license-MIT-ff0066?style=for-the-badge&labelColor=06060e)](LICENSE)
+
 A cyberpunk roguelike browser minigame collection. Each run sends you through a gauntlet of hacking-themed reaction challenges, growing harder with every floor. Survive long enough to spend your DATA in the meta shop and unlock new intrusion modules for future runs.
 
 Inspired by the hacking minigames from [Bitburner](https://store.steampowered.com/app/1812820/Bitburner/).
 
-**▶ [Play now at icebreaker.skorupa.dev](https://icebreaker.skorupa.dev)**
+> Built with heavy AI assistance — the most important skill was knowing when to delete what the AI wrote.
 
-![ICEBREAKER screenshot](/public/images/og-image.png)
+## Gameplay
+
+| | |
+|---|---|
+| ![Main menu](public/images/screenshots/main-menu.png) | ![Minigame in action](public/images/screenshots/defrag.png) |
+| Main menu — hub for runs, meta progression, training | Defrag minigame — uncover safe cells, avoid mines |
+| ![Meta shop](public/images/screenshots/meta-shop.png) | ![Death screen](public/images/screenshots/death-screen.png) |
+| Meta shop — spend DATA on permanent upgrades and new protocols | Death screen — full data breakdown for each run |
 
 ---
 
@@ -24,6 +34,16 @@ Inspired by the hacking minigames from [Bitburner](https://store.steampowered.co
 - **Stats** — lifetime statistics, per-minigame breakdowns, and achievement gallery
 - **Mobile-ready** — touch controls supported across all minigames
 - **Cyberpunk aesthetic** — glitch effects, cyan/magenta palette, Audiowide heading font, terminal-style UI
+
+---
+
+## Live Stats
+
+Public analytics via Umami — pageviews, sessions, and custom game events (runs completed, minigame popularity, achievement unlock rate, deepest floor reached).
+
+**▶ [View live dashboard](https://cloud.umami.is/share/qOtEaYQgY8lrxAmA)**
+
+No cookies, no personal data, no tracking pixels — just aggregate game metrics to see which protocols are most-played and how deep players go.
 
 ---
 
