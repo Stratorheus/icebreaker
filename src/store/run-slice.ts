@@ -283,7 +283,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       stats: { ...get().stats, minigameWinStreaks: {} },
     });
 
-    track("run_started", { startFloor: sf });
+    track("Run started", { startFloor: sf });
   },
 
   completeMinigame: (result: MinigameResult) => {
@@ -409,7 +409,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       consecutiveFloorsNoDamage,
     });
 
-    track("minigame_played", {
+    track("Minigame played", {
       type: result.minigame,
       result: "win",
       timeMs: result.timeMs,
@@ -460,8 +460,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         currentWinStreak: 0,
       });
 
-      track("minigame_played", { type: currentType, result: "loss", floor: state.floor });
-      track("run_completed", {
+      track("Minigame played", { type: currentType, result: "loss", floor: state.floor });
+      track("Run completed", {
         floor: state.floor,
         durationMs: Date.now() - state.runStartTime,
         minigamesWon: state.minigamesWonThisRun,
@@ -508,7 +508,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       currentWinStreak: 0,
     });
 
-    track("minigame_played", { type: currentType, result: "loss", floor: state.floor });
+    track("Minigame played", { type: currentType, result: "loss", floor: state.floor });
   },
 
   takeDamage: (amount: number) => {
@@ -697,7 +697,7 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const state = get();
     set({ quitVoluntarily: true, status: "dead" });
 
-    track("run_completed", {
+    track("Run completed", {
       floor: state.floor,
       durationMs: Date.now() - state.runStartTime,
       minigamesWon: state.minigamesWonThisRun,
