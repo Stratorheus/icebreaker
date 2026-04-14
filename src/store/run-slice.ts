@@ -4,6 +4,7 @@ import { STARTING_MINIGAMES } from "@/data/minigames/registry";
 import type { MinigameResult } from "@/types/minigame";
 import { CHECKPOINT_INTERVAL, getDataDrip, getEffectiveCredits, getEffectiveDamage, getEffectiveDifficulty, getFloorBonusCredits, getMilestoneBonus, getMinigamesPerFloor, getStartingCredits } from "@/data/balancing";
 import { applyShield } from "@/lib/power-up-effects";
+import { track } from "@/lib/analytics";
 import { META_UPGRADE_POOL } from "@/data/upgrades/registry";
 import type { MetaSlice } from "./meta-slice";
 import type { ShopSlice } from "./shop-slice";
@@ -281,6 +282,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       // Reset per-minigame win streaks — streak achievements are run-scoped
       stats: { ...get().stats, minigameWinStreaks: {} },
     });
+
+    track("run_started", { startFloor: sf });
   },
 
   completeMinigame: (result: MinigameResult) => {
@@ -405,6 +408,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       floorCompletionTimestamps,
       consecutiveFloorsNoDamage,
     });
+
+    track("minigame_played", {
+      type: result.minigame,
+      result: "win",
+      timeMs: result.timeMs,
+      floor: state.floor,
+    });
   },
 
   failMinigame: () => {
@@ -433,12 +443,13 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
     const tookDamage = damage > 0;
 
     if (newHpAfterDamage <= 0) {
+      const minigamesPlayedFinal = state.minigamesPlayedThisRun + 1;
       set({
         hp: 0,
         inventory,
         floorDamageTaken: tookDamage ? true : state.floorDamageTaken,
         runDamageTaken: tookDamage ? true : state.runDamageTaken,
-        minigamesPlayedThisRun: state.minigamesPlayedThisRun + 1,
+        minigamesPlayedThisRun: minigamesPlayedFinal,
         status: "dead",
         // Time Siphon resets on fail; Cascade Clock resets on fail
         timeSiphonBonus: 0,
@@ -447,6 +458,15 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
         lastMinigameResult: { success: false, timeMs: 0, type: currentType },
         lastDamageTaken: damage,
         currentWinStreak: 0,
+      });
+
+      track("minigame_played", { type: currentType, result: "loss", floor: state.floor });
+      track("run_completed", {
+        floor: state.floor,
+        durationMs: Date.now() - state.runStartTime,
+        minigamesWon: state.minigamesWonThisRun,
+        minigamesPlayed: minigamesPlayedFinal,
+        cause: "death",
       });
       return;
     }
@@ -487,6 +507,8 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
       lastDamageTaken: damage,
       currentWinStreak: 0,
     });
+
+    track("minigame_played", { type: currentType, result: "loss", floor: state.floor });
   },
 
   takeDamage: (amount: number) => {
@@ -672,7 +694,16 @@ export const createRunSlice: StateCreator<FullStore, [], [], RunSlice> = (
   quitRun: () => {
     // Set quitVoluntarily and go to "dead" — DeathScreen reads the flag
     // to skip death penalty and show "RUN TERMINATED" instead.
+    const state = get();
     set({ quitVoluntarily: true, status: "dead" });
+
+    track("run_completed", {
+      floor: state.floor,
+      durationMs: Date.now() - state.runStartTime,
+      minigamesWon: state.minigamesWonThisRun,
+      minigamesPlayed: state.minigamesPlayedThisRun,
+      cause: "quit",
+    });
   },
 
 });

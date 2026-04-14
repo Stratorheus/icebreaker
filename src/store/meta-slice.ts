@@ -1,6 +1,8 @@
 import type { StateCreator } from "zustand";
 import type { MinigameType, PlayerStats } from "@/types/game";
 import { STARTING_MINIGAMES } from "@/data/minigames/registry";
+import { ACHIEVEMENT_POOL } from "@/data/achievements";
+import { track } from "@/lib/analytics";
 import type { RunSlice } from "./run-slice";
 import type { ShopSlice } from "./shop-slice";
 
@@ -119,18 +121,24 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
     const state = get();
     const currentTier = state.purchasedUpgrades[id] ?? 0;
     if (maxTier !== undefined && currentTier >= maxTier) return;
+    const nextTier = currentTier + 1;
     set({
       purchasedUpgrades: {
         ...state.purchasedUpgrades,
-        [id]: currentTier + 1,
+        [id]: nextTier,
       },
     });
+
+    track("meta_purchase", { id, tier: nextTier });
   },
 
   unlockAchievement: (id: string) => {
     const state = get();
     if (state.achievements.includes(id)) return;
     set({ achievements: [...state.achievements, id] });
+
+    const achievement = ACHIEVEMENT_POOL.find((a) => a.id === id);
+    track("achievement_unlocked", { id, category: achievement?.category });
   },
 
   revealAchievement: (id: string) => {
