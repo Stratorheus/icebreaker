@@ -129,7 +129,7 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
       },
     });
 
-    track("meta_purchase", { id, tier: nextTier });
+    track("Meta purchase", { id, tier: nextTier });
   },
 
   unlockAchievement: (id: string) => {
@@ -138,7 +138,7 @@ export const createMetaSlice: StateCreator<FullStore, [], [], MetaSlice> = (
     set({ achievements: [...state.achievements, id] });
 
     const achievement = ACHIEVEMENT_POOL.find((a) => a.id === id);
-    track("achievement_unlocked", { id, category: achievement?.category });
+    track("Achievement unlocked", { id, category: achievement?.category });
   },
 
   revealAchievement: (id: string) => {

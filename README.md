@@ -39,11 +39,11 @@ Inspired by the hacking minigames from [Bitburner](https://store.steampowered.co
 
 ## Live Stats
 
-Public analytics via Umami — pageviews, sessions, and custom game events (runs completed, minigame popularity, achievement unlock rate, deepest floor reached).
+Public game events dashboard via Umami — runs started, runs completed, minigames played, achievements unlocked, and meta purchases. Aggregate counts only, no PII.
 
-**▶ [View live dashboard](https://cloud.umami.is/share/qOtEaYQgY8lrxAmA)**
+**▶ [View live events dashboard](https://cloud.umami.is/share/4FJWL6Vw2xIuUpCG)**
 
-No cookies, no personal data, no tracking pixels — just aggregate game metrics to see which protocols are most-played and how deep players go.
+No cookies, no personal data, no tracking pixels — cookieless analytics powered by [Umami](https://umami.is).
 
 ---
 
