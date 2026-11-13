@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Typecheck, Unit Tests & E2E
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04 # ubuntu-latest is 26.04 since 2026-11 and Playwright 1.58 has no chromium build for it
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
